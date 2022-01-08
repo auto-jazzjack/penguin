@@ -1,0 +1,5 @@
+rootProject.name = 'penguin'
+
+include 'penguin-core'
+include 'penguin-lettuce'
+include 'sample:application'
