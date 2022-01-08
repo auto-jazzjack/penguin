@@ -1,18 +1,32 @@
-plugins {
-    id 'java'
+buildscript {
+    ext {
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        //classPath
+    }
 }
 
-group = 'io.penguin'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
-
-repositories {
-    mavenCentral()
-}
 
 subprojects {
-}
+    apply plugin: 'java'
 
-test {
-    useJUnitPlatform()
+    sourceCompatibility = '11'
+    group = 'io.penguin'
+
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        compileOnly ('org.projectlombok:lombok:1.18.12')
+        annotationProcessor('org.projectlombok:lombok:1.18.12')
+
+        testCompileOnly 'org.projectlombok:lombok:1.18.12'
+        testAnnotationProcessor('org.projectlombok:lombok:1.18.12')
+    }
 }
