@@ -1,26 +1,7 @@
-plugins {
-    id 'java'
-}
-
-group = 'io.penguin'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation 'io.projectreactor:reactor-core:3.4.12'
     implementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     implementation 'ch.qos.logback:logback-classic:1.2.6'
-
-    compileOnly ('org.projectlombok:lombok:1.18.12')
-    annotationProcessor('org.projectlombok:lombok:1.18.12')
-
-    testCompileOnly 'org.projectlombok:lombok:1.18.12'
-    testAnnotationProcessor('org.projectlombok:lombok:1.18.12')
-
 }
 
 test {
