@@ -6,13 +6,12 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
 @Slf4j
-public abstract class DefaultCacheReaderImpl<K, V> implements CacheReader<K, V> {
+public abstract class BaseCacheReader<K, V> implements CacheReader<K, V> {
 
     private final Sinks.Many<K> watcher;
     private final Reader<K, V> fromDownStream;
-    private final Reader<K, V> fromThis;
 
-    public DefaultCacheReaderImpl(Reader<K, V> fromDownStream, Reader<K, V> fromThis) {
+    public BaseCacheReader(Reader<K, V> fromDownStream) {
         watcher = Sinks.many()
                 .unicast()
                 .onBackpressureBuffer();
@@ -20,25 +19,22 @@ public abstract class DefaultCacheReaderImpl<K, V> implements CacheReader<K, V> 
         watcher.asFlux()
                 .flatMap(i -> fromDownStream.findOne(i).map(j -> Pair.of(i, j)))
                 .filter(i -> i.getKey() != null && i.getValue() != null)
-                .subscribe(i -> writeOne(i.getKey(), i.getValue(), expireTime()), e -> log.error("", e));
+                .subscribe(i -> writeOne(i.getKey(), i.getValue().getValue()), e -> log.error("", e));
 
         this.fromDownStream = fromDownStream;
-        this.fromThis = fromThis;
     }
 
     @Override
-    abstract public Mono<Boolean> writeOne(K key, V value, long expireTime);
+    abstract public Mono<Boolean> writeOne(K key, V value);
 
     @Override
     abstract public long expireTime();
 
     @Override
-    public Mono<V> findOne(K key) {
-        return fromThis.findOne(key);
-    }
+    abstract public Mono<Context<V>> findOne(K key);
 
     @Override
-    public Mono<V> fromDownStream(K key) {
+    public Mono<Context<V>> fromDownStream(K key) {
         return fromDownStream.findOne(key);
     }
 }

@@ -3,7 +3,7 @@ package io.penguin.penguincore.reader;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Sinks;
 
-public class DefaultCacheReaderImplTest {
+public class BaseCacheReaderTest {
 
 
     @Test
