@@ -1,5 +1,8 @@
 rootProject.name = 'penguin'
 
 include 'penguin-core'
-include 'penguin-lettuce'
+include 'persistence:penguin-lettuce'
+include 'persistence:penguin-cassandra'
+
+include 'penguin-deployment'
 include 'sample:application'

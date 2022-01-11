@@ -1,0 +1,12 @@
+dependencies {
+    implementation project(":penguin-core")
+    implementation project(":persistence:penguin-lettuce")
+    implementation project(":persistence:penguin-cassandra")
+
+    implementation 'io.projectreactor:reactor-core:3.4.12'
+
+}
+
+test {
+    useJUnitPlatform()
+}
