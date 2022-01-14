@@ -13,13 +13,16 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     implementation project(":penguin-core")
+    implementation project(":penguin-deployment")
     implementation project(":persistence:penguin-lettuce")
     implementation project(":persistence:penguin-cassandra")
 
     implementation 'io.projectreactor:reactor-core:3.4.12'
+    implementation 'io.lettuce:lettuce-core:5.3.2.RELEASE'
+
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
