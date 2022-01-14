@@ -7,7 +7,6 @@ import com.datastax.driver.mapping.Result;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import io.penguin.penguincore.reader.Context;
 import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
 
@@ -29,7 +28,7 @@ public abstract class CassandraSource<K, V> implements Reader<K, V> {
     }
 
     @Override
-    public Mono<Context<V>> findOne(K key) {
+    public Mono<V> findOne(K key) {
 
         ListenableFuture<Result<V>> resultListenableFuture = mappingManager.mapper(valueType)
                 .mapAsync(session.executeAsync(statement.bind(key)));
@@ -42,10 +41,11 @@ public abstract class CassandraSource<K, V> implements Reader<K, V> {
                         .map(Result::one)
                         .orElse(null);
 
-                i.success(Context.<V>builder()
-                        .from(Context.From.SOURCE)
-                        .value(v)
-                        .build());
+                if (v != null) {
+                    i.success(v);
+                } else {
+                    i.success();
+                }
             }
 
             @Override
