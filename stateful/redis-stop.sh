@@ -1,0 +1,1 @@
+pkill redis-server && sleep 2
