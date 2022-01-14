@@ -1,6 +1,5 @@
 package io.penguin.deployment.penguindeployment;
 
-import io.penguin.pengiuncassandra.CassandraSource;
 import io.penguin.pengiunlettuce.LettuceCache;
 import io.penguin.penguincore.reader.Context;
 import io.penguin.penguincore.reader.Reader;
@@ -18,14 +17,16 @@ public class Deployment<K, V> {
 
     public Mono<V> findOne(K key) {
         return redisCache.findOne(key)
-                .flatMap(i -> {
-                    if (i.getValue() == null) {
-                        return source.findOne(key)
-                                .doOnNext(j -> redisCache.insertQueue(key));
-                    } else {
-                        return Mono.just(i);
-                    }
-                })
-                .map(Context::getValue);
+                .switchIfEmpty(Mono.create(i -> {
+                    source.findOne(key)
+                            .doOnNext(j -> {
+                                redisCache.insertQueue(key);
+                            })
+                            .doOnNext(j->{
+                                i.success(j);
+                            }).subscribe();
+
+                }));
+
     }
 }

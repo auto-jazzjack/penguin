@@ -3,6 +3,7 @@ package io.penguin.penguincore.reader;
 import io.penguin.penguincore.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.SignalType;
 import reactor.core.publisher.Sinks;
 
 @Slf4j
@@ -28,13 +29,18 @@ public abstract class BaseCacheReader<K, V> implements CacheReader<K, V> {
     abstract public void writeOne(K key, V value);
 
     @Override
-    abstract public long expireTime();
+    abstract public long expireSecond();
 
     @Override
     abstract public Mono<V> findOne(K key);
 
     public void insertQueue(K k) {
-        watcher.tryEmitNext(k);
+        watcher.emitNext(k, new Sinks.EmitFailureHandler() {
+            @Override
+            public boolean onEmitFailure(SignalType signalType, Sinks.EmitResult emitResult) {
+                return false;
+            }
+        });
     }
 
     @Override
