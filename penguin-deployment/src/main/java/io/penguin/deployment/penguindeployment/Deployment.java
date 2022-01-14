@@ -16,13 +16,15 @@ public class Deployment<K, V> {
 
     public Mono<V> findOne(K key) {
         return redisCache.findOne(key)
-                .flatMap(i -> {
-                    if (i == null) {
-                        return source.findOne(key)
-                                .doOnNext(j -> redisCache.insertQueue(key));
-                    } else {
-                        return Mono.just(i);
-                    }
-                });
+                .switchIfEmpty(Mono.create(i -> {
+                    source.findOne(key)
+                            .doOnNext(j -> {
+                                redisCache.insertQueue(key);
+                            })
+                            .doOnNext(j->{
+                                i.success(j);
+                            }).subscribe();
+
+                }));
     }
 }

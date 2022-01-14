@@ -3,6 +3,7 @@ package io.penguin.penguincore.controller;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.penguin.deployment.penguindeployment.Deployment;
 import io.penguin.pengiunlettuce.LettuceCacheConfig;
+import io.penguin.pengiunlettuce.codec.DefaultCodec;
 import io.penguin.penguincore.reader.RedisCache;
 import io.penguin.penguincore.reader.Source;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ public class TestController {
 
         deployment = new Deployment(
                 new RedisCache(source, statefulRedisClusterConnection, LettuceCacheConfig.builder()
+                        .expireTime(10)
+                        .queueSize(3000)
+                        .codec(DefaultCodec.getInstance())
                         .build()),
                 source
 

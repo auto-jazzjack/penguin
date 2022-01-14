@@ -11,23 +11,25 @@ import java.util.Optional;
 public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
     private final RedisAdvancedClusterReactiveCommands<K, byte[]> reactive;
-    private final long expireTime;
+    private final long expireSecond;
 
     public LettuceCache(Reader<K, V> fromDownStream, StatefulRedisClusterConnection<K, byte[]> connection, LettuceCacheConfig lettuceCacheConfig) {
         super(fromDownStream);
 
         this.reactive = connection.reactive();
-        this.expireTime = Optional.of(lettuceCacheConfig).map(LettuceCacheConfig::getExpireTime).orElse(0L);
+        this.expireSecond = Optional.of(lettuceCacheConfig).map(LettuceCacheConfig::getExpireTime)
+                .orElse(0L);
     }
 
     @Override
     public void writeOne(K key, V value) {
-        reactive.setex(key, this.expireTime, serialize(value));
+        reactive.setex(key, this.expireSecond, serialize(value))
+                .subscribe();
     }
 
     @Override
-    public long expireTime() {
-        return this.expireTime;
+    public long expireSecond() {
+        return this.expireSecond;
     }
 
     @Override

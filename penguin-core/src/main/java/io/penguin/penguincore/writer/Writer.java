@@ -2,5 +2,5 @@ package io.penguin.penguincore.writer;
 
 public interface Writer<K, V> {
     void writeOne(K key, V value);
-    long expireTime();
+    long expireSecond();
 }
