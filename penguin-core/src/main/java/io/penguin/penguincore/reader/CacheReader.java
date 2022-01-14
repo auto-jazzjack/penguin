@@ -4,5 +4,5 @@ import io.penguin.penguincore.writer.Writer;
 import reactor.core.publisher.Mono;
 
 public interface CacheReader<K, V> extends Reader<K, V>, Writer<K, V> {
-    Mono<Context<V>> fromDownStream(K key);
+    Mono<V> fromDownStream(K key);
 }

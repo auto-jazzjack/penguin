@@ -53,13 +53,9 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     }
 
     @Override
-    public Mono<Context<V>> findOne(K key) {
+    public Mono<V> findOne(K key) {
         return reactive.get(key)
-                .map(this::deserialize)
-                .map(i -> Context.<V>builder()
-                        .value(i)
-                        .from(Context.From.CACHE1)
-                        .build());
+                .map(this::deserialize);
     }
 
     abstract public byte[] serialize(V v);

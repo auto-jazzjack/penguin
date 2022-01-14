@@ -3,23 +3,24 @@ package io.penguin.deployment.penguindeployment;
 import io.penguin.pengiuncassandra.CassandraSource;
 import io.penguin.pengiunlettuce.LettuceCache;
 import io.penguin.penguincore.reader.Context;
+import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
 
 public class Deployment<K, V> {
 
     private final LettuceCache<K, V> redisCache;
-    private final CassandraSource<K, V> cassandraSource;
+    private final Reader<K, V> source;
 
-    public Deployment(LettuceCache<K, V> redisCache, CassandraSource<K, V> cassandraSource) {
+    public Deployment(LettuceCache<K, V> redisCache, Reader<K, V> source) {
         this.redisCache = redisCache;
-        this.cassandraSource = cassandraSource;
+        this.source = source;
     }
 
     public Mono<V> findOne(K key) {
         return redisCache.findOne(key)
                 .flatMap(i -> {
                     if (i.getValue() == null) {
-                        return cassandraSource.findOne(key)
+                        return source.findOne(key)
                                 .doOnNext(j -> redisCache.insertQueue(key));
                     } else {
                         return Mono.just(i);
