@@ -10,4 +10,5 @@ import lombok.Data;
 public class CassandraConfig {
     private PreparedStatement statement;
     private Class<?> valueType;
+
 }
