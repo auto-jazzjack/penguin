@@ -7,10 +7,15 @@ import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.codec.CompressionCodec;
+import io.lettuce.core.event.DefaultEventPublisherOptions;
+import io.lettuce.core.metrics.DefaultCommandLatencyCollectorOptions;
+import io.lettuce.core.resource.ClientResources;
+import io.lettuce.core.resource.DefaultClientResources;
 import io.penguin.pengiunlettuce.codec.DefaultCodec;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,8 +29,17 @@ public class RedisConfig {
                 .collect(Collectors.toList()));
     }
 
+    private ClientResources clientResources() {
+        return DefaultClientResources.builder()
+                .commandLatencyPublisherOptions(DefaultEventPublisherOptions.builder()
+                        .eventEmitInterval(Duration.ofMinutes(1))
+                        .build())
+                .ioThreadPoolSize(4)
+                .build();
+    }
+
     public StatefulRedisClusterConnection<String, byte[]> connection(List<RedisURI> redisURI) {
-        RedisClusterClient redisClusterClient = RedisClusterClient.create(redisURI);
+        RedisClusterClient redisClusterClient = RedisClusterClient.create(clientResources(), redisURI);
 
         redisClusterClient.setOptions(ClusterClientOptions.builder()
                 .topologyRefreshOptions(ClusterTopologyRefreshOptions.builder()
@@ -33,8 +47,6 @@ public class RedisConfig {
                         .enablePeriodicRefresh()
                         .build())
                 .requestQueueSize(30000)
-                .timeoutOptions(TimeoutOptions.builder()
-                        .build())
                 .build());
 
 
