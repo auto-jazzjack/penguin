@@ -43,9 +43,8 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     }
 
     @Override
-    public Mono<Boolean> writeOne(K key, V value) {
-        return reactive.setex(key, this.expireTime, serialize(value))
-                .map(i -> true);
+    public void writeOne(K key, V value) {
+        reactive.setex(key, this.expireTime, serialize(value));
     }
 
     @Override
@@ -66,4 +65,6 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     abstract public byte[] serialize(V v);
 
     abstract public V deserialize(byte[] bytes);
+
+
 }
