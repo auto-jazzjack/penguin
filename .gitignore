@@ -35,3 +35,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+/redis-6.2.6
+redis-6.2.6/cluster-config
+!/redis-6.2.6/nodes.conf
+!/redis-6.2.6/redis.conf
+!/redis-6.2.6/redis.conf_

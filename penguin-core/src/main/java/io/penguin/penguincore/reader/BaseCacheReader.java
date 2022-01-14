@@ -25,13 +25,17 @@ public abstract class BaseCacheReader<K, V> implements CacheReader<K, V> {
     }
 
     @Override
-    abstract public Mono<Boolean> writeOne(K key, V value);
+    abstract public void writeOne(K key, V value);
 
     @Override
     abstract public long expireTime();
 
     @Override
     abstract public Mono<Context<V>> findOne(K key);
+
+    public void insertQueue(K k) {
+        watcher.tryEmitNext(k);
+    }
 
     @Override
     public Mono<Context<V>> fromDownStream(K key) {

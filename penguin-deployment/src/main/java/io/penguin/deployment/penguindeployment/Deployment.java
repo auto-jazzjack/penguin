@@ -20,7 +20,7 @@ public class Deployment<K, V> {
                 .flatMap(i -> {
                     if (i.getValue() == null) {
                         return cassandraSource.findOne(key)
-                                .doOnNext(j -> redisCache.writeOne(key, j.getValue()).subscribe());
+                                .doOnNext(j -> redisCache.insertQueue(key));
                     } else {
                         return Mono.just(i);
                     }
