@@ -26,7 +26,7 @@ public class TestController {
     StatefulRedisClusterConnection<String, byte[]> statefulRedisClusterConnection;
 
     @PostConstruct
-    public void init() {
+    public void init() throws Exception {
         Source source = new Source();
 
         deployment = new Deployment(

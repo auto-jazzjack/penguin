@@ -1,16 +1,15 @@
 package io.penguin.deployment.penguindeployment;
 
-import io.penguin.pengiunlettuce.LettuceCache;
-import io.penguin.penguincore.reader.Context;
+import io.penguin.pengiunlettuce.LettuceCacheWithPlugin;
 import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
 
 public class Deployment<K, V> {
 
-    private final LettuceCache<K, V> redisCache;
+    private final LettuceCacheWithPlugin<K, V> redisCache;
     private final Reader<K, V> source;
 
-    public Deployment(LettuceCache<K, V> redisCache, Reader<K, V> source) {
+    public Deployment(LettuceCacheWithPlugin<K, V> redisCache, Reader<K, V> source) {
         this.redisCache = redisCache;
         this.source = source;
     }
@@ -22,7 +21,7 @@ public class Deployment<K, V> {
                             .doOnNext(j -> {
                                 redisCache.insertQueue(key);
                             })
-                            .doOnNext(j->{
+                            .doOnNext(j -> {
                                 i.success(j);
                             }).subscribe();
 

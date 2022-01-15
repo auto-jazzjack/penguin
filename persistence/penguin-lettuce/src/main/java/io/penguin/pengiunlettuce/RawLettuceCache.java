@@ -8,18 +8,18 @@ import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
-public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
+abstract class RawLettuceCache<K, V> extends BaseCacheReader<K, V> {
 
-    private final RedisAdvancedClusterReactiveCommands<K, byte[]> reactive;
+    protected final RedisAdvancedClusterReactiveCommands<K, byte[]> reactive;
     private final long expireSecond;
 
-    public LettuceCache(Reader<K, V> fromDownStream, StatefulRedisClusterConnection<K, byte[]> connection, LettuceCacheConfig lettuceCacheConfig) {
+    public RawLettuceCache(Reader<K, V> fromDownStream, StatefulRedisClusterConnection<K, byte[]> connection, LettuceCacheConfig pureLettuceCacheConfig) {
         super(fromDownStream);
-
         this.reactive = connection.reactive();
-        this.expireSecond = Optional.of(lettuceCacheConfig).map(LettuceCacheConfig::getExpireTime)
+        this.expireSecond = Optional.of(pureLettuceCacheConfig).map(LettuceCacheConfig::getExpireTime)
                 .orElse(0L);
     }
+
 
     @Override
     public void writeOne(K key, V value) {
