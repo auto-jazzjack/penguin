@@ -34,7 +34,7 @@ public class PluginComposer {
         Plugin<V>[] collect = plugins.stream()
                 .sorted(Comparator.comparingInt(Plugin::order))
                 .collect(Collectors.toList())
-                .toArray(Plugin[]::<V>new);
+                .toArray(Plugin[]::new);
 
         return new Reader<>() {
 
