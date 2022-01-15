@@ -3,8 +3,7 @@ package io.penguin.penguincore.controller;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.penguin.deployment.penguindeployment.Deployment;
 import io.penguin.pengiunlettuce.LettuceCacheConfig;
-import io.penguin.pengiunlettuce.codec.DefaultCodec;
-import io.penguin.penguincore.reader.RedisCache;
+import io.penguin.penguincore.reader.ObjectMapperCache;
 import io.penguin.penguincore.reader.Source;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,18 +22,14 @@ public class TestController {
     private Deployment<String, Map<String, String>> deployment;
 
     @Autowired
-    StatefulRedisClusterConnection<String, byte[]> statefulRedisClusterConnection;
+    StatefulRedisClusterConnection<String, byte[]> connection;
 
     @PostConstruct
     public void init() throws Exception {
         Source source = new Source();
 
         deployment = new Deployment(
-                new RedisCache(source, statefulRedisClusterConnection, LettuceCacheConfig.builder()
-                        .expireTime(10)
-                        .queueSize(3000)
-                        .codec(DefaultCodec.getInstance())
-                        .build()),
+                new ObjectMapperCache(source, connection, LettuceCacheConfig.base().build()),
                 source
 
         );

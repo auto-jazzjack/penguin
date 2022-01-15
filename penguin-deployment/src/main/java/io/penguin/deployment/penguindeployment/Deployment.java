@@ -1,15 +1,15 @@
 package io.penguin.deployment.penguindeployment;
 
-import io.penguin.pengiunlettuce.LettuceCacheWithPlugin;
+import io.penguin.pengiunlettuce.LettuceCache;
 import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
 
 public class Deployment<K, V> {
 
-    private final LettuceCacheWithPlugin<K, V> redisCache;
+    private final LettuceCache<K, V> redisCache;
     private final Reader<K, V> source;
 
-    public Deployment(LettuceCacheWithPlugin<K, V> redisCache, Reader<K, V> source) {
+    public Deployment(LettuceCache<K, V> redisCache, Reader<K, V> source) {
         this.redisCache = redisCache;
         this.source = source;
     }
@@ -18,12 +18,9 @@ public class Deployment<K, V> {
         return redisCache.findOne(key)
                 .switchIfEmpty(Mono.create(i -> {
                     source.findOne(key)
-                            .doOnNext(j -> {
-                                redisCache.insertQueue(key);
-                            })
-                            .doOnNext(j -> {
-                                i.success(j);
-                            }).subscribe();
+                            .doOnNext(j -> redisCache.insertQueue(key))
+                            .doOnNext(i::success)
+                            .subscribe();
 
                 }));
 

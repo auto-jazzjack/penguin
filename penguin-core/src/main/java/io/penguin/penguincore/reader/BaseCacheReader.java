@@ -20,19 +20,11 @@ public abstract class BaseCacheReader<K, V> implements CacheReader<K, V> {
         watcher.asFlux()
                 .flatMap(i -> fromDownStream.findOne(i).map(j -> Pair.of(i, j)))
                 .filter(i -> i.getKey() != null && i.getValue() != null)
-                .subscribe(i -> writeOne(i.getKey(), i.getValue()), e -> log.error("", e));
+                .subscribe(i -> writeOne(i.getKey().toString(), i.getValue()), e -> log.error("", e));
 
         this.fromDownStream = fromDownStream;
     }
 
-    @Override
-    abstract public void writeOne(K key, V value);
-
-    @Override
-    abstract public long expireSecond();
-
-    @Override
-    abstract public Mono<V> findOne(K key);
 
     public void insertQueue(K k) {
         watcher.emitNext(k, new Sinks.EmitFailureHandler() {

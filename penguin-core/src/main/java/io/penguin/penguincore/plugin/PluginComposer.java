@@ -9,17 +9,28 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class PluginComposer {
 
     private static final List<Class<? extends Plugin>> pluginList;
+
     static {
         pluginList = new ArrayList<>();
         pluginList.add(CircuitPlugin.class);
     }
 
-    public static <K, V> Reader<K, V> decorateWithInput(PluginInput input, Reader<K, V> reader) throws Exception {
+    public static <K, V> Reader<K, V> decorateWithInput(PluginInput input, Function<K, Mono<V>> reader) throws Exception {
+
+        if (input == null) {
+            return new Reader<K, V>() {
+                @Override
+                public Mono<V> findOne(K key) {
+                    return reader.apply(key);
+                }
+            };
+        }
 
         List<Plugin<V>> plugins = new ArrayList<>();
         for (Class<? extends Plugin> aClass : pluginList) {
@@ -39,12 +50,12 @@ public class PluginComposer {
         return new Reader<>() {
 
             private final Plugin<V>[] plugins = collect;
-            private final Reader<K, V> fromRemote = reader;
+            private final Function<K, Mono<V>> fromRemote = reader;
 
             @Override
             public Mono<V> findOne(K key) {
 
-                Mono<V> mono = fromRemote.findOne(key);
+                Mono<V> mono = fromRemote.apply(key);
 
                 for (Plugin<V> plugin : plugins) {
                     mono = (Mono<V>) plugin.apply();

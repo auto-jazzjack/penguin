@@ -9,4 +9,8 @@ import lombok.Data;
 public class PluginInput {
 
     private CircuitModel circuit;
+
+    public static PluginInput.PluginInputBuilder base() {
+        return PluginInput.builder().circuit(CircuitModel.base().build());
+    }
 }
