@@ -2,6 +2,11 @@ dependencies {
     implementation 'io.projectreactor:reactor-core:3.4.12'
     implementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     implementation 'ch.qos.logback:logback-classic:1.2.6'
+    implementation 'io.github.resilience4j:resilience4j-circuitbreaker:1.7.0'
+    implementation 'io.github.resilience4j:resilience4j-core:1.7.0'
+    implementation 'io.github.resilience4j:resilience4j-reactor:1.7.0'
+
+
 }
 
 test {

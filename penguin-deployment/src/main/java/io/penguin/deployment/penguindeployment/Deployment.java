@@ -1,7 +1,6 @@
 package io.penguin.deployment.penguindeployment;
 
 import io.penguin.pengiunlettuce.LettuceCache;
-import io.penguin.penguincore.reader.Context;
 import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
 
@@ -19,12 +18,9 @@ public class Deployment<K, V> {
         return redisCache.findOne(key)
                 .switchIfEmpty(Mono.create(i -> {
                     source.findOne(key)
-                            .doOnNext(j -> {
-                                redisCache.insertQueue(key);
-                            })
-                            .doOnNext(j->{
-                                i.success(j);
-                            }).subscribe();
+                            .doOnNext(j -> redisCache.insertQueue(key))
+                            .doOnNext(i::success)
+                            .subscribe();
 
                 }));
 

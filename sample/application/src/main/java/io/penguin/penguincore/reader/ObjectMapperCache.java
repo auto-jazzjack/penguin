@@ -6,19 +6,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.penguin.pengiunlettuce.LettuceCache;
 import io.penguin.pengiunlettuce.LettuceCacheConfig;
-import reactor.core.publisher.Mono;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
-public class RedisCache extends LettuceCache<String, Map<String, String>> {
+public class ObjectMapperCache extends LettuceCache<String, Map<String, String>> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public RedisCache(Reader<String, Map<String, String>> fromDownStream,
-                      StatefulRedisClusterConnection<String, byte[]> connection, LettuceCacheConfig lettuceCacheConfig) {
-        super(fromDownStream, connection, lettuceCacheConfig);
+    public ObjectMapperCache(Reader<String, Map<String, String>> fromDownStream,
+                             StatefulRedisClusterConnection<String, byte[]> connection, LettuceCacheConfig pureLettuceCacheConfig) throws Exception {
+        super(fromDownStream, connection, pureLettuceCacheConfig);
     }
 
     @Override
