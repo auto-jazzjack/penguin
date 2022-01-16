@@ -24,7 +24,6 @@ public class ObjectMapperCache extends LettuceCache<String, Map<String, String>>
         try {
             return objectMapper.writeValueAsBytes(stringStringMap);
         } catch (Exception e) {
-            System.out.println("Error");
             return new byte[0];
         }
     }
@@ -34,9 +33,8 @@ public class ObjectMapperCache extends LettuceCache<String, Map<String, String>>
 
         try {
             Thread.sleep(1000);
-            Map<String, String> stringStringMap = objectMapper.readValue(bytes, new TypeReference<>() {
+            return objectMapper.readValue(bytes, new TypeReference<>() {
             });
-            return stringStringMap;
         } catch (Exception e) {
             System.out.println("Error");
             return Collections.emptyMap();

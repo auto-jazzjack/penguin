@@ -8,7 +8,6 @@ import org.reactivestreams.Subscription;
 import reactor.core.CoreSubscriber;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 public class Timer<V> implements Subscription, CoreSubscriber<V> {
@@ -16,26 +15,17 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
     private final CoreSubscriber<V> source;
     private Subscription subscription;
     private final Timeout timeout;
-    private final AtomicLong wait;
 
     public Timer(CoreSubscriber<V> source, HashedWheelTimer timer, long milliseconds) {
         this.source = source;
-
-        System.out.println("1 " + System.currentTimeMillis());
         timeout = timer.newTimeout(
-                timeout -> {
-                    log.error("timeouted");
-                    throw new TimeoutException();
-                }, milliseconds,
+                timeout -> onError(new TimeoutException()), milliseconds,
                 TimeUnit.MILLISECONDS
         );
-        wait = new AtomicLong(1);
-
     }
 
     @Override
     public void onNext(V v) {
-        System.out.println("2 " + System.currentTimeMillis());
         if (!timeout.isCancelled()) {
             timeout.cancel();
         }
@@ -46,11 +36,8 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
 
     @Override
     public void onError(Throwable t) {
-        System.out.println("3 " + System.currentTimeMillis());
-        if (wait.compareAndSet(1, 0)) {
-            if (!timeout.isCancelled()) {
-                timeout.cancel();
-            }
+        if (!timeout.isCancelled()) {
+            timeout.cancel();
         }
 
         source.onError(t);
@@ -58,13 +45,10 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
 
     @Override
     public void onComplete() {
-        System.out.println(timeout.isExpired());
-        System.out.println("4 " + System.currentTimeMillis());
-        if (wait.compareAndSet(1, 0)) {
-            if (!timeout.isCancelled()) {
-                timeout.cancel();
-            }
+        if (!timeout.isCancelled()) {
+            timeout.cancel();
         }
+
         source.onComplete();
 
     }
@@ -77,12 +61,10 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
 
     @Override
     public void cancel() {
-        System.out.println("5 " + System.currentTimeMillis());
-        if (wait.compareAndSet(1, 0)) {
-            if (!timeout.isCancelled()) {
-                timeout.cancel();
-            }
+        if (!timeout.isCancelled()) {
+            timeout.cancel();
         }
+
 
         this.subscription.cancel();
     }

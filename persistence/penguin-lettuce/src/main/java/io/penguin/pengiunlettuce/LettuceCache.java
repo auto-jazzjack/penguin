@@ -62,11 +62,11 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     @Override
     public Mono<V> findOne(K key) {
 
-        Mono<byte[]> mono = reactive.get(key.toString());
+        Mono<V> mono = reactive.get(key.toString()).map(this::deserialize);
         mono = new TimeoutPlugin<>(mono, ingredient);
         mono = new CircuitPlugin<>(mono, ingredient);
 
-        return mono.map(this::deserialize);
+        return mono;
     }
 
 

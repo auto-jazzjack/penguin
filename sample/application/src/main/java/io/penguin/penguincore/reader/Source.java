@@ -3,9 +3,7 @@ package io.penguin.penguincore.reader;
 
 import reactor.core.publisher.Mono;
 
-import java.util.Collections;
 import java.util.HashMap;
-
 import java.util.Map;
 
 public class Source implements Reader<String, Map<String, String>> {
@@ -19,11 +17,7 @@ public class Source implements Reader<String, Map<String, String>> {
         retv.put("hello1", "hello1");
         retv.put("hello2", "hello2");
 
-        try {
-            Thread.sleep(1000);
-        } catch (Exception e) {
 
-        }
         return Mono.just(retv);
     }
 }
