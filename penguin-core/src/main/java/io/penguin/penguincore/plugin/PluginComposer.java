@@ -2,6 +2,7 @@ package io.penguin.penguincore.plugin;
 
 
 import io.penguin.penguincore.plugin.circuit.CircuitPlugin;
+import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
 import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
 
@@ -19,6 +20,7 @@ public class PluginComposer {
     static {
         pluginList = new ArrayList<>();
         pluginList.add(CircuitPlugin.class);
+        pluginList.add(TimeoutPlugin.class);
     }
 
     public static <K, V> Reader<K, V> decorateWithInput(PluginInput input, Function<K, Mono<V>> reader) throws Exception {

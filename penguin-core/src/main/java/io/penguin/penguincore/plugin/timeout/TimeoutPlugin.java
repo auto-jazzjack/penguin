@@ -1,0 +1,51 @@
+package io.penguin.penguincore.plugin.timeout;
+
+import io.netty.util.HashedWheelTimer;
+import io.penguin.penguincore.plugin.Plugin;
+import io.penguin.penguincore.plugin.PluginInput;
+import org.reactivestreams.Publisher;
+import reactor.core.CoreSubscriber;
+import reactor.core.publisher.Mono;
+
+import java.util.Objects;
+import java.util.Optional;
+
+public class TimeoutPlugin<V> extends Plugin<V> {
+
+    private final HashedWheelTimer timer;
+
+    public TimeoutPlugin(PluginInput pluginInput, Mono<V> source) {
+        super(pluginInput, source);
+        Objects.requireNonNull(pluginInput);
+        Objects.requireNonNull(pluginInput.getCircuit());
+
+
+    }
+
+    @Override
+    public int order() {
+        return super.pluginInput.getCircuit().getOrder();
+    }
+
+    @Override
+    public boolean support() {
+
+        boolean empty = Optional.ofNullable(pluginInput)
+                .map(PluginInput::getCircuit)
+                .isEmpty();
+
+        return !empty;
+    }
+
+    @Override
+    public Publisher<V> apply() {
+        return source;
+    }
+
+    @Override
+    public void subscribe(CoreSubscriber<? super V> actual) {
+        source.subscribe(new Timer<>());
+    }
+
+
+}
