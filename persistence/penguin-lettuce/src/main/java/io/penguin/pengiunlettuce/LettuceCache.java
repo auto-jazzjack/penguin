@@ -66,7 +66,7 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
         mono = new TimeoutPlugin<>(mono, ingredient);
         mono = new CircuitPlugin<>(mono, ingredient);
 
-        return mono;
+        return mono.onErrorReturn(failFindOne(key));
     }
 
 

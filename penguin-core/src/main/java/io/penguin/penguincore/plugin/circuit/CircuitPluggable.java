@@ -9,6 +9,7 @@ import io.penguin.penguincore.plugin.PluginInput;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class CircuitPluggable extends Pluggable<CircuitIngredient> {
 
@@ -27,13 +28,15 @@ public class CircuitPluggable extends Pluggable<CircuitIngredient> {
 
     @Override
     public CircuitIngredient generate() {
+        CircuitBreaker circuitBreaker = CircuitBreaker.of(pluginInput.getCircuit().getCircuitName(), CircuitBreakerConfig.custom()
+                .permittedNumberOfCallsInHalfOpenState(pluginInput.getCircuit().getPermittedNumberOfCallsInHalfOpenState())
+                .failureRateThreshold(pluginInput.getCircuit().getFailureRateThreshold())
+                .waitDurationInOpenState(Duration.ofMillis(pluginInput.getCircuit().getWaitDurationInOpenStateMillisecond()))
+                .build());
+
         return CircuitIngredient.builder()
-                .circuitBreakerOperator(CircuitBreakerOperator.of(CircuitBreaker.of("",
-                        CircuitBreakerConfig.custom()
-                                .permittedNumberOfCallsInHalfOpenState(pluginInput.getCircuit().getPermittedNumberOfCallsInHalfOpenState())
-                                .failureRateThreshold(pluginInput.getCircuit().getFailureRateThreshold())
-                                .waitDurationInOpenState(Duration.ofMillis(pluginInput.getCircuit().getWaitDurationInOpenStateMillisecond()))
-                                .build())))
+                .circuitBreakerOperator(CircuitBreakerOperator.of(circuitBreaker))
+                .circuitBreaker(circuitBreaker)
                 .build();
     }
 }

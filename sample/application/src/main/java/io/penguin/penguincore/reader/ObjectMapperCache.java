@@ -8,6 +8,7 @@ import io.penguin.pengiunlettuce.LettuceCache;
 import io.penguin.pengiunlettuce.LettuceCacheConfig;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ObjectMapperCache extends LettuceCache<String, Map<String, String>> {
@@ -39,5 +40,12 @@ public class ObjectMapperCache extends LettuceCache<String, Map<String, String>>
             System.out.println("Error");
             return Collections.emptyMap();
         }
+    }
+
+    @Override
+    public Map<String, String> failFindOne(String key) {
+        Map<String, String> retv = new HashMap<>();
+        retv.put("fallback", "fallback");
+        return retv;
     }
 }
