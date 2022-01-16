@@ -40,7 +40,6 @@ public class CircuitPlugin<V> extends Plugin<V> {
         boolean empty = Optional.ofNullable(pluginInput)
                 .map(PluginInput::getCircuit)
                 .isEmpty();
-
         return !empty;
     }
 

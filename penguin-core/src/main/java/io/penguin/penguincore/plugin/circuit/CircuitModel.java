@@ -9,7 +9,7 @@ import lombok.Data;
 public class CircuitModel {
 
     int order;
-    int failureRateThreshold;
+    float failureRateThreshold;
     int waitDurationInOpenStateMillisecond;
     int permittedNumberOfCallsInHalfOpenState;
 
@@ -17,7 +17,7 @@ public class CircuitModel {
     public static CircuitModel.CircuitModelBuilder base() {
         return CircuitModel.builder()
                 .permittedNumberOfCallsInHalfOpenState(100)
-                .failureRateThreshold(10)
+                .failureRateThreshold(0.1F)
                 .waitDurationInOpenStateMillisecond(10000);
     }
 }
