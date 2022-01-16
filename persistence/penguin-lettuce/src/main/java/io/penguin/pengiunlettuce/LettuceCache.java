@@ -2,8 +2,11 @@ package io.penguin.pengiunlettuce;
 
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.reactive.RedisAdvancedClusterReactiveCommands;
-import io.penguin.penguincore.plugin.Plugin;
-import io.penguin.penguincore.plugin.PluginComposer;
+import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
+import io.penguin.penguincore.plugin.circuit.CircuitPluggable;
+import io.penguin.penguincore.plugin.circuit.CircuitPlugin;
+import io.penguin.penguincore.plugin.timeout.TimeoutPluggable;
+import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
 import io.penguin.penguincore.reader.BaseCacheReader;
 import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
@@ -15,7 +18,7 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     protected final RedisAdvancedClusterReactiveCommands<String, byte[]> reactive;
     private final long expireSecond;
     private final String prefix;
-    private final Plugin<byte[]>[] plugins;
+    private final AllIngredient ingredient;
 
     public LettuceCache(Reader<K, V> fromDownStream, StatefulRedisClusterConnection<String, byte[]> connection, LettuceCacheConfig cacheConfig) throws Exception {
         super(fromDownStream);
@@ -24,7 +27,19 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
         this.reactive = connection.reactive();
         this.expireSecond = cacheConfig.getExpireTime();
         this.prefix = cacheConfig.getPrefix();
-        plugins = PluginComposer.orderedPlugin(cacheConfig.getPluginInput());
+        this.ingredient = AllIngredient.builder().build();
+
+
+        CircuitPluggable circuitPluggable = new CircuitPluggable(cacheConfig.getPluginInput());
+        if (circuitPluggable.support()) {
+            ingredient.setCircuitIngredient(circuitPluggable.generate());
+        }
+
+        TimeoutPluggable timeoutPluggable = new TimeoutPluggable(cacheConfig.getPluginInput());
+        if (timeoutPluggable.support()) {
+            ingredient.setTimeoutIngredient(timeoutPluggable.generate());
+        }
+
     }
 
 
@@ -48,10 +63,8 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     public Mono<V> findOne(K key) {
 
         Mono<byte[]> mono = reactive.get(key.toString());
-
-        for (Plugin<byte[]> plugin : plugins) {
-            mono = (Mono<byte[]>) plugin.apply(mono);
-        }
+        mono = new TimeoutPlugin<>(mono, ingredient);
+        mono = new CircuitPlugin<>(mono, ingredient);
 
         return mono.map(this::deserialize);
     }
