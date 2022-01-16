@@ -5,19 +5,19 @@ import lombok.Data;
 
 @Data
 @Builder
-
 public class CircuitModel {
 
-    int order;
-    int failureRateThreshold;
-    int waitDurationInOpenStateMillisecond;
-    int permittedNumberOfCallsInHalfOpenState;
+    private float failureRateThreshold;
+    private int waitDurationInOpenStateMillisecond;
+    private int permittedNumberOfCallsInHalfOpenState;
+    private String circuitName;
 
 
     public static CircuitModel.CircuitModelBuilder base() {
         return CircuitModel.builder()
                 .permittedNumberOfCallsInHalfOpenState(100)
-                .failureRateThreshold(10)
+                .failureRateThreshold(0.1F)
+                .circuitName("")
                 .waitDurationInOpenStateMillisecond(10000);
     }
 }

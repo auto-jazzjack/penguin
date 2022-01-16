@@ -1,6 +1,7 @@
 package io.penguin.penguincore.plugin;
 
 import io.penguin.penguincore.plugin.circuit.CircuitModel;
+import io.penguin.penguincore.plugin.timeout.TimeoutModel;
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,8 +10,12 @@ import lombok.Data;
 public class PluginInput {
 
     private CircuitModel circuit;
+    private TimeoutModel timeout;
+    private String metricKey;
 
     public static PluginInput.PluginInputBuilder base() {
-        return PluginInput.builder().circuit(CircuitModel.base().build());
+        return PluginInput.builder()
+                .circuit(CircuitModel.base().build())
+                .timeout(TimeoutModel.base().build());
     }
 }
