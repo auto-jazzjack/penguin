@@ -19,13 +19,14 @@ public class TimeoutPlugin<V> extends Plugin<V> {
         super(pluginInput, source);
         Objects.requireNonNull(pluginInput);
         Objects.requireNonNull(pluginInput.getTimeout());
+
         timer = new HashedWheelTimer();
         milliseconds = pluginInput.getTimeout().getTimeoutMilliseconds();
     }
 
     @Override
     public int order() {
-        return super.pluginInput.getCircuit().getOrder();
+        return super.pluginInput.getTimeout().getOrder();
     }
 
     @Override

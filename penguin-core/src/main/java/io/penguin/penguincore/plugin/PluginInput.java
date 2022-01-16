@@ -11,6 +11,7 @@ public class PluginInput {
 
     private CircuitModel circuit;
     private TimeoutModel timeout;
+    private String metricKey;
 
     public static PluginInput.PluginInputBuilder base() {
         return PluginInput.builder()

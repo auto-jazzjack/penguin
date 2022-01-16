@@ -21,6 +21,7 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
     public Timer(CoreSubscriber<V> source, HashedWheelTimer timer, long milliseconds) {
         this.source = source;
 
+        System.out.println("1 " + System.currentTimeMillis());
         timeout = timer.newTimeout(
                 timeout -> {
                     log.error("timeouted");
@@ -34,6 +35,7 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
 
     @Override
     public void onNext(V v) {
+        System.out.println("2 " + System.currentTimeMillis());
         if (!timeout.isCancelled()) {
             timeout.cancel();
         }
@@ -44,8 +46,11 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
 
     @Override
     public void onError(Throwable t) {
-        if (!timeout.isCancelled()) {
-            timeout.cancel();
+        System.out.println("3 " + System.currentTimeMillis());
+        if (wait.compareAndSet(1, 0)) {
+            if (!timeout.isCancelled()) {
+                timeout.cancel();
+            }
         }
 
         source.onError(t);
@@ -53,8 +58,12 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
 
     @Override
     public void onComplete() {
-        if (!timeout.isCancelled()) {
-            timeout.cancel();
+        System.out.println(timeout.isExpired());
+        System.out.println("4 " + System.currentTimeMillis());
+        if (wait.compareAndSet(1, 0)) {
+            if (!timeout.isCancelled()) {
+                timeout.cancel();
+            }
         }
         source.onComplete();
 
@@ -68,8 +77,11 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
 
     @Override
     public void cancel() {
-        if (!timeout.isCancelled()) {
-            timeout.cancel();
+        System.out.println("5 " + System.currentTimeMillis());
+        if (wait.compareAndSet(1, 0)) {
+            if (!timeout.isCancelled()) {
+                timeout.cancel();
+            }
         }
 
         this.subscription.cancel();
