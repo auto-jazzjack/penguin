@@ -23,6 +23,30 @@ public class PluginComposer {
         pluginList.add(TimeoutPlugin.class);
     }
 
+    public static <V> Plugin<V>[] orderedPlugin(PluginInput input) throws Exception {
+        if (input == null) {
+            return null;
+        }
+
+        List<Plugin<V>> plugins = new ArrayList<>();
+        for (Class<? extends Plugin> aClass : pluginList) {
+            Constructor<? extends Plugin> constructor = aClass.getConstructor(PluginInput.class, Mono.class);
+            Plugin<V> plugin = constructor.newInstance(input, Mono.empty());
+
+            if (plugin.support()) {
+                plugins.add(plugin);
+            }
+        }
+
+        Plugin<V>[] collect = plugins.stream()
+                .sorted(Comparator.comparingInt(Plugin::order))
+                .collect(Collectors.toList())
+                .toArray(Plugin[]::new);
+
+        return collect;
+
+    }
+
     public static <K, V> Reader<K, V> decorateWithInput(PluginInput input, Function<K, Mono<V>> reader) throws Exception {
 
         if (input == null) {

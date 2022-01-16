@@ -2,6 +2,7 @@ package io.penguin.pengiunlettuce;
 
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.reactive.RedisAdvancedClusterReactiveCommands;
+import io.penguin.penguincore.plugin.Plugin;
 import io.penguin.penguincore.plugin.PluginComposer;
 import io.penguin.penguincore.reader.BaseCacheReader;
 import io.penguin.penguincore.reader.Reader;
@@ -12,9 +13,9 @@ import java.util.Objects;
 public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
     protected final RedisAdvancedClusterReactiveCommands<String, byte[]> reactive;
-    private final Reader<String, V> pluginAdoptedCaller;
     private final long expireSecond;
     private String prefix;
+    private final Plugin<V>[] plugins;
 
     public LettuceCache(Reader<K, V> fromDownStream, StatefulRedisClusterConnection<String, byte[]> connection, LettuceCacheConfig cacheConfig) throws Exception {
         super(fromDownStream);
@@ -23,7 +24,7 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
         this.reactive = connection.reactive();
         this.expireSecond = cacheConfig.getExpireTime();
         this.prefix = cacheConfig.getPrefix();
-        pluginAdoptedCaller = PluginComposer.decorateWithInput(cacheConfig.getPluginInput(), key -> reactive.get(key).map(this::deserialize));
+        plugins = PluginComposer.orderedPlugin(cacheConfig.getPluginInput());
     }
 
 
@@ -45,7 +46,14 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
     @Override
     public Mono<V> findOne(K key) {
-        return pluginAdoptedCaller.findOne(this.prefix() + key);
+
+        Mono<V> mono = reactive.get(key.toString()).map(this::deserialize);
+
+        for (Plugin<V> plugin : plugins) {
+            mono = (Mono<V>) plugin.apply(mono);
+        }
+
+        return mono;
     }
 
 
