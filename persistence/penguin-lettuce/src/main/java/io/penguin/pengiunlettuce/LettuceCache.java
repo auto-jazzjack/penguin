@@ -14,8 +14,8 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
     protected final RedisAdvancedClusterReactiveCommands<String, byte[]> reactive;
     private final long expireSecond;
-    private String prefix;
-    private final Plugin<V>[] plugins;
+    private final String prefix;
+    private final Plugin<byte[]>[] plugins;
 
     public LettuceCache(Reader<K, V> fromDownStream, StatefulRedisClusterConnection<String, byte[]> connection, LettuceCacheConfig cacheConfig) throws Exception {
         super(fromDownStream);
@@ -47,13 +47,13 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     @Override
     public Mono<V> findOne(K key) {
 
-        Mono<V> mono = reactive.get(key.toString()).map(this::deserialize);
+        Mono<byte[]> mono = reactive.get(key.toString());
 
-        for (Plugin<V> plugin : plugins) {
-            mono = (Mono<V>) plugin.apply(mono);
+        for (Plugin<byte[]> plugin : plugins) {
+            mono = (Mono<byte[]>) plugin.apply(mono);
         }
 
-        return mono;
+        return mono.map(this::deserialize);
     }
 
 
