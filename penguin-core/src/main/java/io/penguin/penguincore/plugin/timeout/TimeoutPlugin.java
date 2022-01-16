@@ -13,13 +13,14 @@ import java.util.Optional;
 public class TimeoutPlugin<V> extends Plugin<V> {
 
     private final HashedWheelTimer timer;
+    private final long milliseconds;
 
     public TimeoutPlugin(PluginInput pluginInput, Mono<V> source) {
         super(pluginInput, source);
         Objects.requireNonNull(pluginInput);
-        Objects.requireNonNull(pluginInput.getCircuit());
-
-
+        Objects.requireNonNull(pluginInput.getTimeout());
+        timer = new HashedWheelTimer();
+        milliseconds = pluginInput.getTimeout().getTimeoutMilliseconds();
     }
 
     @Override
@@ -31,7 +32,7 @@ public class TimeoutPlugin<V> extends Plugin<V> {
     public boolean support() {
 
         boolean empty = Optional.ofNullable(pluginInput)
-                .map(PluginInput::getCircuit)
+                .map(PluginInput::getTimeout)
                 .isEmpty();
 
         return !empty;
@@ -44,7 +45,7 @@ public class TimeoutPlugin<V> extends Plugin<V> {
 
     @Override
     public void subscribe(CoreSubscriber<? super V> actual) {
-        source.subscribe(new Timer<>());
+        source.subscribe(new Timer<>(actual, timer, milliseconds));
     }
 
 
