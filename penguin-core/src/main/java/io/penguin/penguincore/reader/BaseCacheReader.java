@@ -6,6 +6,8 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
 import reactor.core.publisher.Sinks;
 
+import java.time.Duration;
+
 @Slf4j
 public abstract class BaseCacheReader<K, V> implements CacheReader<K, V> {
 
@@ -20,6 +22,9 @@ public abstract class BaseCacheReader<K, V> implements CacheReader<K, V> {
         watcher.asFlux()
                 .flatMap(i -> fromDownStream.findOne(i).map(j -> Pair.of(i, j)))
                 .filter(i -> i.getKey() != null && i.getValue() != null)
+                .windowTimeout(100, Duration.ofSeconds(5))
+                .distinct()
+                .flatMap(i -> i)
                 .subscribe(i -> writeOne(i.getKey().toString(), i.getValue()), e -> log.error("", e));
 
         this.fromDownStream = fromDownStream;

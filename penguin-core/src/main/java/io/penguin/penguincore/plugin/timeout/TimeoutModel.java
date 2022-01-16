@@ -5,12 +5,10 @@ import lombok.Data;
 
 @Data
 @Builder
-
 public class TimeoutModel {
 
     int order;
     long timeoutMilliseconds;
-
 
     public static TimeoutModel.TimeoutModelBuilder base() {
         return TimeoutModel.builder()

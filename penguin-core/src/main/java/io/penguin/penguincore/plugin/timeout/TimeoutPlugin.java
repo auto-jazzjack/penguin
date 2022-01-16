@@ -34,19 +34,18 @@ public class TimeoutPlugin<V> extends Plugin<V> {
         boolean empty = Optional.ofNullable(pluginInput)
                 .map(PluginInput::getTimeout)
                 .isEmpty();
-
         return !empty;
     }
 
-    @Override
-    public Publisher<V> apply() {
-        return source;
-    }
 
     @Override
     public void subscribe(CoreSubscriber<? super V> actual) {
         source.subscribe(new Timer<>(actual, timer, milliseconds));
     }
 
-
+    @Override
+    public Publisher<V> apply(Publisher<V> before) {
+        source = (Mono<V>) before;
+        return this;
+    }
 }

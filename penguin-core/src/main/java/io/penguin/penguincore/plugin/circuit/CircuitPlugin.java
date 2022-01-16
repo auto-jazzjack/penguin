@@ -45,7 +45,7 @@ public class CircuitPlugin<V> extends Plugin<V> {
     }
 
     @Override
-    public Publisher<V> apply() {
-        return circuitBreakerOperator.apply(this.source);
+    public Publisher<V> apply(Publisher<V> before) {
+        return circuitBreakerOperator.apply(before);
     }
 }

@@ -60,7 +60,7 @@ public class PluginComposer {
                 Mono<V> mono = fromRemote.apply(key);
 
                 for (Plugin<V> plugin : plugins) {
-                    mono = (Mono<V>) plugin.apply();
+                    mono = (Mono<V>) plugin.apply(mono);
                 }
 
                 return mono;

@@ -9,7 +9,7 @@ import reactor.core.publisher.MonoOperator;
 public abstract class Plugin<V> extends MonoOperator<V, V> {
 
     protected final PluginInput pluginInput;
-    protected final Mono<V> source;
+    protected Mono<V> source;
 
     public Plugin(PluginInput pluginInput, Mono<V> source) {
         super(source);
@@ -24,7 +24,7 @@ public abstract class Plugin<V> extends MonoOperator<V, V> {
 
     abstract public boolean support();
 
-    abstract public Publisher<V> apply();
+    abstract public Publisher<V> apply(Publisher<V> before);
 
     @Override
     public void subscribe(CoreSubscriber<? super V> actual) {
