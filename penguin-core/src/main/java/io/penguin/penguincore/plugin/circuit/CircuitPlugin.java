@@ -16,13 +16,13 @@ public class CircuitPlugin<V> extends Plugin<V> {
         super(source, allIngredient);
         circuitBreakerOperator = (CircuitBreakerOperator<V>) allIngredient.getCircuitIngredient().getCircuitBreakerOperator();
         circuitBreaker = allIngredient.getCircuitIngredient().getCircuitBreaker();
+
         this.source = (Mono<V>) circuitBreakerOperator.apply(source);
     }
 
 
     @Override
     public void subscribe(CoreSubscriber<? super V> actual) {
-        System.out.println(circuitBreaker.getState());
         source.subscribe(actual);
     }
 }

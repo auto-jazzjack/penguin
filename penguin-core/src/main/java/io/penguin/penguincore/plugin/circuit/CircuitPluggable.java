@@ -9,7 +9,6 @@ import io.penguin.penguincore.plugin.PluginInput;
 
 import java.time.Duration;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public class CircuitPluggable extends Pluggable<CircuitIngredient> {
 

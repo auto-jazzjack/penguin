@@ -72,10 +72,13 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
         long start = System.currentTimeMillis();
         Mono<V> mono = reactive.get(key.toString()).map(this::deserialize);
+
         mono = new TimeoutPlugin<>(mono, ingredient);
         mono = new CircuitPlugin<>(mono, ingredient);
 
-        return mono.doOnSuccess(i -> reader.record(Duration.ofMillis(System.currentTimeMillis() - start)));
+        return mono
+                .onErrorReturn(this.failFindOne(key))
+                .doOnSuccess(i -> reader.record(Duration.ofMillis(System.currentTimeMillis() - start)));
     }
 
 
