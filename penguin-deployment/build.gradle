@@ -3,7 +3,7 @@ dependencies {
     implementation project(":persistence:penguin-lettuce")
     implementation project(":persistence:penguin-cassandra")
 
-    implementation 'io.projectreactor:reactor-core:3.4.12'
+    implementation ("io.projectreactor:reactor-core:${reactor_version}")
 
 }
 

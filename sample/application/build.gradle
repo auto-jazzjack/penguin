@@ -14,14 +14,20 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    testCompileOnly 'org.apache.httpcomponents:httpclient:4.5.13'
 
     implementation project(":penguin-core")
     implementation project(":penguin-deployment")
     implementation project(":persistence:penguin-lettuce")
     implementation project(":persistence:penguin-cassandra")
 
-    implementation 'io.projectreactor:reactor-core:3.4.12'
-    implementation 'io.lettuce:lettuce-core:5.3.2.RELEASE'
+    implementation("org.springframework.boot:spring-boot-starter-actuator:2.6.2")
+
+    implementation("io.projectreactor:reactor-core:${reactor_version}")
+    implementation("io.lettuce:lettuce-core:${lettuce_core_version}")
+    implementation("io.micrometer:micrometer-registry-prometheus:${micrometer_version}")
+    implementation("ch.qos.logback:logback-classic:1.2.6")
 
 
     implementation project(":penguin-core")

@@ -1,5 +1,6 @@
 package io.penguin.penguincore.plugin.timeout;
 
+import io.micrometer.core.instrument.Counter;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
 import io.penguin.penguincore.exception.TimeoutException;
@@ -15,13 +16,15 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
     private final CoreSubscriber<V> source;
     private Subscription subscription;
     private final Timeout timeout;
+    private final Counter counter;
 
-    public Timer(CoreSubscriber<V> source, HashedWheelTimer timer, long milliseconds) {
+    public Timer(CoreSubscriber<V> source, Counter counter, HashedWheelTimer timer, long milliseconds) {
         this.source = source;
         timeout = timer.newTimeout(
                 timeout -> onError(new TimeoutException()), milliseconds,
                 TimeUnit.MILLISECONDS
         );
+        this.counter = counter;
     }
 
     @Override
@@ -31,7 +34,6 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
         }
 
         source.onNext(v);
-
     }
 
     @Override
@@ -41,6 +43,10 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
         }
 
         source.onError(t);
+
+        if (t instanceof TimeoutException) {
+            counter.increment();
+        }
     }
 
     @Override
@@ -50,7 +56,6 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
         }
 
         source.onComplete();
-
     }
 
     @Override
@@ -64,7 +69,6 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
         if (!timeout.isCancelled()) {
             timeout.cancel();
         }
-
 
         this.subscription.cancel();
     }
@@ -80,5 +84,4 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
             throw new TimeoutException();
         }
     }
-
 }

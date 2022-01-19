@@ -10,6 +10,7 @@ import io.penguin.pengiunlettuce.LettuceCacheConfig;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class ObjectMapperCache extends LettuceCache<String, Map<String, String>> {
 
@@ -33,7 +34,7 @@ public class ObjectMapperCache extends LettuceCache<String, Map<String, String>>
     public Map<String, String> deserialize(byte[] bytes) {
 
         try {
-            Thread.sleep(1000);
+            Thread.sleep(ThreadLocalRandom.current().nextLong(150L));
             return objectMapper.readValue(bytes, new TypeReference<>() {
             });
         } catch (Exception e) {

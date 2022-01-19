@@ -1,5 +1,6 @@
 package io.penguin.penguincore.plugin.timeout;
 
+import io.micrometer.core.instrument.Counter;
 import io.netty.util.HashedWheelTimer;
 import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
 import io.penguin.penguincore.plugin.Plugin;
@@ -10,18 +11,20 @@ public class TimeoutPlugin<V> extends Plugin<V> {
 
     private final HashedWheelTimer timer;
     private final long milliseconds;
+    private final Counter timeoutCounter;
 
     public TimeoutPlugin(Mono<V> source, AllIngredient ingredient) {
         super(source, ingredient);
         milliseconds = ingredient.getTimeoutIngredient().getMilliseconds();
         timer = ingredient.getTimeoutIngredient().getTimer();
+        timeoutCounter = ingredient.getTimeoutIngredient().getCounter();
         this.source = source;
     }
 
 
     @Override
     public void subscribe(CoreSubscriber<? super V> actual) {
-        source.subscribe(new Timer<>(actual, timer, milliseconds));
+        source.subscribe(new Timer<>(actual, timeoutCounter, timer, milliseconds));
     }
 
 }
