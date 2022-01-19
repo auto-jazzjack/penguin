@@ -16,7 +16,7 @@ public class CircuitModel {
     public static CircuitModel.CircuitModelBuilder base() {
         return CircuitModel.builder()
                 .permittedNumberOfCallsInHalfOpenState(5)
-                .failureRateThreshold(10f)
+                .failureRateThreshold(30f)
                 .circuitName("")
                 .waitDurationInOpenStateMillisecond(1000);
     }

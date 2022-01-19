@@ -10,6 +10,6 @@ public abstract class Pluggable<V> {
 
     abstract public boolean support();
 
-    abstract public V generate();
+    abstract public V generate(Class<?> clazz);
 
 }

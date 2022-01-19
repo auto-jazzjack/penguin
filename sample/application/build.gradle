@@ -20,6 +20,8 @@ dependencies {
     implementation project(":persistence:penguin-lettuce")
     implementation project(":persistence:penguin-cassandra")
 
+    implementation("org.springframework.boot:spring-boot-starter-actuator:2.6.2")
+
     implementation("io.projectreactor:reactor-core:${reactor_version}")
     implementation("io.lettuce:lettuce-core:${lettuce_core_version}")
     implementation("io.micrometer:micrometer-registry-prometheus:${micrometer_version}")

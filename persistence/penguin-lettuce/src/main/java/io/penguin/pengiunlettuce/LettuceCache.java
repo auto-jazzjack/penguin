@@ -11,17 +11,20 @@ import io.penguin.penguincore.plugin.timeout.TimeoutPluggable;
 import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
 import io.penguin.penguincore.reader.BaseCacheReader;
 import io.penguin.penguincore.reader.Reader;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.Objects;
 
+@Slf4j
 public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
     protected final RedisAdvancedClusterReactiveCommands<String, byte[]> reactive;
     private final long expireSecond;
     private final String prefix;
     private final AllIngredient ingredient;
+
     private final Timer reader = MetricCreator.timer("LETTUCE_READER", "kind", this.getClass().getSimpleName());
     private final Timer writer = MetricCreator.timer("LETTUCE_WRITER", "kind", this.getClass().getSimpleName());
 
@@ -38,12 +41,12 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
         CircuitPluggable circuitPluggable = new CircuitPluggable(cacheConfig.getPluginInput());
         if (circuitPluggable.support()) {
-            ingredient.setCircuitIngredient(circuitPluggable.generate());
+            ingredient.setCircuitIngredient(circuitPluggable.generate(this.getClass()));
         }
 
         TimeoutPluggable timeoutPluggable = new TimeoutPluggable(cacheConfig.getPluginInput());
         if (timeoutPluggable.support()) {
-            ingredient.setTimeoutIngredient(timeoutPluggable.generate());
+            ingredient.setTimeoutIngredient(timeoutPluggable.generate(this.getClass()));
         }
 
     }
@@ -77,6 +80,7 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
         mono = new CircuitPlugin<>(mono, ingredient);
 
         return mono
+                .doOnError(e -> log.error("", e))
                 .onErrorReturn(this.failFindOne(key))
                 .doOnSuccess(i -> reader.record(Duration.ofMillis(System.currentTimeMillis() - start)));
     }

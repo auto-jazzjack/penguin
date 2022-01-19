@@ -2,6 +2,7 @@ package io.penguin.penguincore.plugin.circuit;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
+import io.micrometer.core.instrument.Counter;
 import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
 import io.penguin.penguincore.plugin.Plugin;
 import reactor.core.CoreSubscriber;
@@ -11,6 +12,8 @@ public class CircuitPlugin<V> extends Plugin<V> {
 
     private final CircuitBreakerOperator<V> circuitBreakerOperator;
     private final CircuitBreaker circuitBreaker;
+    private final Counter success;
+    private final Counter fail;
 
     public CircuitPlugin(Mono<V> source, AllIngredient allIngredient) {
         super(source, allIngredient);
@@ -18,11 +21,15 @@ public class CircuitPlugin<V> extends Plugin<V> {
         circuitBreaker = allIngredient.getCircuitIngredient().getCircuitBreaker();
 
         this.source = (Mono<V>) circuitBreakerOperator.apply(source);
+        this.success = allIngredient.getCircuitIngredient().getSuccess();
+        this.fail = allIngredient.getCircuitIngredient().getFail();
     }
 
 
     @Override
     public void subscribe(CoreSubscriber<? super V> actual) {
-        source.subscribe(actual);
+        source.doOnError(i -> fail.increment())
+                .doOnSuccess(i -> success.increment())
+                .subscribe(actual);
     }
 }
