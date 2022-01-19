@@ -1,10 +1,10 @@
 package io.penguin.penguincore.plugin;
 
-public abstract class Pluggable<V> {
+public abstract class PluginConfiguration<V> {
 
     protected final PluginInput pluginInput;
 
-    public Pluggable(PluginInput pluginInput) {
+    public PluginConfiguration(PluginInput pluginInput) {
         this.pluginInput = pluginInput;
     }
 

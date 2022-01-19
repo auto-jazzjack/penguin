@@ -3,14 +3,14 @@ package io.penguin.penguincore.plugin.timeout;
 import io.netty.util.HashedWheelTimer;
 import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.plugin.Ingredient.TimeoutIngredient;
-import io.penguin.penguincore.plugin.Pluggable;
+import io.penguin.penguincore.plugin.PluginConfiguration;
 import io.penguin.penguincore.plugin.PluginInput;
 
 import java.util.Optional;
 
-public class TimeoutPluggable extends Pluggable<TimeoutIngredient> {
+public class TimeoutConfiguration extends PluginConfiguration<TimeoutIngredient> {
 
-    public TimeoutPluggable(PluginInput pluginInput) {
+    public TimeoutConfiguration(PluginInput pluginInput) {
         super(pluginInput);
     }
 

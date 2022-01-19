@@ -1,13 +1,15 @@
 package io.penguin.pengiunlettuce;
 
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.reactive.RedisAdvancedClusterReactiveCommands;
 import io.micrometer.core.instrument.Timer;
+import io.penguin.penguincore.exception.TimeoutException;
 import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
-import io.penguin.penguincore.plugin.circuit.CircuitPluggable;
+import io.penguin.penguincore.plugin.circuit.CircuitConfiguration;
 import io.penguin.penguincore.plugin.circuit.CircuitPlugin;
-import io.penguin.penguincore.plugin.timeout.TimeoutPluggable;
+import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
 import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
 import io.penguin.penguincore.reader.BaseCacheReader;
 import io.penguin.penguincore.reader.Reader;
@@ -39,12 +41,12 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
         this.ingredient = AllIngredient.builder().build();
 
 
-        CircuitPluggable circuitPluggable = new CircuitPluggable(cacheConfig.getPluginInput());
+        CircuitConfiguration circuitPluggable = new CircuitConfiguration(cacheConfig.getPluginInput());
         if (circuitPluggable.support()) {
             ingredient.setCircuitIngredient(circuitPluggable.generate(this.getClass()));
         }
 
-        TimeoutPluggable timeoutPluggable = new TimeoutPluggable(cacheConfig.getPluginInput());
+        TimeoutConfiguration timeoutPluggable = new TimeoutConfiguration(cacheConfig.getPluginInput());
         if (timeoutPluggable.support()) {
             ingredient.setTimeoutIngredient(timeoutPluggable.generate(this.getClass()));
         }
@@ -80,7 +82,11 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
         mono = new CircuitPlugin<>(mono, ingredient);
 
         return mono
-                .doOnError(e -> log.error("", e))
+                .doOnError(e -> {
+                    if (!(e instanceof TimeoutException) && !(e instanceof CallNotPermittedException)) {
+                        log.error("", e);
+                    }
+                })
                 .onErrorReturn(this.failFindOne(key))
                 .doOnSuccess(i -> reader.record(Duration.ofMillis(System.currentTimeMillis() - start)));
     }

@@ -5,15 +5,15 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
 import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.plugin.Ingredient.CircuitIngredient;
-import io.penguin.penguincore.plugin.Pluggable;
+import io.penguin.penguincore.plugin.PluginConfiguration;
 import io.penguin.penguincore.plugin.PluginInput;
 
 import java.time.Duration;
 import java.util.Optional;
 
-public class CircuitPluggable extends Pluggable<CircuitIngredient> {
+public class CircuitConfiguration extends PluginConfiguration<CircuitIngredient> {
 
-    public CircuitPluggable(PluginInput pluginInput) {
+    public CircuitConfiguration(PluginInput pluginInput) {
         super(pluginInput);
     }
 
