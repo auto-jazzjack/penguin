@@ -31,16 +31,18 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
     public void onNext(V v) {
         if (!timeout.isCancelled()) {
             timeout.cancel();
-            source.onNext(v);
         }
+
+        source.onNext(v);
     }
 
     @Override
     public void onError(Throwable t) {
         if (!timeout.isCancelled()) {
             timeout.cancel();
-            source.onError(t);
         }
+
+        source.onError(t);
 
         if (t instanceof TimeoutException) {
             counter.increment();
@@ -51,8 +53,9 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
     public void onComplete() {
         if (!timeout.isCancelled()) {
             timeout.cancel();
-            source.onComplete();
         }
+
+        source.onComplete();
     }
 
     @Override
@@ -66,7 +69,6 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
         if (!timeout.isCancelled()) {
             timeout.cancel();
         }
-
 
         this.subscription.cancel();
     }

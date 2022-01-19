@@ -29,7 +29,6 @@ subprojects {
         mavenCentral()
     }
     dependencies {
-        implementation("ch.qos.logback:logback-classic:1.2.6")
 
         compileOnly ('org.projectlombok:lombok:1.18.12')
         annotationProcessor('org.projectlombok:lombok:1.18.12')
