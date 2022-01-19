@@ -54,7 +54,7 @@ public abstract class BaseCacheReader<K, V> implements CacheReader<K, V> {
         long start = System.currentTimeMillis();
         return fromDownStream.findOne(key)
                 .doOnSuccess(i -> {
-                    timer.record(Duration.ofMillis(System.currentTimeMillis() - start));\
+                    timer.record(Duration.ofMillis(System.currentTimeMillis() - start));
                     counter.increment();
                 });
     }
