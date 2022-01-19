@@ -20,8 +20,9 @@ dependencies {
     implementation project(":persistence:penguin-lettuce")
     implementation project(":persistence:penguin-cassandra")
 
-    implementation ("io.projectreactor:reactor-core:${reactor_version}")
-    implementation ("io.lettuce:lettuce-core:${lettuce_core}")
+    implementation("io.projectreactor:reactor-core:${reactor_version}")
+    implementation("io.lettuce:lettuce-core:${lettuce_core_version}")
+    implementation("io.micrometer:micrometer-registry-prometheus:${micrometer_version}")
 
 
     implementation project(":penguin-core")

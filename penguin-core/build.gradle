@@ -1,13 +1,12 @@
 dependencies {
     implementation("io.projectreactor:reactor-core:${reactor_version}")
     implementation("org.junit.jupiter:junit-jupiter:5.8.1")
-    implementation("ch.qos.logback:logback-classic:1.2.6")
     implementation("io.github.resilience4j:resilience4j-circuitbreaker:${resilience4j_version}")
     implementation("io.github.resilience4j:resilience4j-core:${resilience4j_version}")
     implementation("io.github.resilience4j:resilience4j-reactor:${resilience4j_version}")
 
     implementation("io.netty:netty-all:4.1.51.Final")
-    implementation("io.micrometer:micrometer-registry-prometheus:1.8.0")
+    implementation("io.micrometer:micrometer-registry-prometheus:${micrometer_version}")
 }
 
 test {

@@ -3,7 +3,8 @@ buildscript {
 
         resilience4j_version = "1.7.0"
         reactor_version = "3.4.12"
-        lettuce_core = "5.3.2.RELEASE"
+        lettuce_core_version = "5.3.2.RELEASE"
+        micrometer_version = "1.8.0"
     }
 
     repositories {
@@ -19,6 +20,7 @@ version = '0.0.1-SNAPSHOT'
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'java-library'
 
     sourceCompatibility = '11'
     group = 'io.penguin'
@@ -27,6 +29,8 @@ subprojects {
         mavenCentral()
     }
     dependencies {
+        implementation("ch.qos.logback:logback-classic:1.2.6")
+
         compileOnly ('org.projectlombok:lombok:1.18.12')
         annotationProcessor('org.projectlombok:lombok:1.18.12')
 

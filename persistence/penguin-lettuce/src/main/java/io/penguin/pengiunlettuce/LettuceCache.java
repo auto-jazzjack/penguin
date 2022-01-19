@@ -2,6 +2,8 @@ package io.penguin.pengiunlettuce;
 
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.reactive.RedisAdvancedClusterReactiveCommands;
+import io.micrometer.core.instrument.Timer;
+import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
 import io.penguin.penguincore.plugin.circuit.CircuitPluggable;
 import io.penguin.penguincore.plugin.circuit.CircuitPlugin;
@@ -11,6 +13,7 @@ import io.penguin.penguincore.reader.BaseCacheReader;
 import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.Objects;
 
 public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
@@ -19,6 +22,9 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     private final long expireSecond;
     private final String prefix;
     private final AllIngredient ingredient;
+    private final Timer reader = MetricCreator.timer("LETTUCE_READER", "kind", this.getClass().getSimpleName());
+    private final Timer writer = MetricCreator.timer("LETTUCE_WRITER", "kind", this.getClass().getSimpleName());
+
 
     public LettuceCache(Reader<K, V> fromDownStream, StatefulRedisClusterConnection<String, byte[]> connection, LettuceCacheConfig cacheConfig) throws Exception {
         super(fromDownStream);
@@ -45,7 +51,9 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
     @Override
     public void writeOne(String key, V value) {
+        long start = System.currentTimeMillis();
         reactive.setex(this.prefix() + key, this.expireSecond, serialize(value))
+                .doOnSuccess(i -> writer.record(Duration.ofMillis(System.currentTimeMillis() - start)))
                 .subscribe();
     }
 
@@ -62,11 +70,12 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     @Override
     public Mono<V> findOne(K key) {
 
+        long start = System.currentTimeMillis();
         Mono<V> mono = reactive.get(key.toString()).map(this::deserialize);
         mono = new TimeoutPlugin<>(mono, ingredient);
         mono = new CircuitPlugin<>(mono, ingredient);
 
-        return mono.onErrorReturn(failFindOne(key));
+        return mono.doOnSuccess(i -> reader.record(Duration.ofMillis(System.currentTimeMillis() - start)));
     }
 
 
