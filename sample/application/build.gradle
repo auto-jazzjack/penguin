@@ -20,8 +20,8 @@ dependencies {
     implementation project(":persistence:penguin-lettuce")
     implementation project(":persistence:penguin-cassandra")
 
-    implementation 'io.projectreactor:reactor-core:3.4.12'
-    implementation 'io.lettuce:lettuce-core:5.3.2.RELEASE'
+    implementation ("io.projectreactor:reactor-core:${reactor_version}")
+    implementation ("io.lettuce:lettuce-core:${lettuce_core}")
 
 
     implementation project(":penguin-core")
