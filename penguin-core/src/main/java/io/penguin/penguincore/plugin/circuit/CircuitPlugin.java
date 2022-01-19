@@ -1,51 +1,28 @@
 package io.penguin.penguincore.plugin.circuit;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
+import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
 import io.penguin.penguincore.plugin.Plugin;
-import io.penguin.penguincore.plugin.PluginInput;
-import org.reactivestreams.Publisher;
+import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;
-
-import java.time.Duration;
-import java.util.Objects;
-import java.util.Optional;
 
 public class CircuitPlugin<V> extends Plugin<V> {
 
     private final CircuitBreakerOperator<V> circuitBreakerOperator;
+    private final CircuitBreaker circuitBreaker;
 
-    public CircuitPlugin(PluginInput pluginInput, Mono<V> source) {
-        super(pluginInput, source);
-        Objects.requireNonNull(pluginInput);
-        Objects.requireNonNull(pluginInput.getCircuit());
-
-        circuitBreakerOperator = CircuitBreakerOperator.of(CircuitBreaker.of("",
-                CircuitBreakerConfig.custom()
-                        .permittedNumberOfCallsInHalfOpenState(pluginInput.getCircuit().getPermittedNumberOfCallsInHalfOpenState())
-                        .failureRateThreshold(pluginInput.getCircuit().getFailureRateThreshold())
-                        .waitDurationInOpenState(Duration.ofMillis(pluginInput.getCircuit().getWaitDurationInOpenStateMillisecond()))
-                        .build()));
+    public CircuitPlugin(Mono<V> source, AllIngredient allIngredient) {
+        super(source, allIngredient);
+        circuitBreakerOperator = (CircuitBreakerOperator<V>) allIngredient.getCircuitIngredient().getCircuitBreakerOperator();
+        circuitBreaker = allIngredient.getCircuitIngredient().getCircuitBreaker();
+        this.source = (Mono<V>) circuitBreakerOperator.apply(source);
     }
 
-    @Override
-    public int order() {
-        return super.pluginInput.getCircuit().getOrder();
-    }
 
     @Override
-    public boolean support() {
-
-        boolean empty = Optional.ofNullable(pluginInput)
-                .map(PluginInput::getCircuit)
-                .isEmpty();
-
-        return !empty;
-    }
-
-    @Override
-    public Publisher<V> apply() {
-        return circuitBreakerOperator.apply(this.source);
+    public void subscribe(CoreSubscriber<? super V> actual) {
+        System.out.println(circuitBreaker.getState());
+        source.subscribe(actual);
     }
 }

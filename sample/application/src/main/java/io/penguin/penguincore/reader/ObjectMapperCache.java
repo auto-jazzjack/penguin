@@ -8,6 +8,7 @@ import io.penguin.pengiunlettuce.LettuceCache;
 import io.penguin.pengiunlettuce.LettuceCacheConfig;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ObjectMapperCache extends LettuceCache<String, Map<String, String>> {
@@ -24,7 +25,6 @@ public class ObjectMapperCache extends LettuceCache<String, Map<String, String>>
         try {
             return objectMapper.writeValueAsBytes(stringStringMap);
         } catch (Exception e) {
-            System.out.println("Error");
             return new byte[0];
         }
     }
@@ -33,12 +33,19 @@ public class ObjectMapperCache extends LettuceCache<String, Map<String, String>>
     public Map<String, String> deserialize(byte[] bytes) {
 
         try {
-            Map<String, String> stringStringMap = objectMapper.readValue(bytes, new TypeReference<Map<String, String>>() {
+            Thread.sleep(1000);
+            return objectMapper.readValue(bytes, new TypeReference<>() {
             });
-            return stringStringMap;
         } catch (Exception e) {
             System.out.println("Error");
             return Collections.emptyMap();
         }
+    }
+
+    @Override
+    public Map<String, String> failFindOne(String key) {
+        Map<String, String> retv = new HashMap<>();
+        retv.put("fallback", "fallback");
+        return retv;
     }
 }

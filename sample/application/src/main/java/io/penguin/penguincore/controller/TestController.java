@@ -3,6 +3,8 @@ package io.penguin.penguincore.controller;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.penguin.deployment.penguindeployment.Deployment;
 import io.penguin.pengiunlettuce.LettuceCacheConfig;
+import io.penguin.penguincore.plugin.PluginInput;
+import io.penguin.penguincore.plugin.timeout.TimeoutModel;
 import io.penguin.penguincore.reader.ObjectMapperCache;
 import io.penguin.penguincore.reader.Source;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +31,13 @@ public class TestController {
         Source source = new Source();
 
         deployment = new Deployment(
-                new ObjectMapperCache(source, connection, LettuceCacheConfig.base().build()),
+                new ObjectMapperCache(source, connection, LettuceCacheConfig.base()
+                        .pluginInput(PluginInput.base()
+                                .timeout(TimeoutModel.base()
+                                        .timeoutMilliseconds(100)
+                                        .build())
+                                .build())
+                        .build()),
                 source
 
         );
