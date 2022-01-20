@@ -1,15 +1,15 @@
 package io.penguin.penguincore.plugin;
 
-public abstract class Pluggable<V> {
+public abstract class PluginConfiguration<V> {
 
     protected final PluginInput pluginInput;
 
-    public Pluggable(PluginInput pluginInput) {
+    public PluginConfiguration(PluginInput pluginInput) {
         this.pluginInput = pluginInput;
     }
 
     abstract public boolean support();
 
-    abstract public V generate();
+    abstract public V generate(Class<?> clazz);
 
 }
