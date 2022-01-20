@@ -5,7 +5,7 @@ package penguin;
 option java_package = "io.penguin.core.cache";
 option java_outer_classname = "penguin";
 
-message Cache {
+message Codec {
   int64 timestamp = 1;
   bytes payload = 2;
 }

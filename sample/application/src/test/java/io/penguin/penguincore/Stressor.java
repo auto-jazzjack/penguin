@@ -11,8 +11,8 @@ import java.util.concurrent.Executors;
 
 public class Stressor {
 
-
-    @Test
+/*
+    //@Test
     public void stressor() throws Exception {
         RestTemplate restTemplate = new RestTemplate();
 
@@ -30,5 +30,5 @@ public class Stressor {
             }
         }
         countDownLatch.await();
-    }
+    }*/
 }

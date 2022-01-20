@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.reactive.RedisAdvancedClusterReactiveCommands;
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import io.penguin.core.cache.penguin;
 import io.penguin.penguincore.exception.TimeoutException;
@@ -31,9 +32,9 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     private final String prefix;
     private final AllIngredient ingredient;
 
-    private final Timer reader = MetricCreator.timer("LETTUCE_READER", "kind", this.getClass().getSimpleName());
-    private final Timer writer = MetricCreator.timer("LETTUCE_WRITER", "kind", this.getClass().getSimpleName());
-
+    private final Timer reader = MetricCreator.timer("lettuce_reader", "kind", this.getClass().getSimpleName());
+    private final Timer writer = MetricCreator.timer("lettuce_writer", "kind", this.getClass().getSimpleName());
+    private final Counter reupdate = MetricCreator.counter("lettuce_reupdate_count", "kind", this.getClass().getSimpleName());
 
     public LettuceCache(Reader<K, V> fromDownStream, StatefulRedisClusterConnection<String, byte[]> connection, LettuceCacheConfig cacheConfig) throws Exception {
         super(fromDownStream);
@@ -82,7 +83,12 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
         Mono<V> mono = reactive.get(key.toString())
                 .map(i -> ProtoUtil.safeParseFrom(penguin.Codec.parser(), i, penguin.Codec.newBuilder().getDefaultInstanceForType()))
                 .map(i -> Pair.of(i.getTimestamp(), deserialize(i.getPayload().toByteArray())))
-                .doOnNext(i -> writeOne(key.toString(), i.getValue()))
+                .doOnNext(i -> {
+                    if (i.getKey() + expireMilliseconds > System.currentTimeMillis()) {
+                        reupdate.increment();
+                        writeOne(key.toString(), i.getValue());
+                    }
+                })
                 .map(Pair::getValue);
 
         mono = new TimeoutPlugin<>(mono, ingredient);

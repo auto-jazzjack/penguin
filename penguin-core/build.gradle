@@ -1,14 +1,12 @@
-apply plugin: 'com.google.protobuf'
-apply plugin: 'idea'
-
 dependencies {
 
     compileOnly("ch.qos.logback:logback-classic:1.2.6")
 
     api("io.github.resilience4j:resilience4j-core:${resilience4j_version}")
-    api("com.google.protobuf:protobuf-java:${protobuf_version}")
+
     api("io.github.resilience4j:resilience4j-circuitbreaker:${resilience4j_version}")
 
+    implementation("com.google.protobuf:protobuf-java:${protobuf_version}")
     implementation("io.projectreactor:reactor-core:${reactor_version}")
     implementation("org.junit.jupiter:junit-jupiter:5.8.1")
     implementation("io.github.resilience4j:resilience4j-reactor:${resilience4j_version}")
@@ -16,17 +14,18 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus:${micrometer_version}")
 }
 
-sourceSets {
-    main {
-        proto {
-            srcDir "/src/main/proto"
-        }
-    }
-}
-
 protobuf {
     protoc {
         artifact = 'com.google.protobuf:protoc:3.19.3'
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
     }
 }
 

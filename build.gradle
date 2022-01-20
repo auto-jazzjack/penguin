@@ -21,6 +21,8 @@ version = '0.0.1-SNAPSHOT'
 subprojects {
     apply plugin: 'java'
     apply plugin: 'java-library'
+    apply plugin: 'idea'
+    apply plugin: 'com.google.protobuf'
 
     sourceCompatibility = '11'
     group = 'io.penguin'
@@ -30,7 +32,6 @@ subprojects {
     }
 
     dependencies {
-
         compileOnly ('org.projectlombok:lombok:1.18.12')
         annotationProcessor('org.projectlombok:lombok:1.18.12')
 
