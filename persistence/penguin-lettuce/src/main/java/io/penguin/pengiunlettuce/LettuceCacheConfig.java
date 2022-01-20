@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 @Builder
 public class LettuceCacheConfig {
-    private long expireTime;
+    private long expireMilliseconds;
     private RedisCodec<?, byte[]> codec;
     private int queueSize;
     private String prefix;
@@ -19,7 +19,7 @@ public class LettuceCacheConfig {
 
     public static LettuceCacheConfig.LettuceCacheConfigBuilder base() {
         return LettuceCacheConfig.builder()
-                .expireTime(10)
+                .expireMilliseconds(10)
                 .queueSize(50000)
                 .codec(DefaultCodec.getInstance())
                 .prefix("")

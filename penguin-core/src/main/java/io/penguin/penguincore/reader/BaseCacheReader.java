@@ -6,7 +6,6 @@ import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.SignalType;
 import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
@@ -41,12 +40,7 @@ public abstract class BaseCacheReader<K, V> implements CacheReader<K, V> {
 
 
     public void insertQueue(K k) {
-        watcher.emitNext(k, new Sinks.EmitFailureHandler() {
-            @Override
-            public boolean onEmitFailure(SignalType signalType, Sinks.EmitResult emitResult) {
-                return false;
-            }
-        });
+        watcher.emitNext(k, (signalType, emitResult) -> false);
     }
 
     @Override
