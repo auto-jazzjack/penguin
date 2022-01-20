@@ -1,9 +1,11 @@
 package io.penguin.pengiunlettuce;
 
+import com.google.protobuf.ByteString;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.reactive.RedisAdvancedClusterReactiveCommands;
 import io.micrometer.core.instrument.Timer;
+import io.penguin.core.cache.penguin;
 import io.penguin.penguincore.exception.TimeoutException;
 import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
@@ -13,6 +15,8 @@ import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
 import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
 import io.penguin.penguincore.reader.BaseCacheReader;
 import io.penguin.penguincore.reader.Reader;
+import io.penguin.penguincore.util.Pair;
+import io.penguin.penguincore.util.ProtoUtil;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
@@ -23,7 +27,7 @@ import java.util.Objects;
 public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
     protected final RedisAdvancedClusterReactiveCommands<String, byte[]> reactive;
-    private final long expireSecond;
+    private final long expireMilliseconds;
     private final String prefix;
     private final AllIngredient ingredient;
 
@@ -36,7 +40,7 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
         Objects.requireNonNull(cacheConfig);
 
         this.reactive = connection.reactive();
-        this.expireSecond = cacheConfig.getExpireTime();
+        this.expireMilliseconds = cacheConfig.getExpireMilliseconds();
         this.prefix = cacheConfig.getPrefix();
         this.ingredient = AllIngredient.builder().build();
 
@@ -53,11 +57,10 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
     }
 
-
     @Override
     public void writeOne(String key, V value) {
         long start = System.currentTimeMillis();
-        reactive.setex(this.prefix() + key, this.expireSecond, serialize(value))
+        reactive.setex(this.prefix() + key, this.expireMilliseconds, withTime(value))
                 .doOnSuccess(i -> writer.record(Duration.ofMillis(System.currentTimeMillis() - start)))
                 .subscribe();
     }
@@ -69,14 +72,18 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
     @Override
     public long expireSecond() {
-        return this.expireSecond;
+        return this.expireMilliseconds;
     }
 
     @Override
     public Mono<V> findOne(K key) {
 
         long start = System.currentTimeMillis();
-        Mono<V> mono = reactive.get(key.toString()).map(this::deserialize);
+        Mono<V> mono = reactive.get(key.toString())
+                .map(i -> ProtoUtil.safeParseFrom(penguin.Codec.parser(), i, penguin.Codec.newBuilder().getDefaultInstanceForType()))
+                .map(i -> Pair.of(i.getTimestamp(), deserialize(i.getPayload().toByteArray())))
+                .doOnNext(i -> writeOne(key.toString(), i.getValue()))
+                .map(Pair::getValue);
 
         mono = new TimeoutPlugin<>(mono, ingredient);
         mono = new CircuitPlugin<>(mono, ingredient);
@@ -95,6 +102,13 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     abstract public byte[] serialize(V v);
 
     abstract public V deserialize(byte[] bytes);
+
+    private byte[] withTime(V v) {
+        return penguin.Codec.newBuilder()
+                .setTimestamp(System.currentTimeMillis())
+                .setPayload(ByteString.copyFrom(serialize(v)))
+                .build().toByteArray();
+    }
 
 
 }
