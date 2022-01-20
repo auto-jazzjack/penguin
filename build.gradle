@@ -1,10 +1,10 @@
 buildscript {
     ext {
-
         resilience4j_version = "1.7.0"
         reactor_version = "3.4.12"
         lettuce_core_version = "5.3.2.RELEASE"
         micrometer_version = "1.8.0"
+        protobuf_version = "3.12.0"
     }
 
     repositories {
@@ -12,7 +12,7 @@ buildscript {
     }
 
     dependencies {
-        //classPath
+        classpath "com.google.protobuf:protobuf-gradle-plugin:0.8.12"
     }
 }
 
@@ -28,6 +28,7 @@ subprojects {
     repositories {
         mavenCentral()
     }
+
     dependencies {
 
         compileOnly ('org.projectlombok:lombok:1.18.12')
@@ -36,4 +37,5 @@ subprojects {
         testCompileOnly 'org.projectlombok:lombok:1.18.12'
         testAnnotationProcessor('org.projectlombok:lombok:1.18.12')
     }
+
 }

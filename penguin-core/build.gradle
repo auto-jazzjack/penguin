@@ -1,4 +1,8 @@
+apply plugin: 'com.google.protobuf'
+apply plugin: 'idea'
+
 dependencies {
+
     implementation("io.projectreactor:reactor-core:${reactor_version}")
     implementation("org.junit.jupiter:junit-jupiter:5.8.1")
     api("io.github.resilience4j:resilience4j-circuitbreaker:${resilience4j_version}")
@@ -9,6 +13,22 @@ dependencies {
 
     implementation("io.netty:netty-all:4.1.51.Final")
     implementation("io.micrometer:micrometer-registry-prometheus:${micrometer_version}")
+    implementation("com.google.protobuf:protobuf-java:${protobuf_version}")
+
+}
+
+sourceSets {
+    main {
+        proto {
+            srcDir "/src/main/proto"
+        }
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.19.3'
+    }
 }
 
 test {
