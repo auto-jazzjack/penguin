@@ -4,6 +4,7 @@ dependencies {
     implementation("io.projectreactor:reactor-core:${reactor_version}")
     implementation("io.lettuce:lettuce-core:${lettuce_core_version}")
     implementation("io.micrometer:micrometer-registry-prometheus:${micrometer_version}")
+    implementation("com.google.protobuf:protobuf-java:${protobuf_version}")
 
 }
 test {
