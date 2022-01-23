@@ -12,6 +12,8 @@ dependencies {
     implementation("io.github.resilience4j:resilience4j-reactor:${resilience4j_version}")
     implementation("io.netty:netty-all:4.1.51.Final")
     implementation("io.micrometer:micrometer-registry-prometheus:${micrometer_version}")
+    implementation("io.github.resilience4j:resilience4j-bulkhead:${resilience4j_version}")
+
 }
 
 protobuf {
