@@ -31,7 +31,7 @@ public class BulkheadConfiguration extends PluginConfiguration<BulkheadIngredien
 
     @Override
     public BulkheadIngredient generate(Class<?> clazz) {
-        BulkheadOperator<?> of = BulkheadOperator.of(Bulkhead.of(clazz.getName(), BulkheadConfig.custom()
+        BulkheadOperator<?> of = BulkheadOperator.of(Bulkhead.of(clazz.getSimpleName(), BulkheadConfig.custom()
                 .maxConcurrentCalls(pluginInput.getBulkhead().getMaxConcurrentCalls())
                 .maxWaitDuration(Duration.ofMillis(pluginInput.getBulkhead().getMaxWaitDurationMilliseconds()))
                 .build()));

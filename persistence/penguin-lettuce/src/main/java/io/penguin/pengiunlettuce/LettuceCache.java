@@ -98,8 +98,8 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
                 })
                 .map(Pair::getValue);
 
-        mono = new BulkheadPlugin<>(mono, ingredient);
         mono = new TimeoutPlugin<>(mono, ingredient);
+        mono = new BulkheadPlugin<>(mono, ingredient);
         mono = new CircuitPlugin<>(mono, ingredient);
 
 

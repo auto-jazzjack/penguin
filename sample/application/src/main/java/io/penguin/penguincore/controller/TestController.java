@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 public class TestController {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final ExecutorService executorService = Executors.newFixedThreadPool(200);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(2000);
     private Deployment<String, Map<String, String>> deployment;
 
     @Autowired
@@ -67,27 +67,30 @@ public class TestController {
 
     private void stressor() throws Exception {
 
-        int size = 10000;
+        int size = 50000;
         CountDownLatch countDownLatch = new CountDownLatch(size);
         for (int i = 0; i < size; i++) {
             if (i % 100 == 0) {
                 log.info("" + i);
             }
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
+            try {
+                executorService.submit(() -> {
                     try {
-                        restTemplate.postForEntity(URI.create("http://localhost:9876/hello"), null, Map.class);
-                        countDownLatch.countDown();
+                        restTemplate
+                                .postForEntity(URI.create("http://localhost:9876/hello"), null, Map.class);
                     } catch (Exception e) {
-                        log.error("", e);
-                        countDownLatch.countDown();
+                        System.out.println(e);
                     }
-
-                }
-            }).get();
+                    countDownLatch.countDown();
+                });
+            }catch (Exception e){
+                System.out.println();
+            }
         }
-        boolean await = countDownLatch.await(100, TimeUnit.SECONDS);
+
+
+        boolean await = countDownLatch.await(15, TimeUnit.SECONDS);
+        //countDownLatch.await();
         log.info("" + await);
         System.out.println(countDownLatch.getCount());
     }

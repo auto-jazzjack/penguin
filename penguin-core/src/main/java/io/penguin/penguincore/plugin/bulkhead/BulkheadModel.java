@@ -22,6 +22,6 @@ public class BulkheadModel {
         return BulkheadModel.builder()
                 .bulkHeadMode(BulkHeadMode.SEMAPHORE)
                 .maxWaitDurationMilliseconds(500)
-                .maxConcurrentCalls(1);
+                .maxConcurrentCalls(300);
     }
 }
