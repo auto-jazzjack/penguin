@@ -11,14 +11,14 @@ import reactor.core.CoreSubscriber;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class Timer<V> implements Subscription, CoreSubscriber<V> {
+public class TimeoutSubscriber<V> implements Subscription, CoreSubscriber<V> {
 
     private final CoreSubscriber<V> source;
     private Subscription subscription;
     private final Timeout timeout;
     private final Counter counter;
 
-    public Timer(CoreSubscriber<V> source, Counter counter, HashedWheelTimer timer, long milliseconds) {
+    public TimeoutSubscriber(CoreSubscriber<V> source, Counter counter, HashedWheelTimer timer, long milliseconds) {
         this.source = source;
         timeout = timer.newTimeout(
                 timeout -> onError(new TimeoutException()), milliseconds,
@@ -41,12 +41,7 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
         if (!timeout.isCancelled()) {
             timeout.cancel();
         }
-
         source.onError(t);
-
-        if (t instanceof TimeoutException) {
-            counter.increment();
-        }
     }
 
     @Override
@@ -55,6 +50,7 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
             timeout.cancel();
         }
 
+        counter.increment();
         source.onComplete();
     }
 
@@ -77,11 +73,5 @@ public class Timer<V> implements Subscription, CoreSubscriber<V> {
     public void onSubscribe(Subscription s) {
         this.subscription = s;
         source.onSubscribe(this);
-    }
-
-    public void stopTimerWhenExpired() {
-        if (timeout.isExpired()) {
-            throw new TimeoutException();
-        }
     }
 }

@@ -44,7 +44,7 @@ public class TestController {
                 new ObjectMapperCache(source, connection, LettuceCacheConfig.base()
                         .pluginInput(PluginInput.base()
                                 .timeout(TimeoutModel.base()
-                                        .timeoutMilliseconds(100)
+                                        .timeoutMilliseconds(75)
                                         .build())
                                 .build())
                         .build()),
@@ -79,12 +79,12 @@ public class TestController {
                         restTemplate
                                 .postForEntity(URI.create("http://localhost:9876/hello"), null, Map.class);
                     } catch (Exception e) {
-                        System.out.println(e);
+                        //System.out.println(e);
                     }
                     countDownLatch.countDown();
                 });
             }catch (Exception e){
-                System.out.println();
+                //System.out.println();
             }
         }
 
