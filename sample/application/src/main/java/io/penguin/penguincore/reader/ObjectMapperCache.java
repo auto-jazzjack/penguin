@@ -34,7 +34,6 @@ public class ObjectMapperCache extends LettuceCache<String, Map<String, String>>
     public Map<String, String> deserialize(byte[] bytes) {
 
         try {
-            Thread.sleep(ThreadLocalRandom.current().nextLong(150L));
             return objectMapper.readValue(bytes, new TypeReference<>() {
             });
         } catch (Exception e) {

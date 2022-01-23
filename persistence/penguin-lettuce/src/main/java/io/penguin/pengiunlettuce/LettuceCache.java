@@ -10,6 +10,8 @@ import io.penguin.core.cache.penguin;
 import io.penguin.penguincore.exception.TimeoutException;
 import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
+import io.penguin.penguincore.plugin.bulkhead.BulkheadConfiguration;
+import io.penguin.penguincore.plugin.bulkhead.BulkheadPlugin;
 import io.penguin.penguincore.plugin.circuit.CircuitConfiguration;
 import io.penguin.penguincore.plugin.circuit.CircuitPlugin;
 import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
@@ -46,14 +48,19 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
         this.ingredient = AllIngredient.builder().build();
 
 
-        CircuitConfiguration circuitPluggable = new CircuitConfiguration(cacheConfig.getPluginInput());
-        if (circuitPluggable.support()) {
-            ingredient.setCircuitIngredient(circuitPluggable.generate(this.getClass()));
+        CircuitConfiguration circuitConfiguration = new CircuitConfiguration(cacheConfig.getPluginInput());
+        if (circuitConfiguration.support()) {
+            ingredient.setCircuitIngredient(circuitConfiguration.generate(this.getClass()));
         }
 
-        TimeoutConfiguration timeoutPluggable = new TimeoutConfiguration(cacheConfig.getPluginInput());
-        if (timeoutPluggable.support()) {
-            ingredient.setTimeoutIngredient(timeoutPluggable.generate(this.getClass()));
+        TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(cacheConfig.getPluginInput());
+        if (timeoutConfiguration.support()) {
+            ingredient.setTimeoutIngredient(timeoutConfiguration.generate(this.getClass()));
+        }
+
+        BulkheadConfiguration bulkheadConfiguration = new BulkheadConfiguration(cacheConfig.getPluginInput());
+        if (bulkheadConfiguration.support()) {
+            ingredient.setBulkheadIngredient(bulkheadConfiguration.generate(this.getClass()));
         }
 
     }
@@ -91,8 +98,10 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
                 })
                 .map(Pair::getValue);
 
+        mono = new BulkheadPlugin<>(mono, ingredient);
         mono = new TimeoutPlugin<>(mono, ingredient);
         mono = new CircuitPlugin<>(mono, ingredient);
+
 
         return mono
                 .doOnError(e -> {
