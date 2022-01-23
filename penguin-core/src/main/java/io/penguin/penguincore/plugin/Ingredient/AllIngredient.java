@@ -7,5 +7,6 @@ import lombok.Data;
 @Builder
 public class AllIngredient {
     private CircuitIngredient circuitIngredient;
+    private BulkheadIngredient bulkheadIngredient;
     private TimeoutIngredient timeoutIngredient;
 }
