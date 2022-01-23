@@ -3,17 +3,14 @@ package io.penguin.penguincore.plugin;
 import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
 import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.MonoOperator;
 
 
-public abstract class Plugin<V> extends MonoOperator<V, V> {
+public abstract class Plugin<V> {
 
     protected Mono<V> source;
 
-    public Plugin(Mono<V> source, AllIngredient allIngredient) {
-        super(source);
-        this.source = source;
+    public Plugin() {
     }
 
-    abstract public void subscribe(CoreSubscriber<? super V> actual);
+    abstract public Mono<V> decorateSource(Mono<V> source);
 }
