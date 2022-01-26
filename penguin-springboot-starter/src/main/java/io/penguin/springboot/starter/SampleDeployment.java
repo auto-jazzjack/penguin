@@ -1,15 +1,15 @@
-package io.penguin.deployment.penguindeployment;
+package io.penguin.springboot.starter;
 
 import io.penguin.pengiunlettuce.LettuceCache;
 import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
 
-public class Deployment<K, V> {
+public class SampleDeployment<K, V> {
 
     private final LettuceCache<K, V> redisCache;
     private final Reader<K, V> source;
 
-    public Deployment(LettuceCache<K, V> redisCache, Reader<K, V> source) {
+    public SampleDeployment(LettuceCache<K, V> redisCache, Reader<K, V> source) {
         this.redisCache = redisCache;
         this.source = source;
     }

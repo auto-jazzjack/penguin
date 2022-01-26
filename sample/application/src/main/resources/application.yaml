@@ -1,0 +1,14 @@
+penguin:
+  version: v1
+  kind: penguin
+
+  metadata:
+    name: my-first
+
+  spec:
+    containers:
+      - name: static
+        class: hello_map
+      - name: lettuce
+        class: lettuce
+

@@ -1,7 +1,7 @@
 package io.penguin.penguincore.controller;
 
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
-import io.penguin.deployment.penguindeployment.Deployment;
+import io.penguin.springboot.starter.SampleDeployment;
 import io.penguin.pengiunlettuce.LettuceCacheConfig;
 import io.penguin.penguincore.plugin.PluginInput;
 import io.penguin.penguincore.plugin.timeout.TimeoutModel;
@@ -31,7 +31,7 @@ public class TestController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ExecutorService executorService = Executors.newFixedThreadPool(2000);
-    private Deployment<String, Map<String, String>> deployment;
+    private SampleDeployment<String, Map<String, String>> sampleDeployment;
 
     @Autowired
     StatefulRedisClusterConnection<String, byte[]> connection;
@@ -40,7 +40,7 @@ public class TestController {
     public void init() throws Exception {
         Source source = new Source();
 
-        deployment = new Deployment(
+        sampleDeployment = new SampleDeployment(
                 new ObjectMapperCache(source, connection, LettuceCacheConfig.base()
                         .pluginInput(PluginInput.base()
                                 .timeout(TimeoutModel.base()
@@ -55,7 +55,7 @@ public class TestController {
 
     @PostMapping(path = "/hello")
     public Mono<Map<String, String>> read() {
-        return deployment.findOne("ad");
+        return sampleDeployment.findOne("ad");
     }
 
 
