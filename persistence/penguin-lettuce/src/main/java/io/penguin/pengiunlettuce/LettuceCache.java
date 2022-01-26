@@ -1,11 +1,11 @@
 package io.penguin.pengiunlettuce;
 
 import com.google.protobuf.ByteString;
-import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.reactive.RedisAdvancedClusterReactiveCommands;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import io.penguin.core.cache.penguin;
+import io.penguin.pengiunlettuce.connection.RedisConfig;
 import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
 import io.penguin.penguincore.plugin.Plugin;
@@ -40,11 +40,11 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     private final Counter reupdate = MetricCreator.counter("lettuce_reupdate_count", "kind", this.getClass().getSimpleName());
     private final Plugin[] plugins;
 
-    public LettuceCache(Reader<K, V> fromDownStream, StatefulRedisClusterConnection<String, byte[]> connection, LettuceCacheConfig cacheConfig) throws Exception {
+    public LettuceCache(Reader<K, V> fromDownStream, LettuceCacheConfig cacheConfig) throws Exception {
         super(fromDownStream);
         Objects.requireNonNull(cacheConfig);
 
-        this.reactive = connection.reactive();
+        this.reactive = RedisConfig.connection(cacheConfig.getRedisUris(), cacheConfig.getPort()).reactive();
         this.expireMilliseconds = cacheConfig.getExpireMilliseconds();
         this.prefix = cacheConfig.getPrefix();
         this.ingredient = AllIngredient.builder().build();
