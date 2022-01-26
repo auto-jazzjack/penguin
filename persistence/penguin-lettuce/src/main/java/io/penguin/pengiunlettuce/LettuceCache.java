@@ -16,7 +16,6 @@ import io.penguin.penguincore.plugin.circuit.CircuitPlugin;
 import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
 import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
 import io.penguin.penguincore.reader.BaseCacheReader;
-import io.penguin.penguincore.reader.Reader;
 import io.penguin.penguincore.util.Pair;
 import io.penguin.penguincore.util.ProtoUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -40,8 +39,8 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     private final Counter reupdate = MetricCreator.counter("lettuce_reupdate_count", "kind", this.getClass().getSimpleName());
     private final Plugin[] plugins;
 
-    public LettuceCache(Reader<K, V> fromDownStream, LettuceCacheConfig cacheConfig) throws Exception {
-        super(fromDownStream);
+    public LettuceCache(LettuceCacheConfig cacheConfig) throws Exception {
+        super(cacheConfig.getFromDownStream());
         Objects.requireNonNull(cacheConfig);
 
         this.reactive = RedisConfig.connection(cacheConfig.getRedisUris(), cacheConfig.getPort()).reactive();

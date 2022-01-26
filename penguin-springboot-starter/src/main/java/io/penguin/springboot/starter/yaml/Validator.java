@@ -29,7 +29,7 @@ public class Validator {
 
     static void validate(Penguin.Container container) {
         Objects.requireNonNull(container);
-        Objects.requireNonNull(container.getClazz());
+        Objects.requireNonNull(container.getKind());
         Objects.requireNonNull(container.getName());
     }
 

@@ -1,12 +1,12 @@
 package io.penguin.penguincore.controller;
 
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
-import io.penguin.springboot.starter.SampleDeployment;
 import io.penguin.pengiunlettuce.LettuceCacheConfig;
 import io.penguin.penguincore.plugin.PluginInput;
 import io.penguin.penguincore.plugin.timeout.TimeoutModel;
 import io.penguin.penguincore.reader.ObjectMapperCache;
 import io.penguin.penguincore.reader.Source;
+import io.penguin.springboot.starter.SampleDeployment;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -41,12 +41,13 @@ public class TestController {
         Source source = new Source();
 
         sampleDeployment = new SampleDeployment(
-                new ObjectMapperCache(source, connection, LettuceCacheConfig.base()
+                new ObjectMapperCache(LettuceCacheConfig.base()
                         .pluginInput(PluginInput.base()
                                 .timeout(TimeoutModel.base()
                                         .timeoutMilliseconds(75)
                                         .build())
                                 .build())
+                        .fromDownStream(source)
                         .build()),
                 source
 
@@ -83,7 +84,7 @@ public class TestController {
                     }
                     countDownLatch.countDown();
                 });
-            }catch (Exception e){
+            } catch (Exception e) {
                 //System.out.println();
             }
         }

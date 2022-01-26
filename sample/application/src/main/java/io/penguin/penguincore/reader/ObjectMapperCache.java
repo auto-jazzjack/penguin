@@ -16,9 +16,8 @@ public class ObjectMapperCache extends LettuceCache<String, Map<String, String>>
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ObjectMapperCache(Reader<String, Map<String, String>> fromDownStream,
-                             StatefulRedisClusterConnection<String, byte[]> connection, LettuceCacheConfig pureLettuceCacheConfig) throws Exception {
-        super(fromDownStream, connection, pureLettuceCacheConfig);
+    public ObjectMapperCache(LettuceCacheConfig pureLettuceCacheConfig) throws Exception {
+        super(pureLettuceCacheConfig);
     }
 
     @Override

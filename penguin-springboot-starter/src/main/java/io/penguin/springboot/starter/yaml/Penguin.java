@@ -33,7 +33,7 @@ public class Penguin {
     @Data
     public static class Container {
         private String name;
-        private Class<?> clazz;
+        private String kind;
         private Map<String, Object> spec;
     }
 
