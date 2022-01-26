@@ -1,0 +1,12 @@
+penguin:
+  version: v1
+  kind: penguin
+
+  metadata:
+    name: my-first
+
+  spec:
+    containers:
+      - name: static
+        kind: lettuce
+

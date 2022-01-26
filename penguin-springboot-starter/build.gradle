@@ -1,7 +1,13 @@
+plugins {
+    id 'org.springframework.boot' version '2.6.2'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+}
+
 dependencies {
     implementation project(":penguin-core")
     implementation project(":persistence:penguin-lettuce")
     implementation project(":persistence:penguin-cassandra")
+    compileOnly("org.springframework.boot:spring-boot-starter")
 
     implementation ("io.projectreactor:reactor-core:${reactor_version}")
 

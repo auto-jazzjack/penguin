@@ -4,5 +4,7 @@ include 'penguin-core'
 include 'persistence:penguin-lettuce'
 include 'persistence:penguin-cassandra'
 
-include 'penguin-deployment'
+include 'penguin-springboot-starter'
 include 'sample:application'
+include 'penguin-codec'
+
