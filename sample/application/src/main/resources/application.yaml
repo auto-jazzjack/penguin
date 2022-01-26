@@ -8,7 +8,5 @@ penguin:
   spec:
     containers:
       - name: static
-        class: hello_map
-      - name: lettuce
-        class: lettuce
+        kind: lettuce
 
