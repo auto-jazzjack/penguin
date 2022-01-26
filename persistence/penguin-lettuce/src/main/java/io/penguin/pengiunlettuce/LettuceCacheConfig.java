@@ -1,7 +1,9 @@
 package io.penguin.pengiunlettuce;
 
 import io.lettuce.core.codec.RedisCodec;
+import io.penguin.core.cache.penguin;
 import io.penguin.pengiunlettuce.codec.DefaultCodec;
+import io.penguin.penguincodec.Codec;
 import io.penguin.penguincore.plugin.PluginInput;
 import io.penguin.penguincore.reader.Reader;
 import lombok.Builder;
@@ -22,6 +24,7 @@ public class LettuceCacheConfig {
     private List<String> redisUris;
     private int port;
     private Reader fromDownStream;
+    private Codec objectCodec;
 
     private PluginInput pluginInput;
 

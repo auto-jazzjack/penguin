@@ -6,3 +6,5 @@ include 'persistence:penguin-cassandra'
 
 include 'penguin-springboot-starter'
 include 'sample:application'
+include 'penguin-codec'
+

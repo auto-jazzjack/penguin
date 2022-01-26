@@ -1,5 +1,6 @@
 dependencies {
     api project(":penguin-core")
+    api project(":penguin-codec")
 
     implementation("io.projectreactor:reactor-core:${reactor_version}")
     implementation("io.lettuce:lettuce-core:${lettuce_core_version}")
