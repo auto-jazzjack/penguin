@@ -3,20 +3,18 @@ package io.penguin.penguincore.reader;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.penguin.pengiunlettuce.LettuceCache;
-import io.penguin.pengiunlettuce.LettuceCacheConfig;
+import io.penguin.pengiunlettuce.cofig.LettuceCacheIngredient;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class ObjectMapperCache extends LettuceCache<String, Map<String, String>> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ObjectMapperCache(LettuceCacheConfig pureLettuceCacheConfig) throws Exception {
+    public ObjectMapperCache(LettuceCacheIngredient pureLettuceCacheConfig) throws Exception {
         super(pureLettuceCacheConfig);
     }
 

@@ -1,8 +1,12 @@
 package io.penguin.penguincodec;
 
-public interface Codec<V> {
+public abstract class Codec<V> {
 
-    byte[] serialize(V v) throws Exception;
+    public abstract byte[] serialize(V v) throws Exception;
 
-    V deserialize(byte[] v) throws Exception;
+    public abstract V deserialize(byte[] v) throws Exception;
+
+    public Codec(Class<V> target) throws Exception {
+
+    }
 }

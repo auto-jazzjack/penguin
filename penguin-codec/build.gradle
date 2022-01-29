@@ -1,5 +1,5 @@
 dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.0'
+    implementation ("com.fasterxml.jackson.core:jackson-databind:${jackson_version}")
     implementation("com.google.protobuf:protobuf-java:${protobuf_version}")
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
