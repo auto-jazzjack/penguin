@@ -1,7 +1,7 @@
 package io.penguin.penguincore.controller;
 
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
-import io.penguin.pengiunlettuce.LettuceCacheConfig;
+import io.penguin.pengiunlettuce.cofig.LettuceCacheIngredient;
 import io.penguin.penguincore.plugin.PluginInput;
 import io.penguin.penguincore.plugin.timeout.TimeoutModel;
 import io.penguin.penguincore.reader.ObjectMapperCache;
@@ -41,7 +41,7 @@ public class TestController {
         Source source = new Source();
 
         sampleDeployment = new SampleDeployment(
-                new ObjectMapperCache(LettuceCacheConfig.base()
+                new ObjectMapperCache(LettuceCacheIngredient.base()
                         .pluginInput(PluginInput.base()
                                 .timeout(TimeoutModel.base()
                                         .timeoutMilliseconds(75)

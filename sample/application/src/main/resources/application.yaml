@@ -9,4 +9,12 @@ penguin:
     containers:
       - name: static
         kind: lettuce
-
+        spec:
+          expireMilliseconds: 100
+          prefix: p
+          redisUris:
+            - 127.0.0.1
+            - 127.0.0.1
+          downStreamName: none
+          codecConfig:
+            codec: io.penguin.penguincodec.JsonCodec

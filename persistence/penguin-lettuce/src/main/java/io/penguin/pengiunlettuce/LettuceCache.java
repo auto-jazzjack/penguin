@@ -5,7 +5,9 @@ import io.lettuce.core.cluster.api.reactive.RedisAdvancedClusterReactiveCommands
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import io.penguin.core.cache.penguin;
+import io.penguin.pengiunlettuce.cofig.LettuceCacheIngredient;
 import io.penguin.pengiunlettuce.connection.RedisConfig;
+import io.penguin.penguincodec.Codec;
 import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
 import io.penguin.penguincore.plugin.Plugin;
@@ -27,19 +29,20 @@ import java.util.List;
 import java.util.Objects;
 
 @Slf4j
-public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
+public  class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
     protected final RedisAdvancedClusterReactiveCommands<String, byte[]> reactive;
     private final long expireMilliseconds;
     private final String prefix;
     private final AllIngredient ingredient;
+    private final Codec<V> codec;
 
     private final Timer reader = MetricCreator.timer("lettuce_reader", "kind", this.getClass().getSimpleName());
     private final Timer writer = MetricCreator.timer("lettuce_writer", "kind", this.getClass().getSimpleName());
     private final Counter reupdate = MetricCreator.counter("lettuce_reupdate_count", "kind", this.getClass().getSimpleName());
     private final Plugin[] plugins;
 
-    public LettuceCache(LettuceCacheConfig cacheConfig) throws Exception {
+    public LettuceCache(LettuceCacheIngredient cacheConfig) throws Exception {
         super(cacheConfig.getFromDownStream());
         Objects.requireNonNull(cacheConfig);
 
@@ -47,6 +50,7 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
         this.expireMilliseconds = cacheConfig.getExpireMilliseconds();
         this.prefix = cacheConfig.getPrefix();
         this.ingredient = AllIngredient.builder().build();
+        this.codec = cacheConfig.getCodec();
 
         List<Plugin<Object>> pluginList = new ArrayList<>();
         TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(cacheConfig.getPluginInput());
@@ -116,9 +120,21 @@ public abstract class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     }
 
 
-    abstract public byte[] serialize(V v);
+    public byte[] serialize(V v) {
+        try {
+            return this.codec.serialize(v);
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot serialize " + v);
+        }
+    }
 
-    abstract public V deserialize(byte[] bytes);
+    public V deserialize(byte[] bytes) {
+        try {
+            return this.codec.deserialize(bytes);
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot deserialize " + new String(bytes));
+        }
+    }
 
     private byte[] withTime(V v) {
         return penguin.Codec.newBuilder()
