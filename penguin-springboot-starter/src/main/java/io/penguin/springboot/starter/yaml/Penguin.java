@@ -3,6 +3,7 @@ package io.penguin.springboot.starter.yaml;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
@@ -16,7 +17,11 @@ import java.util.Map;
 public class Penguin {
     private String version;
     private String kind;
+
+    @NestedConfigurationProperty
     private Metadata metadata;
+
+    @NestedConfigurationProperty
     private Spec spec;
 
 
@@ -34,6 +39,8 @@ public class Penguin {
     public static class Container {
         private String name;
         private String kind;
+
+        @NestedConfigurationProperty
         private Map<String, Object> spec;
     }
 
