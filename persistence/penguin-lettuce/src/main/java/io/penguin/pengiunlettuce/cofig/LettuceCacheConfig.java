@@ -16,7 +16,7 @@ public class LettuceCacheConfig {
     private Long expireMilliseconds;
     private Integer queueSize;
     private String prefix;
-    private List<String> redisUris;
+    private String redisUris;
     private Integer port;
     private String downStreamName;
     private CodecConfig codecConfig;

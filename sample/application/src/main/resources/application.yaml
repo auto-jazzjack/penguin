@@ -15,16 +15,4 @@ penguin:
           downStreamName: none
           codecConfig:
             codec: io.penguin.penguincodec.JsonCodec
-          redisUris:
-            - 127.0.0.1
-
-      - name: static
-        kind: lettuce
-        spec:
-          expireMilliseconds: 100
-          prefix: p
-          downStreamName: none
-          codecConfig:
-            codec: io.penguin.penguincodec.JsonCodec
-          redisUris:
-            - 127.0.0.1
+          redisUris: 127.0.0.1

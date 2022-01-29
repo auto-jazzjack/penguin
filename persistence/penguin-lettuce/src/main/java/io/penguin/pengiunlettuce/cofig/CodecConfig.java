@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CodecConfig {
     private Class<Codec> codec;
+    private Class target;
 }

@@ -1,20 +1,21 @@
 package io.penguin.penguincodec.factory;
 
 import io.penguin.penguincodec.Codec;
+import io.penguin.penguincodec.JsonCodec;
+import io.penguin.penguincodec.ProtoCodec;
 
 public class CodecFactory {
 
-    public static Codec create(Class<Codec> clazz, Object... args) {
+    public static Codec create(Class<Codec> clazz, Class args) {
 
         try {
-
-            Class[] classes = new Class[args.length];
-            for (int j = 0; j < args.length; j++) {
-                classes[j] = args[j].getClass();
+            if (clazz.equals(JsonCodec.class)) {
+                return new JsonCodec(args);
             }
-
-            return clazz.getDeclaredConstructor(classes)
-                    .newInstance(args);
+            if (clazz.equals(ProtoCodec.class)) {
+                return new ProtoCodec(args);
+            }
+            throw new IllegalStateException("No such codec");
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create Codec");
         }

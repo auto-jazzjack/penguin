@@ -9,10 +9,7 @@ import io.penguin.penguincore.reader.Reader;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,9 +48,9 @@ public class LettuceCacheIngredient {
         Optional.ofNullable(config.getQueueSize()).ifPresent(build::setQueueSize);
         Optional.ofNullable(config.getPort()).ifPresent(build::setPort);
         Optional.ofNullable(config.getPrefix()).ifPresent(build::setPrefix);
-        Optional.ofNullable(config.getRedisUris()).ifPresent(build::setRedisUris);
+        Optional.ofNullable(config.getRedisUris()).map(i -> Arrays.stream(i.split(",")).collect(Collectors.toList())).ifPresent(build::setRedisUris);
         Optional.ofNullable(config.getDownStreamName()).ifPresent(i -> build.setFromDownStream(readers.get(i)));
-        Optional.ofNullable(config.getCodecConfig()).ifPresent(i -> build.setCodec(CodecFactory.create(i.getCodec())));
+        Optional.ofNullable(config.getCodecConfig()).ifPresent(i -> build.setCodec(CodecFactory.create(i.getCodec(), i.getTarget())));
 
 
         return build;
