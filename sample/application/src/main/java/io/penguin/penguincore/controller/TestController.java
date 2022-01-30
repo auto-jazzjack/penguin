@@ -25,13 +25,13 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TestController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ExecutorService executorService = Executors.newFixedThreadPool(2000);
     //private final FirstExample firstExample;
-    private final List<Deployment> deploymentList;
+    @Autowired
+    List<Deployment> deploymentList;
 
     @PostConstruct
     public void init() {

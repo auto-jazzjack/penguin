@@ -4,14 +4,12 @@ import io.penguin.springboot.starter.Deployment;
 import io.penguin.springboot.starter.mapper.ComponentCreator;
 import io.penguin.springboot.starter.model.ReaderBundle;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.core.annotation.Order;
 
 import java.util.*;
 
-@Order(1)
-@Import({Penguin.class, DeploymentConfiguration.class})
+
 @Configuration
 public class ReaderTemplateConfiguration {
 
@@ -20,7 +18,7 @@ public class ReaderTemplateConfiguration {
     private final List<Deployment> deploymentList;
     private Map<String, ReaderBundle> readers;
 
-    public ReaderTemplateConfiguration(@Autowired Penguin penguin, List<Deployment> deploymentList) {
+    public ReaderTemplateConfiguration(@Autowired Penguin penguin, @Autowired List<Deployment> deploymentList) {
         this.penguin = penguin;
         this.deploymentList = deploymentList;
 
@@ -38,6 +36,10 @@ public class ReaderTemplateConfiguration {
         add(mapper.generate(penguin, readers));
     }
 
+    @Bean
+    public List<Deployment> deployments() {
+        return new ArrayList<>();
+    }
 
     public void add(Deployment deployment) {
         deploymentList.add(deployment);

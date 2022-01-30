@@ -8,10 +8,10 @@ import org.springframework.context.annotation.Import;
 import java.util.ArrayList;
 import java.util.List;
 
-@Configuration
+//@Configuration
 public class DeploymentConfiguration {
 
-    @Bean
+   // @Bean
     public List<Deployment> deployments() {
         return new ArrayList<>();
     }
