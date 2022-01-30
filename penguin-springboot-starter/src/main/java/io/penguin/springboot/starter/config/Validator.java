@@ -1,4 +1,4 @@
-package io.penguin.springboot.starter.yaml;
+package io.penguin.springboot.starter.config;
 
 import io.penguin.springboot.starter.util.CollectionsUtils;
 
