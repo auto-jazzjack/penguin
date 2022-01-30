@@ -1,4 +1,4 @@
-package io.penguin.springboot.starter.yaml;
+package io.penguin.springboot.starter.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -33,6 +33,7 @@ public class Penguin {
     @Data
     public static class Spec {
         private List<Container> containers;
+        private Class aggregatedTarget;
     }
 
     @Data

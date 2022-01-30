@@ -1,18 +1,21 @@
 penguin:
   version: v1
-  kind: penguin
+  kind: BASE
 
   metadata:
-    name: my-first
+    name: FirstExample
 
   spec:
+    aggregatedTarget: io.penguin.penguincore.reader.FirstExample
     containers:
       - name: static
-        kind: lettuce
+        kind: hello
+      - name: First
+        kind: remote_cache
         spec:
           expireMilliseconds: 100
           prefix: p
-          downStreamName: none
+          downStreamName: static
           codecConfig:
             codec: io.penguin.penguincodec.JsonCodec
           redisUris: 127.0.0.1
