@@ -1,6 +1,7 @@
 package io.penguin.penguincore.controller;
 
 import io.penguin.penguincore.reader.FirstExample;
+import io.penguin.springboot.starter.Deployment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -28,7 +31,12 @@ public class TestController {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ExecutorService executorService = Executors.newFixedThreadPool(2000);
     //private final FirstExample firstExample;
+    private final List<Deployment> deploymentList;
 
+    @PostConstruct
+    public void init() {
+        System.out.println("This is deployment size " + deploymentList.size());
+    }
 
     @PostMapping(path = "/hello")
     public Mono<Map<String, String>> read() {

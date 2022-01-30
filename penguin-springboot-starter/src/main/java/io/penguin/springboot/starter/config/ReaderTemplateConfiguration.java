@@ -6,10 +6,12 @@ import io.penguin.springboot.starter.model.ReaderBundle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.annotation.Order;
 
 import java.util.*;
 
-@Import(Penguin.class)
+@Order(1)
+@Import({Penguin.class, DeploymentConfiguration.class})
 @Configuration
 public class ReaderTemplateConfiguration {
 
