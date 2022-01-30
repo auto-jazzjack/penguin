@@ -29,13 +29,17 @@ public class TestController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ExecutorService executorService = Executors.newFixedThreadPool(2000);
-    //private final FirstExample firstExample;
-    @Autowired
-    List<Deployment> deploymentList;
+
+    //@Autowired
+    //FirstExample firstExample;
+
+    //@Autowired
+    //List<Deployment> deploymentList;
 
     @PostConstruct
     public void init() {
-        System.out.println("This is deployment size " + deploymentList.size());
+        //System.out.println("This is deployment size " + deploymentList.size());
+        System.out.println();
     }
 
     @PostMapping(path = "/hello")

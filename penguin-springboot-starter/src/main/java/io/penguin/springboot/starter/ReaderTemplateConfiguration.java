@@ -1,28 +1,30 @@
-package io.penguin.springboot.starter.config;
+package io.penguin.springboot.starter;
 
-import io.penguin.springboot.starter.Deployment;
+import io.penguin.springboot.starter.config.Penguin;
+import io.penguin.springboot.starter.config.Validator;
 import io.penguin.springboot.starter.mapper.ComponentCreator;
 import io.penguin.springboot.starter.model.ReaderBundle;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.*;
 
 
+@Data
 @Configuration
 public class ReaderTemplateConfiguration {
 
     private final Penguin penguin;
     private final ComponentCreator mapper = new ComponentCreator();
-    private final List<Deployment> deploymentList;
+    private final List<Deployment> deployments;
     private Map<String, ReaderBundle> readers;
 
-    public ReaderTemplateConfiguration(@Autowired Penguin penguin, @Autowired List<Deployment> deploymentList) {
+    public ReaderTemplateConfiguration(@Autowired Penguin penguin, List<Deployment> deployments) {
         this.penguin = penguin;
-        this.deploymentList = deploymentList;
+        this.deployments = deployments;
 
-        System.out.println(penguin);
+        //System.out.println(penguin);
         Validator.validate(penguin);
 
         readers = new TreeMap<>();//Order maintained
@@ -36,12 +38,8 @@ public class ReaderTemplateConfiguration {
         add(mapper.generate(penguin, readers));
     }
 
-    @Bean
-    public List<Deployment> deployments() {
-        return new ArrayList<>();
-    }
 
     public void add(Deployment deployment) {
-        deploymentList.add(deployment);
+        deployments.add(deployment);
     }
 }
