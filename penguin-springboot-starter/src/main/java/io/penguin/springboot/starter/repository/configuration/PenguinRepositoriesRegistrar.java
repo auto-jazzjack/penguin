@@ -2,13 +2,12 @@ package io.penguin.springboot.starter.repository.configuration;
 
 import org.springframework.boot.autoconfigure.data.AbstractRepositoryConfigurationSourceSupport;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
-import org.springframework.data.util.Streamable;
 
 import java.lang.annotation.Annotation;
 
 /**
  * copied https://github.com/n15g/spring-boot-gae/blob/master/src/main/java/contrib/springframework/data/gcp/objectify/config/ObjectifyRepositoryConfigurationExtension.java
- * */
+ */
 public class PenguinRepositoriesRegistrar extends AbstractRepositoryConfigurationSourceSupport {
 
     @Override
@@ -24,11 +23,6 @@ public class PenguinRepositoriesRegistrar extends AbstractRepositoryConfiguratio
     @Override
     protected RepositoryConfigurationExtension getRepositoryConfigurationExtension() {
         return new PenguinRepositoryConfigurationExtension();
-    }
-
-    @Override
-    protected Streamable<String> getBasePackages() {
-        return Streamable.of();
     }
 
     @EnablePenguinRepositories

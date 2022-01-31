@@ -1,6 +1,7 @@
 package io.penguin.springboot.starter.repository.support;
 
 import io.penguin.springboot.starter.Penguin;
+import io.penguin.springboot.starter.PenguinConfiguration;
 import io.penguin.springboot.starter.config.PenguinProperties;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -13,9 +14,9 @@ import java.util.Map;
 
 public class PenguinRepositoryFactory extends RepositoryFactorySupport {
 
-    private final PenguinProperties penguinProperties;
+    private final PenguinConfiguration penguinProperties;
 
-    public PenguinRepositoryFactory(PenguinProperties penguinProperties) {
+    public PenguinRepositoryFactory(PenguinConfiguration penguinProperties) {
         this.penguinProperties = penguinProperties;
     }
 
