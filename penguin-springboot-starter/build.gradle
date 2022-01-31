@@ -3,6 +3,9 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
+bootJar {
+    enabled(false)
+}
 dependencies {
     implementation project(":penguin-core")
     implementation project(":persistence:penguin-lettuce")
