@@ -12,6 +12,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
+@Import(PenguinRepositoriesRegistrar.class)
 public @interface EnablePenguinRepositories {
 
     String[] value() default {};

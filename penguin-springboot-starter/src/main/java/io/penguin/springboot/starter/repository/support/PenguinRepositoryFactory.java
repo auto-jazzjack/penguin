@@ -1,7 +1,6 @@
 package io.penguin.springboot.starter.repository.support;
 
 import io.penguin.springboot.starter.Penguin;
-import io.penguin.springboot.starter.PenguinConfiguration;
 import io.penguin.springboot.starter.config.PenguinProperties;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -14,10 +13,8 @@ import java.util.Map;
 
 public class PenguinRepositoryFactory extends RepositoryFactorySupport {
 
-    private final PenguinConfiguration penguinProperties;
 
-    public PenguinRepositoryFactory(PenguinConfiguration penguinProperties) {
-        this.penguinProperties = penguinProperties;
+    public PenguinRepositoryFactory(PenguinProperties penguinProperties) {
     }
 
     @Override
@@ -26,9 +23,6 @@ public class PenguinRepositoryFactory extends RepositoryFactorySupport {
     }
 
     protected Object getTargetRepository(RepositoryInformation repositoryInformation) {
-        //EntityInformation<?, ?> entityInformation = this.getEntityInformation(repositoryInformation.getDomainType());
-
-        //return null;
         return new Penguin<String, Map<String, String>>() {
             @Override
             public Mono<Map<String, String>> findOne(String key) {
@@ -37,7 +31,6 @@ public class PenguinRepositoryFactory extends RepositoryFactorySupport {
                 return Mono.just(retv);
             }
         };
-        //return super.getTargetRepositoryViaReflection(repositoryInformation, new Object[]{entityInformation, this.keyValueOperations});
     }
 
     @Override
