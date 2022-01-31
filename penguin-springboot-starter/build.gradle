@@ -7,12 +7,12 @@ bootJar {
     enabled(false)
 }
 dependencies {
-    api project(":penguin-core")
-    api project(":persistence:penguin-lettuce")
-    api project(":persistence:penguin-cassandra")
+    implementation project(":penguin-core")
+    implementation project(":persistence:penguin-lettuce")
+    implementation project(":persistence:penguin-cassandra")
     compileOnly("org.springframework.boot:spring-boot-starter")
-    api("org.springframework.data:spring-data-commons")
-    api("org.springframework:spring-tx")
+    implementation("org.springframework.data:spring-data-commons")
+    implementation("org.springframework:spring-tx")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
 
