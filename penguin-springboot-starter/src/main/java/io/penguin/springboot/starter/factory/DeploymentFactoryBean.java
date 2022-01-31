@@ -10,12 +10,16 @@ import org.springframework.data.repository.core.support.ReactiveRepositoryFactor
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
-public class RepositoryFactory<T extends Repository<S, ID>, S, ID> extends RepositoryFactoryBeanSupport<T, S, ID> {
+/*
+copied concept from
+https://github.com/spring-projects/spring-data-mongodb/blob/main/spring-data-mongodb/src/main/java/org/springframework/data/mongodb/repository/support/MongoRepositoryFactoryBean.java
+ */
+public class DeploymentFactoryBean<T extends Repository<S, ID>, S, ID> extends RepositoryFactoryBeanSupport<T, S, ID> {
 
     private final ReaderTemplateConfiguration configuration;
     private final ComponentCreator componentCreator = new ComponentCreator();
 
-    public RepositoryFactory(Class<? extends T> repositoryInterface, ReaderTemplateConfiguration configuration) {
+    public DeploymentFactoryBean(Class<? extends T> repositoryInterface, ReaderTemplateConfiguration configuration) {
         super(repositoryInterface);
         this.configuration = configuration;
     }
