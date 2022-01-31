@@ -12,7 +12,7 @@ import javax.annotation.PostConstruct;
 
 @Configuration
 @EnableConfigurationProperties(PenguinProperties.class)
-//@EnablePenguinRepositories
+@EnablePenguinRepositories
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class PenguinConfiguration {
     private final PenguinProperties penguinProperties;

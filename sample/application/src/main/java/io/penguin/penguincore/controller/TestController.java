@@ -27,8 +27,8 @@ public class TestController {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ExecutorService executorService = Executors.newFixedThreadPool(2000);
 
-    //@Autowired
-    //FirstExample firstExample;
+    @Autowired
+    FirstExample firstExample;
 
     //@Autowired
     //List<Deployment> deploymentList;
@@ -41,8 +41,8 @@ public class TestController {
 
     @PostMapping(path = "/hello")
     public Mono<Map<String, String>> read() {
-        //return firstExample.findOne("ad");
-        return Mono.just(Collections.emptyMap());
+        return firstExample.findOne("ad");
+        //return Mono.just(Collections.emptyMap());
     }
 
 
