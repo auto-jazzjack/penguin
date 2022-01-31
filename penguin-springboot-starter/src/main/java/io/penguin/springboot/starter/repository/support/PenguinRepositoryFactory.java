@@ -24,12 +24,13 @@ public class PenguinRepositoryFactory extends RepositoryFactorySupport {
     protected Object getTargetRepository(RepositoryInformation repositoryInformation) {
         //EntityInformation<?, ?> entityInformation = this.getEntityInformation(repositoryInformation.getDomainType());
 
-        return new Penguin<>() {
+        return null;
+        /*return new Penguin<>() {
             @Override
             public Mono<Object> findOne(Object key) {
                 return Mono.just("hello");
             }
-        };
+        };*/
         //return super.getTargetRepositoryViaReflection(repositoryInformation, new Object[]{entityInformation, this.keyValueOperations});
     }
 

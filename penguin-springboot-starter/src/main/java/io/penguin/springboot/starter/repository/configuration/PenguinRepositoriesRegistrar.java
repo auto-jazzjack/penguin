@@ -5,6 +5,9 @@ import org.springframework.data.repository.config.RepositoryConfigurationExtensi
 
 import java.lang.annotation.Annotation;
 
+/**
+ * copied https://github.com/n15g/spring-boot-gae/blob/master/src/main/java/contrib/springframework/data/gcp/objectify/config/ObjectifyRepositoryConfigurationExtension.java
+ * */
 public class PenguinRepositoriesRegistrar extends AbstractRepositoryConfigurationSourceSupport {
 
     @Override
@@ -15,8 +18,7 @@ public class PenguinRepositoriesRegistrar extends AbstractRepositoryConfiguratio
 
     @Override
     protected Class<?> getConfiguration() {
-        //return PenguinConfig.class;
-        return EnableObjectifyRepositoriesConfiguration.class;
+        return EnableRepositoriesConfiguration.class;
     }
 
     @Override
@@ -25,6 +27,6 @@ public class PenguinRepositoriesRegistrar extends AbstractRepositoryConfiguratio
     }
 
     @EnablePenguinRepositories
-    private static class EnableObjectifyRepositoriesConfiguration {
+    private static class EnableRepositoriesConfiguration {
     }
 }

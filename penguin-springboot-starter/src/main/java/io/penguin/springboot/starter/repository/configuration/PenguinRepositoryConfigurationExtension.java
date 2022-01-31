@@ -32,9 +32,10 @@ public class PenguinRepositoryConfigurationExtension extends RepositoryConfigura
         return Stream.of(Penguin.class).collect(Collectors.toSet());
     }
 
-
     @Override
     protected boolean useRepositoryConfiguration(RepositoryMetadata metadata) {
         return metadata.isReactiveRepository();
     }
+
+
 }
