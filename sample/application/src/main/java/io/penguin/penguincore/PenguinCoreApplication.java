@@ -1,14 +1,11 @@
 package io.penguin.penguincore;
 
-import io.penguin.springboot.starter.ReaderTemplateConfiguration;
+import io.penguin.springboot.starter.repository.configuration.EnablePenguinRepositories;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
 
-@ComponentScan(basePackageClasses = {
-        PenguinCoreApplication.class,
-        ReaderTemplateConfiguration.class
-})
+
+@EnablePenguinRepositories
 @SpringBootApplication
 public class PenguinCoreApplication {
 

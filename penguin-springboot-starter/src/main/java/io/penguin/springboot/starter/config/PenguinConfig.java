@@ -14,7 +14,7 @@ import java.util.Map;
 @Configuration
 @EnableConfigurationProperties
 @ConfigurationProperties(prefix = "penguin")
-public class Penguin {
+public class PenguinConfig {
     private String version;
     private String kind;
 
