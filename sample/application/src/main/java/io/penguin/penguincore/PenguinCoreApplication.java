@@ -4,9 +4,8 @@ import io.penguin.springboot.starter.repository.configuration.EnablePenguinRepos
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-
-@EnablePenguinRepositories
 @SpringBootApplication
+@EnablePenguinRepositories
 public class PenguinCoreApplication {
 
     public static void main(String[] args) {
