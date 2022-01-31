@@ -12,6 +12,9 @@ dependencies {
     implementation project(":persistence:penguin-cassandra")
     compileOnly("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.data:spring-data-commons")
+    implementation("org.springframework:spring-tx")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
 
     implementation ("io.projectreactor:reactor-core:${reactor_version}")
     implementation ("com.fasterxml.jackson.core:jackson-databind:${jackson_version}")

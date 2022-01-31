@@ -1,16 +1,22 @@
 package io.penguin.springboot.starter.repository.support;
 
+import io.penguin.springboot.starter.Penguin;
+import io.penguin.springboot.starter.PenguinConfiguration;
 import io.penguin.springboot.starter.config.PenguinProperties;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import reactor.core.publisher.Mono;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class PenguinRepositoryFactory extends RepositoryFactorySupport {
 
-    private final PenguinProperties penguinProperties;
+    private final PenguinConfiguration penguinProperties;
 
-    public PenguinRepositoryFactory(PenguinProperties penguinProperties) {
+    public PenguinRepositoryFactory(PenguinConfiguration penguinProperties) {
         this.penguinProperties = penguinProperties;
     }
 
@@ -22,13 +28,15 @@ public class PenguinRepositoryFactory extends RepositoryFactorySupport {
     protected Object getTargetRepository(RepositoryInformation repositoryInformation) {
         //EntityInformation<?, ?> entityInformation = this.getEntityInformation(repositoryInformation.getDomainType());
 
-        return null;
-        /*return new Penguin<>() {
+        //return null;
+        return new Penguin<String, Map<String, String>>() {
             @Override
-            public Mono<Object> findOne(Object key) {
-                return Mono.just("hello");
+            public Mono<Map<String, String>> findOne(String key) {
+                Map<String, String> retv = new HashMap<>();
+                retv.put("asdasd", "asdasd");
+                return Mono.just(retv);
             }
-        };*/
+        };
         //return super.getTargetRepositoryViaReflection(repositoryInformation, new Object[]{entityInformation, this.keyValueOperations});
     }
 

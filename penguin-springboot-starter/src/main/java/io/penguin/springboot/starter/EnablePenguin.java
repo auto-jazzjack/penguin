@@ -1,5 +1,6 @@
 package io.penguin.springboot.starter;
 
+import io.penguin.springboot.starter.repository.configuration.PenguinRepositoriesRegistrar;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.ElementType;
@@ -9,6 +10,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Import({PenguinConfiguration.class})
+@Import({PenguinConfiguration.class, PenguinRepositoriesRegistrar.class})
 public @interface EnablePenguin {
 }
