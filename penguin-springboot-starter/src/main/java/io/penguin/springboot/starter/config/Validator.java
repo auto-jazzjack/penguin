@@ -5,21 +5,21 @@ import io.penguin.springboot.starter.util.CollectionsUtils;
 import java.util.Objects;
 
 public class Validator {
-    public static void validate(PenguinConfig penguinConfig) {
-        Objects.requireNonNull(penguinConfig);
-        Objects.requireNonNull(penguinConfig.getKind());
-        Objects.requireNonNull(penguinConfig.getVersion());
+    public static void validate(PenguinProperties penguinProperties) {
+        Objects.requireNonNull(penguinProperties);
+        Objects.requireNonNull(penguinProperties.getKind());
+        Objects.requireNonNull(penguinProperties.getVersion());
 
-        validate(penguinConfig.getMetadata());
-        validate(penguinConfig.getSpec());
+        validate(penguinProperties.getMetadata());
+        validate(penguinProperties.getSpec());
     }
 
-    static void validate(PenguinConfig.Metadata metadata) {
+    static void validate(PenguinProperties.Metadata metadata) {
         Objects.requireNonNull(metadata);
         Objects.requireNonNull(metadata.getName());
     }
 
-    static void validate(PenguinConfig.Spec spec) {
+    static void validate(PenguinProperties.Spec spec) {
         Objects.requireNonNull(spec);
         if (CollectionsUtils.isEmpty(spec.getContainers())) {
             throw new IllegalArgumentException("Spec can not be null" + spec);
@@ -27,7 +27,7 @@ public class Validator {
         spec.getContainers().forEach(Validator::validate);
     }
 
-    static void validate(PenguinConfig.Container container) {
+    static void validate(PenguinProperties.Container container) {
         Objects.requireNonNull(container);
         Objects.requireNonNull(container.getKind());
         Objects.requireNonNull(container.getName());

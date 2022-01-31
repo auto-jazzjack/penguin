@@ -3,7 +3,7 @@ package io.penguin.springboot.starter.kind;
 import io.penguin.penguincore.reader.BaseCacheReader;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.springboot.starter.Penguin;
-import io.penguin.springboot.starter.config.PenguinConfig;
+import io.penguin.springboot.starter.config.PenguinProperties;
 import io.penguin.springboot.starter.model.ReaderBundle;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -17,8 +17,8 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
     private BaseCacheReader<K, V> remoteCache;
 
 
-    public BaseDeployment(PenguinConfig penguinConfig, Map<String, ReaderBundle> readerBundleMap) {
-        for (PenguinConfig.Container i : penguinConfig.getSpec().getContainers()) {
+    public BaseDeployment(PenguinProperties penguinProperties, Map<String, ReaderBundle> readerBundleMap) {
+        for (PenguinProperties.Container i : penguinProperties.getSpec().getContainers()) {
             ReaderBundle readerBundle = readerBundleMap.get(i.getName());
 
             switch (readerBundle.getKind()) {

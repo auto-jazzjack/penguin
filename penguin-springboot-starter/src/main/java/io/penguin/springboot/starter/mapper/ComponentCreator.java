@@ -7,7 +7,7 @@ import io.penguin.pengiunlettuce.cofig.LettuceCacheIngredient;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.penguincore.util.Pair;
 import io.penguin.springboot.starter.Penguin;
-import io.penguin.springboot.starter.config.PenguinConfig;
+import io.penguin.springboot.starter.config.PenguinProperties;
 import io.penguin.springboot.starter.kind.BaseDeployment;
 import io.penguin.springboot.starter.model.ReaderBundle;
 
@@ -28,7 +28,7 @@ public class ComponentCreator {
     public ComponentCreator() {
     }
 
-    public ReaderBundle generate(PenguinConfig.Container container, Map<String, ReaderBundle> readers) {
+    public ReaderBundle generate(PenguinProperties.Container container, Map<String, ReaderBundle> readers) {
 
         try {
             Objects.requireNonNull(container);
@@ -59,15 +59,15 @@ public class ComponentCreator {
         }
     }
 
-    public Penguin generate(PenguinConfig penguinConfig, Map<String, ReaderBundle> readerBundleMap) {
+    public Penguin generate(PenguinProperties penguinProperties, Map<String, ReaderBundle> readerBundleMap) {
 
         try {
-            Objects.requireNonNull(penguinConfig);
-            Objects.requireNonNull(penguinConfig.getKind());
+            Objects.requireNonNull(penguinProperties);
+            Objects.requireNonNull(penguinProperties.getKind());
 
-            switch (DeploymentKind.valueOf(penguinConfig.getKind().toUpperCase())) {
+            switch (DeploymentKind.valueOf(penguinProperties.getKind().toUpperCase())) {
                 case BASE:
-                    return new BaseDeployment(penguinConfig, readerBundleMap);
+                    return new BaseDeployment(penguinProperties, readerBundleMap);
                 default:
                     throw new IllegalStateException("No such Kind");
             }
