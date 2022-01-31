@@ -28,7 +28,7 @@ public class PenguinRepositoriesRegistrar extends AbstractRepositoryConfiguratio
 
     @Override
     protected Streamable<String> getBasePackages() {
-        return Streamable.of("io.penguin.*");
+        return Streamable.of();
     }
 
     @EnablePenguinRepositories

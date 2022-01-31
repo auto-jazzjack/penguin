@@ -6,6 +6,7 @@ import org.springframework.data.repository.config.RepositoryConfigurationExtensi
 import org.springframework.data.repository.core.RepositoryMetadata;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,7 +30,7 @@ public class PenguinRepositoryConfigurationExtension extends RepositoryConfigura
 
     @Override
     protected Collection<Class<?>> getIdentifyingTypes() {
-        return Stream.of(Penguin.class).collect(Collectors.toSet());
+        return Collections.singleton(Penguin.class);
     }
 
     @Override
