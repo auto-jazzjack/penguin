@@ -24,10 +24,14 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
             switch (readerBundle.getKind()) {
                 case REMOTE_CACHE:
                     this.remoteCache = (BaseCacheReader<K, V>) readerBundle.getReader();
+                    break;
                 case SOURCE:
+                case HELLO:
                     this.source = readerBundle.getReader();
+                    break;
                 default:
                     log.warn("No such container");
+                    break;
             }
         }
 

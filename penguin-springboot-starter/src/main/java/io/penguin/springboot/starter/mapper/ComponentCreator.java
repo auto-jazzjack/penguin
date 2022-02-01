@@ -8,9 +8,11 @@ import io.penguin.penguincore.reader.Reader;
 import io.penguin.penguincore.util.Pair;
 import io.penguin.springboot.starter.Penguin;
 import io.penguin.springboot.starter.config.PenguinProperties;
+import io.penguin.springboot.starter.config.Validator;
 import io.penguin.springboot.starter.kind.BaseDeployment;
 import io.penguin.springboot.starter.model.ReaderBundle;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -21,14 +23,27 @@ import static io.penguin.springboot.starter.mapper.ContainerKind.SOURCE;
 
 public class ComponentCreator {
 
-    //private final Map<Container, Reader> mapper;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private Map<String, ReaderBundle> readers;
+    private final PenguinProperties penguinProperties;
 
 
-    public ComponentCreator() {
+    public ComponentCreator(PenguinProperties penguinProperties) {
+        this.penguinProperties = penguinProperties;
+        this.readers = new HashMap<>();
+        Validator.validate(this.penguinProperties);
+        init();
+
     }
 
-    public ReaderBundle generate(PenguinProperties.Container container, Map<String, ReaderBundle> readers) {
+
+    private void init() {
+        this.penguinProperties.getSpec()
+                .getContainers()
+                .forEach(i -> readers.put(i.getName(), generate(i)));
+    }
+
+    public ReaderBundle generate(PenguinProperties.Container container) {
 
         try {
             Objects.requireNonNull(container);
@@ -59,7 +74,7 @@ public class ComponentCreator {
         }
     }
 
-    public Penguin generate(PenguinProperties penguinProperties, Map<String, ReaderBundle> readerBundleMap) {
+    public Penguin generate(PenguinProperties penguinProperties) {
 
         try {
             Objects.requireNonNull(penguinProperties);
@@ -67,7 +82,7 @@ public class ComponentCreator {
 
             switch (DeploymentKind.valueOf(penguinProperties.getKind().toUpperCase())) {
                 case BASE:
-                    return new BaseDeployment(penguinProperties, readerBundleMap);
+                    return new BaseDeployment(penguinProperties, readers);
                 default:
                     throw new IllegalStateException("No such Kind");
             }

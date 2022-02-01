@@ -2,6 +2,7 @@ package io.penguin.springboot.starter.repository.support;
 
 import io.penguin.springboot.starter.Penguin;
 import io.penguin.springboot.starter.config.PenguinProperties;
+import io.penguin.springboot.starter.mapper.ComponentCreator;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -13,8 +14,12 @@ import java.util.Map;
 
 public class PenguinRepositoryFactory extends RepositoryFactorySupport {
 
+    private final ComponentCreator creator;
+    private final PenguinProperties penguinProperties;
 
     public PenguinRepositoryFactory(PenguinProperties penguinProperties) {
+        this.penguinProperties = penguinProperties;
+        creator = new ComponentCreator(this.penguinProperties);
     }
 
     @Override
@@ -23,14 +28,12 @@ public class PenguinRepositoryFactory extends RepositoryFactorySupport {
     }
 
     protected Object getTargetRepository(RepositoryInformation repositoryInformation) {
-        return new Penguin<String, Map<String, String>>() {
-            @Override
-            public Mono<Map<String, String>> findOne(String key) {
-                Map<String, String> retv = new HashMap<>();
-                retv.put("asdasd", "asdasd");
-                return Mono.just(retv);
-            }
-        };
+
+        /*repositoryInformation.getRepositoryBaseClass();
+        repositoryInformation.getDomainType();
+        repositoryInformation.getIdType();*/
+
+        return creator.generate(this.penguinProperties);
     }
 
     @Override
