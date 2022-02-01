@@ -1,22 +1,36 @@
 penguin:
   version: v1
-  kind: BASE
-
   metadata:
     name: FirstExample
   spec:
     workers:
-      name: myFirst
-      aggregatedTarget: io.penguin.penguincore.reader.FirstExample
-      containers:
-      - name: static
-        kind: hello
-      - name: First
-        kind: remote_cache
-        spec:
-          expireMilliseconds: 100
-          prefix: p
-          downStreamName: static
-          codecConfig:
-            codec: io.penguin.penguincodec.JsonCodec
-          redisUris: 127.0.0.1
+      - name: myFirst
+        kind: BASE
+        aggregatedTarget: io.penguin.penguincore.reader.FirstExample
+        containers:
+        - name: static
+          kind: hello
+        - name: First
+          kind: remote_cache
+          spec:
+            expireMilliseconds: 100
+            prefix: p
+            downStreamName: static
+            codecConfig:
+              codec: io.penguin.penguincodec.JsonCodec
+            redisUris: 127.0.0.1
+      - name: mySecond
+        kind: BASE
+        aggregatedTarget: io.penguin.penguincore.reader.SecondExample
+        containers:
+          - name: static1
+            kind: hello2
+          - name: second
+            kind: remote_cache
+            spec:
+              expireMilliseconds: 100
+              prefix: p
+              downStreamName: static
+              codecConfig:
+                codec: io.penguin.penguincodec.JsonCodec
+              redisUris: 127.0.0.1

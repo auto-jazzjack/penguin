@@ -7,7 +7,7 @@ import java.util.Objects;
 public class Validator {
     public static void validate(PenguinProperties penguinProperties) {
         Objects.requireNonNull(penguinProperties);
-        Objects.requireNonNull(penguinProperties.getKind());
+        //Objects.requireNonNull(penguinProperties.getKind());
         Objects.requireNonNull(penguinProperties.getVersion());
 
         validate(penguinProperties.getMetadata());
@@ -32,6 +32,7 @@ public class Validator {
         Objects.requireNonNull(worker.getName());
         Objects.requireNonNull(worker.getAggregatedTarget());
         Objects.requireNonNull(worker.getContainers());
+        Objects.requireNonNull(worker.getKind());
         worker.getContainers().forEach(Validator::validate);
     }
 

@@ -17,8 +17,8 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
     private BaseCacheReader<K, V> remoteCache;
 
 
-    public BaseDeployment(PenguinProperties penguinProperties, Map<String, ReaderBundle> readerBundleMap) {
-        for (PenguinProperties.Container i : penguinProperties.getSpec().getContainers()) {
+    public BaseDeployment(PenguinProperties.Worker worker, Map<String, ReaderBundle> readerBundleMap) {
+        for (PenguinProperties.Container i : worker.getContainers()) {
             ReaderBundle readerBundle = readerBundleMap.get(i.getName());
 
             switch (readerBundle.getKind()) {
@@ -27,6 +27,7 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                     break;
                 case SOURCE:
                 case HELLO:
+                case HELLO2:
                     this.source = readerBundle.getReader();
                     break;
                 default:

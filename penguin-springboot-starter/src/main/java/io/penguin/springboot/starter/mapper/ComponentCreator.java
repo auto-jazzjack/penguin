@@ -17,8 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static io.penguin.springboot.starter.mapper.ContainerKind.HELLO;
-import static io.penguin.springboot.starter.mapper.ContainerKind.SOURCE;
+import static io.penguin.springboot.starter.mapper.ContainerKind.*;
 
 
 public class ComponentCreator {
@@ -68,6 +67,11 @@ public class ComponentCreator {
                     return ReaderBundle.builder()
                             .kind(SOURCE)
                             .build();
+                case HELLO2:
+                    return ReaderBundle.builder()
+                            .reader(new HelloReaderV2())
+                            .kind(HELLO2)
+                            .build();
                 default:
                     throw new IllegalStateException("No such Kind");
             }
@@ -76,15 +80,15 @@ public class ComponentCreator {
         }
     }
 
-    public Penguin generate(PenguinProperties penguinProperties) {
+    public Penguin generate(PenguinProperties.Worker worker) {
 
         try {
-            Objects.requireNonNull(penguinProperties);
-            Objects.requireNonNull(penguinProperties.getKind());
+            Objects.requireNonNull(worker);
+            Objects.requireNonNull(worker.getKind());
 
-            switch (DeploymentKind.valueOf(penguinProperties.getKind().toUpperCase())) {
+            switch (WorkerKind.valueOf(worker.getKind().toUpperCase())) {
                 case BASE:
-                    return new BaseDeployment(penguinProperties, readers);
+                    return new BaseDeployment(worker, readers);
                 default:
                     throw new IllegalStateException("No such Kind");
             }

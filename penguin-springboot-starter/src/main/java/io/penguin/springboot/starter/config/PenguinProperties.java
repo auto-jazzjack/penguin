@@ -40,6 +40,7 @@ public class PenguinProperties {
         private List<Container> containers;
         private Class aggregatedTarget;
         private String name;
+        private String kind;
     }
 
     @Data

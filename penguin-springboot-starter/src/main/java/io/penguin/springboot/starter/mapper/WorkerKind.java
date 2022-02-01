@@ -1,6 +1,6 @@
 package io.penguin.springboot.starter.mapper;
 
 
-public enum DeploymentKind {
+public enum WorkerKind {
     BASE,
 }

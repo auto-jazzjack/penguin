@@ -7,12 +7,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class HelloReader implements Reader<String, Map<String, String>> {
+public class HelloReaderV2 implements Reader<String, Map<String, String>> {
 
     @Override
     public Mono<Map<String, String>> findOne(String key) {
         Map<String, String> retv = new HashMap<>();
-        retv.put("hello", "hello");
+        retv.put("hello2", "hello2");
         return Mono.just(retv);
     }
 
