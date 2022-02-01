@@ -21,10 +21,18 @@ public class Validator {
 
     static void validate(PenguinProperties.Spec spec) {
         Objects.requireNonNull(spec);
-        if (CollectionsUtils.isEmpty(spec.getContainers())) {
+        if (CollectionsUtils.isEmpty(spec.getWorkers())) {
             throw new IllegalArgumentException("Spec can not be null" + spec);
         }
-        spec.getContainers().forEach(Validator::validate);
+        spec.getWorkers().forEach(Validator::validate);
+    }
+
+    static void validate(PenguinProperties.Worker worker) {
+        Objects.requireNonNull(worker);
+        Objects.requireNonNull(worker.getName());
+        Objects.requireNonNull(worker.getAggregatedTarget());
+        Objects.requireNonNull(worker.getContainers());
+        worker.getContainers().forEach(Validator::validate);
     }
 
     static void validate(PenguinProperties.Container container) {

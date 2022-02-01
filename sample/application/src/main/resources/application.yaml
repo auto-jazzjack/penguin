@@ -4,10 +4,11 @@ penguin:
 
   metadata:
     name: FirstExample
-
   spec:
-    aggregatedTarget: io.penguin.penguincore.reader.FirstExample
-    containers:
+    workers:
+      name: myFirst
+      aggregatedTarget: io.penguin.penguincore.reader.FirstExample
+      containers:
       - name: static
         kind: hello
       - name: First

@@ -39,7 +39,9 @@ public class ComponentCreator {
 
     private void init() {
         this.penguinProperties.getSpec()
-                .getContainers()
+                .getWorkers()
+                .stream()
+                .flatMap(i -> i.getContainers().stream())
                 .forEach(i -> readers.put(i.getName(), generate(i)));
     }
 
