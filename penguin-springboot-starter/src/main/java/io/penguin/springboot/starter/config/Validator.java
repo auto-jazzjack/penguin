@@ -7,7 +7,7 @@ import java.util.Objects;
 public class Validator {
     public static void validate(PenguinProperties penguinProperties) {
         Objects.requireNonNull(penguinProperties);
-        Objects.requireNonNull(penguinProperties.getKind());
+        //Objects.requireNonNull(penguinProperties.getKind());
         Objects.requireNonNull(penguinProperties.getVersion());
 
         validate(penguinProperties.getMetadata());
@@ -21,10 +21,19 @@ public class Validator {
 
     static void validate(PenguinProperties.Spec spec) {
         Objects.requireNonNull(spec);
-        if (CollectionsUtils.isEmpty(spec.getContainers())) {
+        if (CollectionsUtils.isEmpty(spec.getWorkers())) {
             throw new IllegalArgumentException("Spec can not be null" + spec);
         }
-        spec.getContainers().forEach(Validator::validate);
+        spec.getWorkers().forEach(Validator::validate);
+    }
+
+    static void validate(PenguinProperties.Worker worker) {
+        Objects.requireNonNull(worker);
+        Objects.requireNonNull(worker.getName());
+        Objects.requireNonNull(worker.getAggregatedTarget());
+        Objects.requireNonNull(worker.getContainers());
+        Objects.requireNonNull(worker.getKind());
+        worker.getContainers().forEach(Validator::validate);
     }
 
     static void validate(PenguinProperties.Container container) {
