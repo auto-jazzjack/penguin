@@ -18,6 +18,6 @@ public class MonoTimeout<V> extends MonoOperator<V, V> {
 
     @Override
     public void subscribe(CoreSubscriber<? super V> actual) {
-        source.subscribe(new TimeoutSubscriber<>(actual, timeout.getCounter(), timeout.getTimer(), timeout.getMilliseconds()));
+        source.subscribe(new TimeoutSubscriber<>(actual, timeout.getFail(), timeout.getTimer(), timeout.getMilliseconds()));
     }
 }

@@ -23,14 +23,14 @@ public class TimeoutConfiguration extends PluginConfiguration<TimeoutIngredient>
         return !empty;
     }
 
-    private static final String timeout = "time_out";
+    static final String fail = "time_out";
 
     @Override
     public TimeoutIngredient generate(Class<?> clazz) {
         return TimeoutIngredient.builder()
                 .milliseconds(pluginInput.getTimeout().getTimeoutMilliseconds())
                 .timer(new HashedWheelTimer())
-                .counter(MetricCreator.counter(timeout, "kind", clazz.getSimpleName()))
+                .fail(MetricCreator.counter(fail, "kind", clazz.getSimpleName()))
                 .build();
     }
 }

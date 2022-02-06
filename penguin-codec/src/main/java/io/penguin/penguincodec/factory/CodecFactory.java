@@ -6,7 +6,7 @@ import io.penguin.penguincodec.ProtoCodec;
 
 public class CodecFactory {
 
-    public static Codec create(Class<Codec> clazz, Class args) {
+    public static Codec create(Class<? extends Codec> clazz, Class args) {
 
         try {
             if (clazz.equals(JsonCodec.class)) {

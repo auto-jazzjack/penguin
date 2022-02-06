@@ -27,8 +27,8 @@ public class CircuitConfiguration extends PluginConfiguration<CircuitIngredient>
     }
 
 
-    private static final String fail = "circuit_opened";
-    private static final String success = "circuit_closed";
+    static final String fail = "circuit_opened";
+    static final String success = "circuit_closed";
 
     @Override
     public CircuitIngredient generate(Class<?> clazz) {

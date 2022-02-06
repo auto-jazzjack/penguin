@@ -26,8 +26,8 @@ public class BulkheadConfiguration extends PluginConfiguration<BulkheadIngredien
     }
 
 
-    private static final String fail = "bulkhead_rejected";
-    private static final String success = "bulkhead_success";
+    static final String fail = "bulkhead_rejected";
+    static final String success = "bulkhead_success";
 
     @Override
     public BulkheadIngredient generate(Class<?> clazz) {
