@@ -2,6 +2,7 @@ package io.penguin.penguincore.plugin.timeout;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.penguin.penguincore.exception.TimeoutException;
 import io.penguin.penguincore.plugin.Ingredient.TimeoutIngredient;
 import io.penguin.penguincore.plugin.PluginInput;
 import lombok.extern.slf4j.Slf4j;
@@ -54,16 +55,20 @@ public class TimeoutPluginTest {
         TimeoutPlugin<String> timeoutPlugin = new TimeoutPlugin<>(generate);
 
         for (int i = 0; i < 10; i++) {
-            timeoutPlugin.decorateSource(Mono.create(j -> {
-                        try {
-                            Thread.sleep(10);
-                        } catch (Exception e) {
-                            j.error(e);
-                        }
+            try {
+                timeoutPlugin.decorateSource(Mono.create(j -> {
+                            try {
+                                Thread.sleep(10);
+                            } catch (Exception e) {
+                                j.error(e);
+                            }
 
-                        j.success("hello");
-                    }))
-                    .block();
+                            j.success("hello");
+                        }))
+                        .block();
+            } catch (Exception e) {
+                Assertions.assertEquals(TimeoutException.class, e.getClass());
+            }
         }
 
         Assertions.assertEquals(10, generate.getFail().count());
