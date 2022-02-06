@@ -9,7 +9,7 @@ public class BulkheadConfigurationTest {
 
 
     @Test
-    public void should_bulk_head_not_supported() {
+    public void should_bulkhead_not_supported() {
         PluginInput pluginInput = PluginInput.builder()
                 .build();
         BulkheadConfiguration bulkheadConfiguration = new BulkheadConfiguration(pluginInput);
@@ -17,7 +17,7 @@ public class BulkheadConfigurationTest {
     }
 
     @Test
-    public void should_bulk_head_supported() {
+    public void should_bulkhead_supported() {
         PluginInput pluginInput = PluginInput.builder()
                 .bulkhead(BulkheadModel.base().build())
                 .build();
@@ -27,7 +27,7 @@ public class BulkheadConfigurationTest {
 
 
     @Test
-    public void should_bulk_head_generated() {
+    public void should_bulkhead_generated() {
         PluginInput pluginInput = PluginInput.builder()
                 .bulkhead(BulkheadModel.base().build())
                 .build();

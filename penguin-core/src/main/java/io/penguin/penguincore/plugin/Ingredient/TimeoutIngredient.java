@@ -9,6 +9,6 @@ import lombok.Data;
 @Builder
 public class TimeoutIngredient {
     private HashedWheelTimer timer;
-    private Counter counter;
+    private Counter fail;
     private long milliseconds;
 }
