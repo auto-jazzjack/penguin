@@ -33,7 +33,6 @@ public class BulkheadConfigurationTest {
                 .build();
         BulkheadConfiguration bulkheadConfiguration = new BulkheadConfiguration(pluginInput);
 
-
         BulkheadIngredient generate = bulkheadConfiguration.generate(this.getClass());
 
         Assertions.assertEquals(BulkheadConfiguration.fail, generate.getFail().getId().getName());
