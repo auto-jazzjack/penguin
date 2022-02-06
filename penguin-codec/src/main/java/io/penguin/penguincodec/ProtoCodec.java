@@ -5,12 +5,11 @@ import com.google.protobuf.Parser;
 
 import java.lang.reflect.Method;
 
-public class ProtoCodec<V extends Message> extends Codec<V> {
+public class ProtoCodec<V extends Message> implements Codec<V> {
 
     private final Parser<? extends V> parserForType;
 
     public ProtoCodec(Class<V> clazz) throws Exception {
-        super(clazz);
         Method newBuilder = clazz.getDeclaredMethod("newBuilder");
         newBuilder.setAccessible(true);
         Message.Builder builder = (Message.Builder) newBuilder.invoke(clazz);
