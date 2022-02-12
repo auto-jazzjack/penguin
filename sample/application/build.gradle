@@ -20,8 +20,8 @@ dependencies {
 
     implementation project(":penguin-core")
     api project(":penguin-springboot-starter")
-    implementation project(":persistence:penguin-lettuce")
-    implementation project(":persistence:penguin-cassandra")
+    implementation project(":penguin-persistence:penguin-lettuce")
+    implementation project(":penguin-persistence:penguin-cassandra")
 
     implementation("org.springframework.boot:spring-boot-starter-actuator:${spring_version}")
 
@@ -32,8 +32,8 @@ dependencies {
 
 
     implementation project(":penguin-core")
-    implementation project(":persistence:penguin-lettuce")
-    implementation project(":persistence:penguin-cassandra")
+    implementation project(":penguin-persistence:penguin-lettuce")
+    implementation project(":penguin-persistence:penguin-cassandra")
 
     implementation 'io.projectreactor:reactor-core:3.4.12'
 

@@ -1,8 +1,8 @@
 rootProject.name = 'penguin'
 
 include 'penguin-core'
-include 'persistence:penguin-lettuce'
-include 'persistence:penguin-cassandra'
+include 'penguin-persistence:penguin-lettuce'
+include 'penguin-persistence:penguin-cassandra'
 
 include 'penguin-springboot-starter'
 include 'sample:application'
