@@ -8,8 +8,16 @@ penguin:
         kind: BASE
         aggregatedTarget: io.penguin.penguincore.reader.FirstExample
         containers:
-        - name: static
-          kind: hello
+        - name: source
+          kind: CASSANDRA
+          spec:
+            idColumn: id
+            keySpace: local
+            hosts:
+              - 127.0.0.1
+            columns:
+              - first
+
         - name: First
           kind: LETTUCE_CACHE
           spec:
@@ -19,18 +27,3 @@ penguin:
             codecConfig:
               codec: io.penguin.penguincodec.JsonCodec
             redisUris: 127.0.0.1
-      - name: mySecond
-        kind: BASE
-        aggregatedTarget: io.penguin.penguincore.reader.SecondExample
-        containers:
-          - name: static1
-            kind: hello2
-          - name: second
-            kind: LETTUCE_CACHE
-            spec:
-              expireMilliseconds: 100
-              prefix: p
-              downStreamName: static
-              codecConfig:
-                codec: io.penguin.penguincodec.JsonCodec
-              redisUris: 127.0.0.1

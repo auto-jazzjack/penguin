@@ -34,7 +34,6 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     protected final RedisAdvancedClusterReactiveCommands<String, byte[]> reactive;
     private final long expireMilliseconds;
     private final String prefix;
-    private final AllIngredient ingredient;
     private final Codec<V> codec;
 
     private final Timer reader = MetricCreator.timer("lettuce_reader", "kind", this.getClass().getSimpleName());
@@ -49,7 +48,7 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
         this.reactive = RedisConfig.connection(cacheConfig.getRedisUris(), cacheConfig.getPort()).reactive();
         this.expireMilliseconds = cacheConfig.getExpireMilliseconds();
         this.prefix = cacheConfig.getPrefix();
-        this.ingredient = AllIngredient.builder().build();
+        AllIngredient ingredient = AllIngredient.builder().build();
         this.codec = cacheConfig.getCodec();
 
         List<Plugin<Object>> pluginList = new ArrayList<>();

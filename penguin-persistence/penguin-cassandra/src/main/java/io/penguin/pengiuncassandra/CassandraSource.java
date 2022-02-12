@@ -10,6 +10,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import io.penguin.pengiuncassandra.config.CassandraIngredient;
+import io.penguin.pengiuncassandra.util.CasandraUtil;
 import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
 import io.penguin.penguincore.plugin.Plugin;
@@ -35,30 +36,22 @@ public class CassandraSource<K, V> implements Reader<K, V> {
     private final MappingManager mappingManager;
     private final PreparedStatement statement;
     private final Session session;
-    private final AllIngredient ingredient;
     private final Plugin<V>[] plugins;
     private final Counter failed = MetricCreator.counter("cassandra_reader",
-            "kind", this.getClass().getSimpleName(),
-            "type", "success"
-    );
+            "kind", this.getClass().getSimpleName(), "type", "success");
 
     private final Counter success = MetricCreator.counter("cassandra_reader",
-            "kind", this.getClass().getSimpleName(),
-            "type", "failed"
-    );
+            "kind", this.getClass().getSimpleName(), "type", "failed");
 
     private final Timer latency = MetricCreator.timer("cassandra_latency",
             "kind", this.getClass().getSimpleName());
 
     public CassandraSource(CassandraIngredient cassandraConfig) {
         valueType = (Class<V>) cassandraConfig.getValueType();
-        this.mappingManager = cassandraConfig.getMappingManager();
-        this.statement = cassandraConfig.getStatement();
-        this.session = this.mappingManager.getSession();
+        this.session = cassandraConfig.getSession();
+        AllIngredient ingredient = AllIngredient.builder().build();
 
-        this.ingredient = AllIngredient.builder().build();
         List<Plugin<Object>> pluginList = new ArrayList<>();
-
 
         TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(cassandraConfig.getPluginInput());
         if (timeoutConfiguration.support()) {
@@ -66,8 +59,20 @@ public class CassandraSource<K, V> implements Reader<K, V> {
             pluginList.add(new TimeoutPlugin<>(ingredient.getTimeoutIngredient()));
         }
 
+
+        this.mappingManager = CasandraUtil.mappingManager(
+                this.session,
+                this.valueType,
+                cassandraConfig.getKeyspace()
+        );
+
+        this.statement = this.mappingManager.getSession().prepare(CasandraUtil.queryGenerator(cassandraConfig.getKeyspace(),
+                cassandraConfig.getTable(),
+                cassandraConfig.getColumns(),
+                cassandraConfig.getIdColumn()));
         plugins = pluginList.toArray(new Plugin[0]);
     }
+
 
     @Override
     public Mono<V> findOne(K key) {
@@ -96,6 +101,7 @@ public class CassandraSource<K, V> implements Reader<K, V> {
                 i.error(t);
             }
         }));
+
         for (Plugin<V> plugin : plugins) {
             mono = plugin.decorateSource(mono);
         }

@@ -71,7 +71,7 @@ public class ComponentCreator {
                     CassandraSourceConfig cassandraSourceConfig = objectMapper.convertValue(container.getSpec(), CassandraSourceConfig.class);
                     return ReaderBundle.builder()
                             .kind(CASSANDRA)
-                            .reader(new CassandraSource<>(toInternal(cassandraSourceConfig, flattenReader)))
+                            .reader(new CassandraSource<>(toInternal(cassandraSourceConfig)))
                             .build();
                 case HELLO2:
                     return ReaderBundle.builder()
@@ -82,7 +82,7 @@ public class ComponentCreator {
                     throw new IllegalStateException("No such Kind");
             }
         } catch (Exception e) {
-            throw new IllegalStateException("Cannot create Reader");
+            throw new IllegalStateException("Cannot create Reader " + e);
         }
     }
 
