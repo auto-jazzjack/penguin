@@ -1,8 +1,13 @@
 dependencies {
-    implementation project(":penguin-core")
-    implementation 'com.datastax.cassandra:cassandra-driver-mapping:3.7.1'
-    implementation 'com.datastax.cassandra:cassandra-driver-core:3.7.1'
-    implementation 'io.projectreactor:reactor-core:3.4.12'
+    api project(":penguin-core")
+    api project(":penguin-codec")
+
+    api("com.datastax.cassandra:cassandra-driver-mapping:3.7.1")
+    api("com.datastax.cassandra:cassandra-driver-core:3.7.1")
+    implementation("io.projectreactor:reactor-core:${reactor_version}")
+    implementation("io.micrometer:micrometer-registry-prometheus:${micrometer_version}")
+    implementation("com.codahale.metrics:metrics-core:3.0.0")
+
 }
 
 test {

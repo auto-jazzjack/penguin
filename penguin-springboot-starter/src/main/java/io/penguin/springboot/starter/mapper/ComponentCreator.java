@@ -1,6 +1,8 @@
 package io.penguin.springboot.starter.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.penguin.pengiuncassandra.CassandraSource;
+import io.penguin.pengiuncassandra.config.CassandraSourceConfig;
 import io.penguin.pengiunlettuce.LettuceCache;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheConfig;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheIngredient;
@@ -17,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static io.penguin.pengiuncassandra.config.CassandraIngredient.toInternal;
 import static io.penguin.springboot.starter.mapper.ContainerKind.*;
 
 
@@ -50,12 +53,13 @@ public class ComponentCreator {
             Objects.requireNonNull(container);
             Objects.requireNonNull(container.getKind());
 
+            Map<String, Reader> flattenReader = flatten(readers);
             switch (ContainerKind.valueOf(container.getKind().toUpperCase())) {
-                case REMOTE_CACHE:
+                case LETTUCE_CACHE:
                     LettuceCacheConfig config = objectMapper.convertValue(container.getSpec(), LettuceCacheConfig.class);
                     return ReaderBundle.builder()
-                            .reader(new LettuceCache<>(LettuceCacheIngredient.toInternal(config, flatten(readers))))
-                            .kind(ContainerKind.REMOTE_CACHE)
+                            .reader(new LettuceCache<>(LettuceCacheIngredient.toInternal(config, flattenReader)))
+                            .kind(ContainerKind.LETTUCE_CACHE)
                             .build();
 
                 case HELLO:
@@ -63,9 +67,11 @@ public class ComponentCreator {
                             .reader(new HelloReader())
                             .kind(HELLO)
                             .build();
-                case SOURCE:
+                case CASSANDRA:
+                    CassandraSourceConfig cassandraSourceConfig = objectMapper.convertValue(container.getSpec(), CassandraSourceConfig.class);
                     return ReaderBundle.builder()
-                            .kind(SOURCE)
+                            .kind(CASSANDRA)
+                            .reader(new CassandraSource<>(toInternal(cassandraSourceConfig)))
                             .build();
                 case HELLO2:
                     return ReaderBundle.builder()
@@ -76,7 +82,7 @@ public class ComponentCreator {
                     throw new IllegalStateException("No such Kind");
             }
         } catch (Exception e) {
-            throw new IllegalStateException("Cannot create Reader");
+            throw new IllegalStateException("Cannot create Reader " + e);
         }
     }
 

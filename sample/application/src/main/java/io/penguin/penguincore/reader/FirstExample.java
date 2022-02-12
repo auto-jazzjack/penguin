@@ -5,6 +5,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-public interface FirstExample extends Penguin<String, Map<String, String>> {
+public interface FirstExample extends Penguin<Long, Map<String, String>> {
 
 }
