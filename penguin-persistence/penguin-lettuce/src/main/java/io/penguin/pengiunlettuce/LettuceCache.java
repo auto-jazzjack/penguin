@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Slf4j
-public  class LettuceCache<K, V> extends BaseCacheReader<K, V> {
+public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
     protected final RedisAdvancedClusterReactiveCommands<String, byte[]> reactive;
     private final long expireMilliseconds;
@@ -40,7 +40,7 @@ public  class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     private final Timer reader = MetricCreator.timer("lettuce_reader", "kind", this.getClass().getSimpleName());
     private final Timer writer = MetricCreator.timer("lettuce_writer", "kind", this.getClass().getSimpleName());
     private final Counter reupdate = MetricCreator.counter("lettuce_reupdate_count", "kind", this.getClass().getSimpleName());
-    private final Plugin[] plugins;
+    private final Plugin<V>[] plugins;
 
     public LettuceCache(LettuceCacheIngredient cacheConfig) throws Exception {
         super(cacheConfig.getFromDownStream());
@@ -109,8 +109,8 @@ public  class LettuceCache<K, V> extends BaseCacheReader<K, V> {
                 })
                 .map(Pair::getValue);
 
-        for (Plugin plugin : plugins) {
-            mono = (Mono<V>) plugin.decorateSource(mono);
+        for (Plugin<V> plugin : plugins) {
+            mono = plugin.decorateSource(mono);
         }
 
 

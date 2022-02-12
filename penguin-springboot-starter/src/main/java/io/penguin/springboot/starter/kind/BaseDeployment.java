@@ -22,10 +22,10 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
             ReaderBundle readerBundle = readerBundleMap.get(i.getName());
 
             switch (readerBundle.getKind()) {
-                case REMOTE_CACHE:
+                case LETTUCE_CACHE:
                     this.remoteCache = (BaseCacheReader<K, V>) readerBundle.getReader();
                     break;
-                case SOURCE:
+                case CASSANDRA:
                 case HELLO:
                 case HELLO2:
                     this.source = readerBundle.getReader();
