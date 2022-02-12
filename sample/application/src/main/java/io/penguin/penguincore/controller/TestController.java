@@ -1,7 +1,6 @@
 package io.penguin.penguincore.controller;
 
 import io.penguin.penguincore.reader.FirstExample;
-import io.penguin.penguincore.reader.SecondExample;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,8 +29,7 @@ public class TestController {
     @Autowired
     FirstExample firstExample;
 
-    @Autowired
-    SecondExample secondExample;
+
     //@Autowired
     //List<Deployment> deploymentList;
 
@@ -43,12 +41,7 @@ public class TestController {
 
     @PostMapping(path = "/hello")
     public Mono<Map<String, String>> read() {
-        return Mono.zip(
-                firstExample.findOne("ad"),
-                secondExample.findOne("id"), (a, b) -> {
-                    a.putAll(b);
-                    return a;
-                });
+        return firstExample.findOne(123L);
     }
 
 

@@ -14,16 +14,16 @@ penguin:
             idColumn: id
             keySpace: local
             hosts: 127.0.0.1
-            columns: first
-            table: first
-            valueType: java.lang.Long
+            columns: first, id
+            table: first_table
+            valueType: io.penguin.penguincore.model.MyModel
 
         - name: First
           kind: LETTUCE_CACHE
           spec:
             expireMilliseconds: 100
             prefix: p
-            downStreamName: static
+            downStreamName: source
             codecConfig:
               codec: io.penguin.penguincodec.JsonCodec
             redisUris: 127.0.0.1

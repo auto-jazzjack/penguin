@@ -21,7 +21,7 @@ dependencies {
     implementation project(":penguin-core")
     api project(":penguin-springboot-starter")
     implementation project(":penguin-persistence:penguin-lettuce")
-    implementation project(":penguin-persistence:penguin-cassandra")
+    api project(":penguin-persistence:penguin-cassandra")
 
     implementation("org.springframework.boot:spring-boot-starter-actuator:${spring_version}")
 

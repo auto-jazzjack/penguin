@@ -44,8 +44,18 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
         return remoteCache.findOne(key)
                 .switchIfEmpty(Mono.create(i -> {
                     source.findOne(key)
+                            .switchIfEmpty(Mono.create(j -> {
+                                i.success();
+                                j.success();
+                            }))
                             .doOnNext(j -> remoteCache.insertQueue(key))
-                            .doOnNext(i::success)
+                            .doOnNext(j -> {
+                                if (j != null) {
+                                    i.success(j);
+                                } else {
+                                    i.success();
+                                }
+                            })
                             .subscribe();
                 }));
 
