@@ -13,10 +13,10 @@ penguin:
           spec:
             idColumn: id
             keySpace: local
-            hosts:
-              - 127.0.0.1
-            columns:
-              - first
+            hosts: 127.0.0.1
+            columns: first
+            table: first
+            valueType: java.lang.Long
 
         - name: First
           kind: LETTUCE_CACHE

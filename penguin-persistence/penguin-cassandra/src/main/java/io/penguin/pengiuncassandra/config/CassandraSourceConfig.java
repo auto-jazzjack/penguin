@@ -18,9 +18,9 @@ public class CassandraSourceConfig {
     private String table;
     private String idColumn;
     private String keySpace;
-    private List<String> hosts;
+    private String hosts;
     private Integer port;
-    private List<String> columns;
+    private String columns;
 
     private PluginInput pluginInput;
 }
