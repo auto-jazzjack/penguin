@@ -8,8 +8,8 @@ bootJar {
 }
 dependencies {
     implementation project(":penguin-core")
-    implementation project(":persistence:penguin-lettuce")
-    implementation project(":persistence:penguin-cassandra")
+    implementation project(":penguin-persistence:penguin-lettuce")
+    implementation project(":penguin-persistence:penguin-cassandra")
     compileOnly("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.data:spring-data-commons")
     implementation("org.springframework:spring-tx")
