@@ -1,17 +1,14 @@
 package io.penguin.penguincore;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.web.client.RestTemplate;
-
-import java.net.URI;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Stressor {
 
 
+    @Test
+    public void hello() {
+        System.out.println("hello");
+    }
     /*
     @Test
     public void stressor() throws Exception {
