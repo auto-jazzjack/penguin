@@ -1,6 +1,7 @@
 package io.penguin.springboot.starter.kind;
 
 import io.penguin.penguincore.reader.BaseCacheReader;
+import io.penguin.penguincore.reader.Context;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.springboot.starter.Penguin;
 import io.penguin.springboot.starter.config.PenguinProperties;
@@ -13,21 +14,20 @@ import java.util.Map;
 @Slf4j
 public class BaseDeployment<K, V> implements Penguin<K, V> {
 
-    private Reader<K, V> source;
-    private BaseCacheReader<K, V> remoteCache;
+    private Reader<K, Context<V>> source;
+    private BaseCacheReader<K, Context<V>> remoteCache;
 
 
-    public BaseDeployment(PenguinProperties.Worker worker, Map<String, ReaderBundle> readerBundleMap) {
+    public BaseDeployment(PenguinProperties.Worker worker, Map<String, ReaderBundle<K, V>> readerBundleMap) {
         for (PenguinProperties.Container i : worker.getContainers()) {
-            ReaderBundle readerBundle = readerBundleMap.get(i.getName());
+            ReaderBundle<K, V> readerBundle = readerBundleMap.get(i.getName());
 
             switch (readerBundle.getKind()) {
                 case LETTUCE_CACHE:
-                    this.remoteCache = (BaseCacheReader<K, V>) readerBundle.getReader();
+                    this.remoteCache = (BaseCacheReader<K, Context<V>>) readerBundle.getReader();
                     break;
                 case CASSANDRA:
                 case HELLO:
-                case HELLO2:
                     this.source = readerBundle.getReader();
                     break;
                 default:
@@ -41,23 +41,17 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
 
     @Override
     public Mono<V> findOne(K key) {
-        return remoteCache.findOne(key)
-                .switchIfEmpty(Mono.create(i -> {
-                    source.findOne(key)
-                            .switchIfEmpty(Mono.create(j -> {
-                                i.success();
-                                j.success();
-                            }))
-                            .doOnNext(j -> remoteCache.insertQueue(key))
-                            .doOnNext(j -> {
-                                if (j != null) {
-                                    i.success(j);
-                                } else {
-                                    i.success();
-                                }
-                            })
-                            .subscribe();
-                }));
 
+        Mono<V> map = Mono.from(remoteCache.findOne(key))
+                .flatMap(i -> {
+                    if (i.getValue() == null) {
+                        remoteCache.insertQueue(key);
+                        return source.findOne(key);
+                    }
+                    return Mono.just(i);
+                })
+                .map(Context::getValue);
+
+        return map;
     }
 }
