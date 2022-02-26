@@ -4,5 +4,4 @@ public enum ContainerKind {
     LETTUCE_CACHE,
     CASSANDRA,
     HELLO,
-    HELLO2,
 }

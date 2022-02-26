@@ -6,6 +6,7 @@ import io.penguin.pengiuncassandra.config.CassandraSourceConfig;
 import io.penguin.pengiunlettuce.LettuceCache;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheConfig;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheIngredient;
+import io.penguin.penguincore.reader.Context;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.penguincore.util.Pair;
 import io.penguin.springboot.starter.Penguin;
@@ -58,7 +59,7 @@ public class ComponentCreator {
                 case LETTUCE_CACHE:
                     LettuceCacheConfig config = objectMapper.convertValue(container.getSpec(), LettuceCacheConfig.class);
                     return ReaderBundle.builder()
-                            .reader(new LettuceCache<>(LettuceCacheIngredient.toInternal(config, flattenReader)))
+                            .reader(new LettuceCache(LettuceCacheIngredient.toInternal(config, flattenReader)))
                             .kind(ContainerKind.LETTUCE_CACHE)
                             .build();
 
@@ -71,12 +72,7 @@ public class ComponentCreator {
                     CassandraSourceConfig cassandraSourceConfig = objectMapper.convertValue(container.getSpec(), CassandraSourceConfig.class);
                     return ReaderBundle.builder()
                             .kind(CASSANDRA)
-                            .reader(new CassandraSource<>(toInternal(cassandraSourceConfig)))
-                            .build();
-                case HELLO2:
-                    return ReaderBundle.builder()
-                            .reader(new HelloReaderV2())
-                            .kind(HELLO2)
+                            .reader(new CassandraSource(toInternal(cassandraSourceConfig)))
                             .build();
                 default:
                     throw new IllegalStateException("No such Kind");
