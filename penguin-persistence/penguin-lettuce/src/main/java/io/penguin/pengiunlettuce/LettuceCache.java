@@ -104,6 +104,7 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
 
         long start = System.currentTimeMillis();
         Mono<Context<V>> mono = reactive.get(key.toString())
+
                 .map(i -> ProtoUtil.safeParseFrom(penguin.Codec.parser(), i, penguin.Codec.newBuilder().getDefaultInstanceForType()))
                 .map(i -> Pair.of(i.getTimestamp(), deserialize(i.getPayload().toByteArray())))
                 .doOnNext(i -> {
@@ -112,7 +113,8 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
                         writeOne(key.toString(), Context.<V>builder().value(i.getValue()).build());
                     }
                 })
-                .map(i -> Context.<V>builder().value(i.getValue()).build());
+                .map(i -> Context.<V>builder().value(i.getValue()).build())
+                .defaultIfEmpty(Context.<V>builder().build());
 
         for (Plugin<Context<V>> plugin : plugins) {
             mono = plugin.decorateSource(mono);
@@ -121,6 +123,7 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
 
         return mono
                 .onErrorReturn(this.failFindOne(key))
+                .doOnError(e -> log.error("", e))
                 .doOnSuccess(i -> reader.record(Duration.ofMillis(System.currentTimeMillis() - start)));
     }
 
