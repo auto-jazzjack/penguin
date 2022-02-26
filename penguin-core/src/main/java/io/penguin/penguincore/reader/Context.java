@@ -7,11 +7,4 @@ import lombok.Data;
 @Builder
 public class Context<V> {
     private V value;
-    private From from;
-
-
-    public enum From {
-        SOURCE,
-        CACHE1,
-    }
 }

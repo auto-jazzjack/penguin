@@ -18,6 +18,7 @@ import io.penguin.penguincore.plugin.circuit.CircuitPlugin;
 import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
 import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
 import io.penguin.penguincore.reader.BaseCacheReader;
+import io.penguin.penguincore.reader.Context;
 import io.penguin.penguincore.util.Pair;
 import io.penguin.penguincore.util.ProtoUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Slf4j
-public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
+public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
 
     protected final RedisAdvancedClusterReactiveCommands<String, byte[]> reactive;
     private final long expireMilliseconds;
@@ -39,7 +40,7 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     private final Timer reader = MetricCreator.timer("lettuce_reader", "kind", this.getClass().getSimpleName());
     private final Timer writer = MetricCreator.timer("lettuce_writer", "kind", this.getClass().getSimpleName());
     private final Counter reupdate = MetricCreator.counter("lettuce_reupdate_count", "kind", this.getClass().getSimpleName());
-    private final Plugin<V>[] plugins;
+    private final Plugin<Context<V>>[] plugins;
 
     public LettuceCache(LettuceCacheIngredient cacheConfig) throws Exception {
         super(cacheConfig.getFromDownStream());
@@ -76,9 +77,14 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     }
 
     @Override
-    public void writeOne(String key, V value) {
+    public void writeOne(String key, Context<V> value) {
+
+        if (value.getValue() == null) {
+            return;
+        }
+
         long start = System.currentTimeMillis();
-        reactive.setex(this.prefix() + key, this.expireMilliseconds, withTime(value))
+        reactive.setex(this.prefix() + key, this.expireMilliseconds, withTime(value.getValue()))
                 .doOnSuccess(i -> writer.record(Duration.ofMillis(System.currentTimeMillis() - start)))
                 .subscribe();
     }
@@ -94,21 +100,21 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     }
 
     @Override
-    public Mono<V> findOne(K key) {
+    public Mono<Context<V>> findOne(K key) {
 
         long start = System.currentTimeMillis();
-        Mono<V> mono = reactive.get(key.toString())
+        Mono<Context<V>> mono = reactive.get(key.toString())
                 .map(i -> ProtoUtil.safeParseFrom(penguin.Codec.parser(), i, penguin.Codec.newBuilder().getDefaultInstanceForType()))
                 .map(i -> Pair.of(i.getTimestamp(), deserialize(i.getPayload().toByteArray())))
                 .doOnNext(i -> {
                     if (i.getKey() + expireMilliseconds > System.currentTimeMillis()) {
                         reupdate.increment();
-                        writeOne(key.toString(), i.getValue());
+                        writeOne(key.toString(), Context.<V>builder().value(i.getValue()).build());
                     }
                 })
-                .map(Pair::getValue);
+                .map(i -> Context.<V>builder().value(i.getValue()).build());
 
-        for (Plugin<V> plugin : plugins) {
+        for (Plugin<Context<V>> plugin : plugins) {
             mono = plugin.decorateSource(mono);
         }
 
