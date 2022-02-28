@@ -1,6 +1,7 @@
 package io.penguin.springboot.starter.controller;
 
 import io.penguin.springboot.starter.Penguin;
+import io.penguin.springboot.starter.util.IdTypeDetermineUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -23,14 +24,14 @@ public class UpdateController {
     private final String OK = "OK";
 
 
-    @PutMapping(path = "/{key}/{id}")
-    public String refreshByKeyAndId(@PathVariable("key") String key, @PathVariable("id") String id) throws Exception {
+    @PutMapping(path = "/{key}/{idType}/{id}")
+    public String refreshByKeyAndId(@PathVariable("key") String key, @PathVariable String idType, @PathVariable("id") String id) throws Exception {
         Penguin<Object, Object> baseDeployment = deployments.get(key);
         if (baseDeployment == null) {
             throw HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "No Such Deployment", new HttpHeaders(), null, StandardCharsets.UTF_8);
         }
 
-        baseDeployment.refreshOne(id);
+        baseDeployment.refreshOne(IdTypeDetermineUtil.getConverter(idType).apply(id));
         return OK;
     }
 }

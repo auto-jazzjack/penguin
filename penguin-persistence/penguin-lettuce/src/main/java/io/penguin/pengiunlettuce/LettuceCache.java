@@ -103,8 +103,7 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
     public Mono<Context<V>> findOne(K key) {
 
         long start = System.currentTimeMillis();
-        Mono<Context<V>> mono = reactive.get(key.toString())
-
+        Mono<Context<V>> mono = reactive.get(this.prefix + key.toString())
                 .map(i -> ProtoUtil.safeParseFrom(penguin.Codec.parser(), i, penguin.Codec.newBuilder().getDefaultInstanceForType()))
                 .map(i -> Pair.of(i.getTimestamp(), deserialize(i.getPayload().toByteArray())))
                 .doOnNext(i -> {

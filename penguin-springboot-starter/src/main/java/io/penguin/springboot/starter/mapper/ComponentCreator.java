@@ -6,7 +6,6 @@ import io.penguin.pengiuncassandra.config.CassandraSourceConfig;
 import io.penguin.pengiunlettuce.LettuceCache;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheConfig;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheIngredient;
-import io.penguin.penguincore.reader.Context;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.penguincore.util.Pair;
 import io.penguin.springboot.starter.Penguin;
@@ -21,7 +20,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static io.penguin.pengiuncassandra.config.CassandraIngredient.toInternal;
-import static io.penguin.springboot.starter.mapper.ContainerKind.*;
+import static io.penguin.springboot.starter.mapper.ContainerKind.CASSANDRA;
+import static io.penguin.springboot.starter.mapper.ContainerKind.HELLO;
 
 
 public class ComponentCreator {
