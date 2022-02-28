@@ -26,4 +26,5 @@ penguin:
             downStreamName: source
             codecConfig:
               codec: io.penguin.penguincodec.JsonCodec
+              target: io.penguin.penguincore.model.MyModel
             redisUris: 127.0.0.1
