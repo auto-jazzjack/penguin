@@ -90,7 +90,7 @@ public class ComponentCreator {
 
             switch (WorkerKind.valueOf(worker.getKind().toUpperCase())) {
                 case BASE:
-                    return new BaseDeployment(worker, readers);
+                    return new BaseDeployment(worker, readers, worker.getName());
                 default:
                     throw new IllegalStateException("No such Kind");
             }
