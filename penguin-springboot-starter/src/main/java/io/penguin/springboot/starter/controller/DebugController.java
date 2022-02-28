@@ -1,5 +1,6 @@
 package io.penguin.springboot.starter.controller;
 
+import io.penguin.springboot.starter.Penguin;
 import io.penguin.springboot.starter.flow.From;
 import io.penguin.springboot.starter.kind.BaseDeployment;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -22,7 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DebugController {
 
-    private final Map<String, BaseDeployment<Object, Object>> deployments;
+    private final Map<String, Penguin<Object, Object>> deployments;
 
     @PostConstruct
     public void hello() {
@@ -31,7 +33,7 @@ public class DebugController {
 
     @GetMapping(path = "/{key}/{id}")
     public Mono<Map<From, Object>> debugKeyAndId(@PathVariable String key, @PathVariable String id) throws Exception {
-        BaseDeployment<Object, Object> baseDeployment = deployments.get(key);
+        Penguin<Object, Object> baseDeployment = deployments.get(key);
         if (baseDeployment == null) {
             throw HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "No Such Deployment", new HttpHeaders(), null, StandardCharsets.UTF_8);
         }

@@ -1,6 +1,6 @@
 package io.penguin.springboot.starter.controller;
 
-import io.penguin.springboot.starter.kind.BaseDeployment;
+import io.penguin.springboot.starter.Penguin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -19,18 +19,18 @@ import java.util.Map;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class UpdateController {
 
-    private final Map<String, BaseDeployment<Object, Object>> deployments;
+    private final Map<String, Penguin<Object, Object>> deployments;
     private final String OK = "OK";
 
 
     @PutMapping(path = "/{key}/{id}")
     public String refreshByKeyAndId(@PathVariable("key") String key, @PathVariable("id") String id) throws Exception {
-        BaseDeployment<Object, Object> baseDeployment = deployments.get(key);
+        Penguin<Object, Object> baseDeployment = deployments.get(key);
         if (baseDeployment == null) {
             throw HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "No Such Deployment", new HttpHeaders(), null, StandardCharsets.UTF_8);
         }
 
-        baseDeployment.getRemoteCache().insertQueue(id);
+        baseDeployment.refreshOne(id);
         return OK;
     }
 }

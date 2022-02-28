@@ -61,6 +61,12 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
         return map;
     }
 
+    @Override
+    public void refreshOne(K key) {
+
+    }
+
+    @Override
     public Mono<Map<From, V>> debugOne(K key) {
 
         return Mono.zip(
