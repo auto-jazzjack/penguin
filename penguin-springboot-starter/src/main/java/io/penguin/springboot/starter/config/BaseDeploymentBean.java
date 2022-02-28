@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class BaseDeploymentBean {
 
     @Bean
-    public Map<String, Penguin> baseDeploymentMap(List<Penguin> baseDeployment) {
+    public Map<String, Penguin> penguinMap(List<Penguin> baseDeployment) {
         return baseDeployment.stream()
                 .map(i -> Pair.of(i.getName(), i))
                 .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
