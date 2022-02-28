@@ -7,13 +7,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-@RestController("/api/v1")
+@RestController
+@RequestMapping(value = "/api/v1/refresh")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class UpdateController {
 
@@ -21,7 +23,7 @@ public class UpdateController {
     private final String OK = "OK";
 
 
-    @PutMapping("/refresh/{key}/{id}")
+    @PutMapping(path = "/{key}/{id}")
     public String refreshByKeyAndId(@PathVariable("key") String key, @PathVariable("id") String id) throws Exception {
         BaseDeployment<Object, Object> baseDeployment = deployments.get(key);
         if (baseDeployment == null) {
