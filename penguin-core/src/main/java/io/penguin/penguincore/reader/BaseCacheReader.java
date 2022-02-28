@@ -40,7 +40,7 @@ public abstract class BaseCacheReader<K, V> implements CacheReader<K, V> {
 
 
     public void insertQueue(K k) {
-        watcher.emitNext(k, (signalType, emitResult) -> false);
+        watcher.tryEmitNext(k);
     }
 
     @Override
