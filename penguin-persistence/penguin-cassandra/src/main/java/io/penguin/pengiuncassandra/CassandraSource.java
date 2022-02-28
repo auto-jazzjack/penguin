@@ -60,7 +60,6 @@ public class CassandraSource<K, V> implements Reader<K, Context<V>> {
             pluginList.add(new TimeoutPlugin<>(ingredient.getTimeoutIngredient()));
         }
 
-
         this.mappingManager = CasandraUtil.mappingManager(
                 this.session,
                 this.valueType,
