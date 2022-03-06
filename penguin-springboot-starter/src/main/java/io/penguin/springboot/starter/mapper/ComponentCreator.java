@@ -1,27 +1,30 @@
 package io.penguin.springboot.starter.mapper;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.penguin.pengiuncassandra.CassandraSource;
 import io.penguin.pengiuncassandra.config.CassandraSourceConfig;
 import io.penguin.pengiunlettuce.LettuceCache;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheConfig;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheIngredient;
+import io.penguin.penguincore.reader.BaseOverWriteReader;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.penguincore.util.Pair;
 import io.penguin.springboot.starter.Penguin;
 import io.penguin.springboot.starter.config.PenguinProperties;
 import io.penguin.springboot.starter.config.Validator;
 import io.penguin.springboot.starter.kind.BaseDeployment;
+import io.penguin.springboot.starter.model.MultiReader;
 import io.penguin.springboot.starter.model.ReaderBundle;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static io.penguin.pengiuncassandra.config.CassandraIngredient.toInternal;
-import static io.penguin.springboot.starter.mapper.ContainerKind.CASSANDRA;
-import static io.penguin.springboot.starter.mapper.ContainerKind.HELLO;
+import static io.penguin.springboot.starter.mapper.ContainerKind.*;
 
 
 public class ComponentCreator {
@@ -74,6 +77,13 @@ public class ComponentCreator {
                             .kind(CASSANDRA)
                             .reader(new CassandraSource(toInternal(cassandraSourceConfig)))
                             .build();
+                case OVER_WRITER:
+                    Map<String, Class<? extends BaseOverWriteReader>> overWriters = objectMapper.convertValue(container.getSpec(), new TypeReference<>() {
+                    });
+                    return ReaderBundle.builder()
+                            .kind(OVER_WRITER)
+                            .reader(createReader(overWriters))
+                            .build();
                 default:
                     throw new IllegalStateException("No such Kind");
             }
@@ -81,6 +91,7 @@ public class ComponentCreator {
             throw new IllegalStateException("Cannot create Reader " + e);
         }
     }
+
 
     public Penguin generate(PenguinProperties.Worker worker) {
 
@@ -104,5 +115,23 @@ public class ComponentCreator {
                 .stream()
                 .map(i -> Pair.of(i.getKey(), i.getValue().getReader()))
                 .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+    }
+
+    private Reader createReader(Map<String, Class<? extends BaseOverWriteReader>> readers) {
+
+        Map<String, BaseOverWriteReader> value = readers
+                .entrySet()
+                .stream()
+                .map(aClass -> {
+                    try {
+                        Constructor declaredConstructor = aClass.getValue().getDeclaredConstructor();
+                        return Pair.of(aClass.getKey(), (BaseOverWriteReader)declaredConstructor.newInstance());
+                    } catch (Exception e) {
+                        throw new IllegalStateException();
+                    }
+                })
+                .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+
+        return new MultiReader(value);
     }
 }
