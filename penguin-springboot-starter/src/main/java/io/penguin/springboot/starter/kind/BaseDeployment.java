@@ -7,14 +7,16 @@ import io.penguin.penguincore.reader.Reader;
 import io.penguin.springboot.starter.Penguin;
 import io.penguin.springboot.starter.config.PenguinProperties;
 import io.penguin.springboot.starter.flow.From;
+import io.penguin.springboot.starter.model.MultiBaseOverWriteReaders;
 import io.penguin.springboot.starter.model.ReaderBundle;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 
 @Slf4j
@@ -27,11 +29,13 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
     /**
      * Each Column can be overWritten
      */
-    private List<BaseOverWriteReader<K, Context<Object>, V>> overWriter;
+    private MultiBaseOverWriteReaders<K> overWriter;
+    private Map<? extends Class<? extends BaseOverWriteReader>, BiConsumer<V, Object>> mergers;
     private final String name;
 
     public BaseDeployment(PenguinProperties.Worker worker, Map<String, ReaderBundle<K, V>> readerBundleMap, String name) {
         this.name = name;
+
         for (PenguinProperties.Container i : worker.getContainers()) {
             ReaderBundle<K, V> readerBundle = readerBundleMap.get(i.getName());
 
@@ -40,6 +44,12 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                     this.remoteCache = (BaseCacheReader<K, Context<V>>) readerBundle.getReader();
                     break;
                 case OVER_WRITER:
+                    System.out.println();
+                    if (readerBundle.getReader() instanceof MultiBaseOverWriteReaders) {
+                        overWriter = (MultiBaseOverWriteReaders) readerBundle.getReader();
+                        mergers = (Map) overWriter.createMergers();
+                    }
+                    break;
                 case CASSANDRA:
                 case HELLO:
                     this.source = readerBundle.getReader();
@@ -49,7 +59,6 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                     break;
             }
         }
-
     }
 
 
@@ -66,8 +75,15 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                 })
                 .map(Context::getValue);
 
-        return withoutOverWrite;
+        Mono<Map<Class<? extends BaseOverWriteReader>, Object>> overWriterOne = overWriter.findOne(key).defaultIfEmpty(Collections.emptyMap());
 
+        return Mono.zip(withoutOverWrite, overWriterOne)
+                .map(i -> {
+                    V origin = i.getT1();
+                    Map<Class<? extends BaseOverWriteReader>, Object> t2 = i.getT2();
+                    t2.forEach((key1, value) -> mergers.get(key1).accept(origin, value));
+                    return origin;
+                });
     }
 
     @Override

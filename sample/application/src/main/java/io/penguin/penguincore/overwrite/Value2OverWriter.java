@@ -1,18 +1,19 @@
 package io.penguin.penguincore.overwrite;
 
+import io.penguin.penguincore.model.MyModel;
 import io.penguin.penguincore.reader.BaseOverWriteReader;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
-public class Value2OverWriter extends BaseOverWriteReader<Long, String, Map<String, String>> {
+public class Value2OverWriter extends BaseOverWriteReader<Long, String, MyModel> {
 
     public Value2OverWriter() {
     }
 
     @Override
-    public void merge(Map<String, String> agg, String inner) {
-        agg.put(inner + "2222", inner);
+    public void merge(MyModel agg, String inner) {
+        agg.setFirst(213123142L);
     }
 
     @Override

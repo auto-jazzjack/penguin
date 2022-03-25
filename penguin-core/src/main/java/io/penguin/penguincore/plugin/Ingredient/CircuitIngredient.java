@@ -3,7 +3,6 @@ package io.penguin.penguincore.plugin.Ingredient;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
 import io.micrometer.core.instrument.Counter;
-import io.penguin.penguincore.metric.MetricCreator;
 import lombok.Builder;
 import lombok.Data;
 

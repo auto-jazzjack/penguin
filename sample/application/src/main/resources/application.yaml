@@ -32,5 +32,5 @@ penguin:
         - name: OverWrite
           kind: OVER_WRITER
           spec:
-            first: io.penguin.penguincore.overwrite.ValueOverWriter
-            second: io.penguin.penguincore.overwrite.Value2OverWriter
+            - io.penguin.penguincore.overwrite.ValueOverWriter
+            - io.penguin.penguincore.overwrite.Value2OverWriter
