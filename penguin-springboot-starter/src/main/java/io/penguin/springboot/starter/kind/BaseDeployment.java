@@ -1,6 +1,7 @@
 package io.penguin.springboot.starter.kind;
 
 import io.penguin.penguincore.reader.BaseCacheReader;
+import io.penguin.penguincore.reader.BaseOverWriteReader;
 import io.penguin.penguincore.reader.Context;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.springboot.starter.Penguin;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -21,6 +23,11 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
 
     private Reader<K, Context<V>> source;
     private BaseCacheReader<K, Context<V>> remoteCache;
+
+    /**
+     * Each Column can be overWritten
+     */
+    private List<BaseOverWriteReader<K, Context<Object>, V>> overWriter;
     private final String name;
 
     public BaseDeployment(PenguinProperties.Worker worker, Map<String, ReaderBundle<K, V>> readerBundleMap, String name) {
@@ -32,6 +39,7 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                 case LETTUCE_CACHE:
                     this.remoteCache = (BaseCacheReader<K, Context<V>>) readerBundle.getReader();
                     break;
+                case OVER_WRITER:
                 case CASSANDRA:
                 case HELLO:
                     this.source = readerBundle.getReader();
@@ -48,7 +56,7 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
     @Override
     public Mono<V> findOne(K key) {
 
-        Mono<V> map = Mono.from(remoteCache.findOne(key))
+        Mono<V> withoutOverWrite = Mono.from(remoteCache.findOne(key))
                 .flatMap(i -> {
                     if (i.getValue() == null) {
                         remoteCache.insertQueue(key);
@@ -58,7 +66,8 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                 })
                 .map(Context::getValue);
 
-        return map;
+        return withoutOverWrite;
+
     }
 
     @Override

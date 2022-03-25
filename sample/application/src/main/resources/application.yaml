@@ -28,3 +28,9 @@ penguin:
               codec: io.penguin.penguincodec.JsonCodec
               target: io.penguin.penguincore.model.MyModel
             redisUris: 127.0.0.1
+
+        - name: OverWrite
+          kind: OVER_WRITER
+          spec:
+            first: io.penguin.penguincore.overwrite.ValueOverWriter
+            second: io.penguin.penguincore.overwrite.Value2OverWriter
