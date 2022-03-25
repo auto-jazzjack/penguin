@@ -14,7 +14,7 @@ import io.penguin.springboot.starter.Penguin;
 import io.penguin.springboot.starter.config.PenguinProperties;
 import io.penguin.springboot.starter.config.Validator;
 import io.penguin.springboot.starter.kind.BaseDeployment;
-import io.penguin.springboot.starter.model.MultiReader;
+import io.penguin.springboot.starter.model.MultiBaseOverWriteReaders;
 import io.penguin.springboot.starter.model.ReaderBundle;
 
 import java.lang.reflect.Constructor;
@@ -119,19 +119,19 @@ public class ComponentCreator {
 
     private Reader createReader(Map<String, Class<? extends BaseOverWriteReader>> readers) {
 
-        Map<String, BaseOverWriteReader> value = readers
-                .entrySet()
+        Map<Class<? extends BaseOverWriteReader>, BaseOverWriteReader> value = readers
+                .values()
                 .stream()
                 .map(aClass -> {
                     try {
-                        Constructor declaredConstructor = aClass.getValue().getDeclaredConstructor();
-                        return Pair.of(aClass.getKey(), (BaseOverWriteReader)declaredConstructor.newInstance());
+                        Constructor declaredConstructor = aClass.getDeclaredConstructor();
+                        return Pair.of(aClass, (BaseOverWriteReader) declaredConstructor.newInstance());
                     } catch (Exception e) {
                         throw new IllegalStateException();
                     }
                 })
                 .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 
-        return new MultiReader(value);
+        return new MultiBaseOverWriteReaders(value);
     }
 }
