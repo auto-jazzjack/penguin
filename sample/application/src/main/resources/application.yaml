@@ -9,7 +9,7 @@ penguin:
           keySpace: local
           hosts: 127.0.0.1
       - name: LETTUCE_CACHE
-        sepc:
+        spec:
           expireMilliseconds: 100
           redisUris: 127.0.0.1
       - name: OVER_WRITER

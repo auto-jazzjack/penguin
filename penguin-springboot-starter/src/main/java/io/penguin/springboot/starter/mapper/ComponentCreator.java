@@ -18,9 +18,7 @@ import io.penguin.springboot.starter.model.MultiBaseOverWriteReaders;
 import io.penguin.springboot.starter.model.ReaderBundle;
 
 import java.lang.reflect.Constructor;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.penguin.pengiuncassandra.config.CassandraIngredient.toInternal;
@@ -32,6 +30,7 @@ public class ComponentCreator {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private Map<String, ReaderBundle> readers;
     private final PenguinProperties penguinProperties;
+    private Map<String, Map<String, Object>> collectedResources;
 
 
     public ComponentCreator(PenguinProperties penguinProperties) {
@@ -44,6 +43,12 @@ public class ComponentCreator {
 
 
     private void init() {
+        collectedResources = this.penguinProperties.getSpec()
+                .getResources()
+                .stream()
+                .collect(Collectors.toMap(PenguinProperties.Resource::getName, i -> Optional.of(i).map(PenguinProperties.Resource::getSpec).orElse(Collections.emptyMap())
+                ));
+
         this.penguinProperties.getSpec()
                 .getWorkers()
                 .stream()
@@ -61,6 +66,7 @@ public class ComponentCreator {
             switch (ContainerKind.valueOf(container.getKind().toUpperCase())) {
                 case LETTUCE_CACHE:
                     LettuceCacheConfig config = objectMapper.convertValue(container.getSpec(), LettuceCacheConfig.class);
+                    Map<String, Object> lettuceResource = collectedResources.get(LETTUCE_CACHE.name());
                     return ReaderBundle.builder()
                             .reader(new LettuceCache(LettuceCacheIngredient.toInternal(config, flattenReader)))
                             .kind(ContainerKind.LETTUCE_CACHE)
@@ -72,6 +78,7 @@ public class ComponentCreator {
                             .kind(HELLO)
                             .build();
                 case CASSANDRA:
+                    Map<String, Object> cassandra = collectedResources.get(CASSANDRA.name());
                     CassandraSourceConfig cassandraSourceConfig = objectMapper.convertValue(container.getSpec(), CassandraSourceConfig.class);
                     return ReaderBundle.builder()
                             .kind(CASSANDRA)
