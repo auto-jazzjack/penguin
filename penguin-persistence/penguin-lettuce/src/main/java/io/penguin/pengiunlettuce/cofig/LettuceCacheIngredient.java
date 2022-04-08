@@ -26,6 +26,8 @@ public class LettuceCacheIngredient {
     private int port;
     private Reader fromDownStream;
     private Codec codec;
+    private Compression compression;
+
 
     private PluginInput pluginInput;
 
@@ -51,7 +53,7 @@ public class LettuceCacheIngredient {
         Optional.ofNullable(config.getRedisUris()).map(i -> Arrays.stream(i.split(",")).collect(Collectors.toList())).ifPresent(build::setRedisUris);
         Optional.ofNullable(config.getDownStreamName()).ifPresent(i -> build.setFromDownStream(readers.get(i)));
         Optional.ofNullable(config.getCodecConfig()).ifPresent(i -> build.setCodec(CodecFactory.create(i.getCodec(), i.getTarget())));
-
+        Optional.ofNullable(config.getCompression()).map(Compression::defaultOrValueOf).ifPresent(build::setCompression);
 
         return build;
     }

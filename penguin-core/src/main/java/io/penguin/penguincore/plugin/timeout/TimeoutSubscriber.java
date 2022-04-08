@@ -9,6 +9,7 @@ import org.reactivestreams.Subscription;
 import reactor.core.CoreSubscriber;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 public class TimeoutSubscriber<V> implements Subscription, CoreSubscriber<V> {
@@ -17,6 +18,8 @@ public class TimeoutSubscriber<V> implements Subscription, CoreSubscriber<V> {
     private Subscription subscription;
     private final Timeout timeout;
     private final Counter counter;
+    private final AtomicBoolean next;
+    private final AtomicBoolean completed;
 
     public TimeoutSubscriber(CoreSubscriber<V> source, Counter counter, HashedWheelTimer timer, long milliseconds) {
         this.source = source;
@@ -24,34 +27,42 @@ public class TimeoutSubscriber<V> implements Subscription, CoreSubscriber<V> {
                 timeout -> onError(new TimeoutException()), milliseconds,
                 TimeUnit.MILLISECONDS
         );
+        this.next = new AtomicBoolean(false);
+        this.completed = new AtomicBoolean(false);
         this.counter = counter;
     }
 
     @Override
     public void onNext(V v) {
-        if (!timeout.isCancelled()) {
-            timeout.cancel();
-        }
+        if (next.compareAndSet(false, true)) {
 
-        source.onNext(v);
+            if (!timeout.isCancelled()) {
+                timeout.cancel();
+            }
+            source.onNext(v);
+        }
     }
 
     @Override
     public void onError(Throwable t) {
-        if (!timeout.isCancelled()) {
-            timeout.cancel();
+
+        if (!completed.get() && !next.get()) {
+            if (!timeout.isCancelled()) {
+                timeout.cancel();
+            }
+            source.onError(t);
         }
-        source.onError(t);
     }
 
     @Override
     public void onComplete() {
-        if (!timeout.isCancelled()) {
-            timeout.cancel();
+        if (next.get() && completed.compareAndSet(false, true)) {
+            if (!timeout.isCancelled()) {
+                timeout.cancel();
+            }
+            counter.increment();
+            source.onComplete();
         }
-
-        counter.increment();
-        source.onComplete();
     }
 
     @Override
