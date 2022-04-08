@@ -3,34 +3,40 @@ penguin:
   metadata:
     name: FirstExample
   spec:
+    resources:
+      - name: CASSANDRA
+        keySpace: local
+        hosts: 127.0.0.1
+      - name: LETTUCE_CACHE
+        expireMilliseconds: 100
+        redisUris: 127.0.0.1
+      - name: OVER_WRITER
+
     workers:
       - name: myFirst
         kind: BASE
         aggregatedTarget: io.penguin.penguincore.reader.FirstExample
         containers:
-        - name: source
-          kind: CASSANDRA
-          spec:
-            idColumn: id
-            keySpace: local
-            hosts: 127.0.0.1
-            columns: first, id
-            table: first_table
-            valueType: io.penguin.penguincore.model.MyModel
+          - name: source
+            kind: CASSANDRA
+            spec:
+              idColumn: id
+              columns: first, id
+              table: first_table
+              valueType: io.penguin.penguincore.model.MyModel
 
-        - name: First
-          kind: LETTUCE_CACHE
-          spec:
-            expireMilliseconds: 100
-            prefix: p
-            downStreamName: source
-            codecConfig:
-              codec: io.penguin.penguincodec.JsonCodec
-              target: io.penguin.penguincore.model.MyModel
-            redisUris: 127.0.0.1
+          - name: First
+            kind: LETTUCE_CACHE
+            spec:
+              expireMilliseconds: 100
+              prefix: p
+              downStreamName: source
+              codecConfig:
+                codec: io.penguin.penguincodec.JsonCodec
+                target: io.penguin.penguincore.model.MyModel
 
-        - name: OverWrite
-          kind: OVER_WRITER
-          spec:
-            - io.penguin.penguincore.overwrite.ValueOverWriter
-            - io.penguin.penguincore.overwrite.Value2OverWriter
+          - name: OverWrite
+            kind: OVER_WRITER
+            spec:
+              - io.penguin.penguincore.overwrite.ValueOverWriter
+              - io.penguin.penguincore.overwrite.Value2OverWriter
