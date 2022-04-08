@@ -6,19 +6,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CassandraSourceConfig {
-    private Class<?> valueType;
-    private String table;
-    private String idColumn;
+public class CassandraConnectionConfig {
     private String keySpace;
-    private String columns;
+    private String hosts;
+    private Integer port;
 
     private PluginInput pluginInput;
 }

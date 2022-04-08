@@ -13,12 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class LettuceCacheConfig {
-    private Long expireMilliseconds;
-    private Integer queueSize;
     private String prefix;
-    private String redisUris;
-    private Integer port;
     private String downStreamName;
     private CodecConfig codecConfig;
-    private String compression;
 }

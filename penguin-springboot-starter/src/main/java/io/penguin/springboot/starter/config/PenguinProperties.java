@@ -33,6 +33,13 @@ public class PenguinProperties {
     @Data
     public static class Spec {
         private List<Worker> workers;
+        private List<Resource> resources;
+    }
+
+    @Data
+    public static class Resource {
+        private String name;
+        private Map<String, Object> spec;
     }
 
     @Data
