@@ -1,11 +1,13 @@
 package io.penguin.pengiunlettuce.cofig;
 
 import io.penguin.penguincore.plugin.PluginInput;
-import io.penguin.penguincore.reader.Reader;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -14,10 +16,10 @@ import java.util.stream.Stream;
 @Builder
 public class LettuceConnectionIngredient {
 
-    private long expireMilliseconds;
-    private int queueSize;
+    private Long expireMilliseconds;
+    private Integer queueSize;
     private List<String> redisUris;
-    private int port;
+    private Integer port;
     private Compression compression;
 
 
@@ -25,23 +27,25 @@ public class LettuceConnectionIngredient {
 
     public static LettuceConnectionIngredient.LettuceConnectionIngredientBuilder base() {
         return LettuceConnectionIngredient.builder()
-                .expireMilliseconds(10)
+                .expireMilliseconds(10L)
                 .queueSize(50000)
                 .redisUris(Stream.of("127.0.0.1").collect(Collectors.toList()))
                 .port(6379)
                 .pluginInput(PluginInput.base().build());
     }
 
-    public static LettuceConnectionIngredient toInternal(LettuceCacheConfig config, Map<String, Reader> readers) {
+    public static LettuceConnectionIngredient toInternal(LettuceConnectionConfig config) {
+
         Objects.requireNonNull(config);
         LettuceConnectionIngredient build = LettuceConnectionIngredient.base()
+                .expireMilliseconds(Optional.ofNullable(config.getExpireMilliseconds()).orElse(1000000L))
+                .queueSize(Optional.ofNullable(config.getQueueSize()).orElse(30000))
+                .port(Optional.ofNullable(config.getPort()).orElse(6379))
+                .redisUris(Optional.ofNullable(config.getRedisUris()).map(i -> Arrays.stream(i.split(",")).collect(Collectors.toList()))
+                        .orElseThrow(() -> new IllegalArgumentException("Redice host should be supplied")))
+                .compression(Optional.ofNullable(config.getCompression()).map(Compression::defaultOrValueOf).orElse(Compression.NONE))
                 .build();
 
-        Optional.ofNullable(config.getExpireMilliseconds()).ifPresent(build::setExpireMilliseconds);
-        Optional.ofNullable(config.getQueueSize()).ifPresent(build::setQueueSize);
-        Optional.ofNullable(config.getPort()).ifPresent(build::setPort);
-        Optional.ofNullable(config.getRedisUris()).map(i -> Arrays.stream(i.split(",")).collect(Collectors.toList())).ifPresent(build::setRedisUris);
-        Optional.ofNullable(config.getCompression()).map(Compression::defaultOrValueOf).ifPresent(build::setCompression);
 
         return build;
     }

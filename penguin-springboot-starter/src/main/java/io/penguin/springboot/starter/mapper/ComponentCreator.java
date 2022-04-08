@@ -3,10 +3,14 @@ package io.penguin.springboot.starter.mapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.penguin.pengiuncassandra.CassandraSource;
+import io.penguin.pengiuncassandra.config.CassandraConnectionConfig;
+import io.penguin.pengiuncassandra.config.CassandraConnectionIngredient;
 import io.penguin.pengiuncassandra.config.CassandraSourceConfig;
 import io.penguin.pengiunlettuce.LettuceCache;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheConfig;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheIngredient;
+import io.penguin.pengiunlettuce.cofig.LettuceConnectionConfig;
+import io.penguin.pengiunlettuce.cofig.LettuceConnectionIngredient;
 import io.penguin.penguincore.reader.BaseOverWriteReader;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.penguincore.util.Pair;
@@ -66,9 +70,10 @@ public class ComponentCreator {
             switch (ContainerKind.valueOf(container.getKind().toUpperCase())) {
                 case LETTUCE_CACHE:
                     LettuceCacheConfig config = objectMapper.convertValue(container.getSpec(), LettuceCacheConfig.class);
-                    Map<String, Object> lettuceResource = collectedResources.get(LETTUCE_CACHE.name());
+                    LettuceConnectionConfig connection = objectMapper.convertValue(collectedResources.get(LETTUCE_CACHE.name()), LettuceConnectionConfig.class);
+
                     return ReaderBundle.builder()
-                            .reader(new LettuceCache(LettuceCacheIngredient.toInternal(config, flattenReader)))
+                            .reader(new LettuceCache(LettuceConnectionIngredient.toInternal(connection), LettuceCacheIngredient.toInternal(config, flattenReader)))
                             .kind(ContainerKind.LETTUCE_CACHE)
                             .build();
 
@@ -78,11 +83,12 @@ public class ComponentCreator {
                             .kind(HELLO)
                             .build();
                 case CASSANDRA:
-                    Map<String, Object> cassandra = collectedResources.get(CASSANDRA.name());
                     CassandraSourceConfig cassandraSourceConfig = objectMapper.convertValue(container.getSpec(), CassandraSourceConfig.class);
+                    CassandraConnectionConfig cassandra = objectMapper.convertValue(collectedResources.get(CASSANDRA.name()), CassandraConnectionConfig.class);
+
                     return ReaderBundle.builder()
                             .kind(CASSANDRA)
-                            .reader(new CassandraSource(toInternal(cassandraSourceConfig)))
+                            .reader(new CassandraSource(CassandraConnectionIngredient.toInternal(cassandra), toInternal(cassandraSourceConfig)))
                             .build();
                 case OVER_WRITER:
                     Map<String, Class<? extends BaseOverWriteReader>> overWriters = objectMapper.convertValue(container.getSpec(), new TypeReference<>() {
@@ -95,6 +101,7 @@ public class ComponentCreator {
                     throw new IllegalStateException("No such Kind");
             }
         } catch (Exception e) {
+            e.printStackTrace();
             throw new IllegalStateException("Cannot create Reader " + e);
         }
     }

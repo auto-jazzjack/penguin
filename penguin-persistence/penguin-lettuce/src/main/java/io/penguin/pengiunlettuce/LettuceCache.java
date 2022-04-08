@@ -6,7 +6,8 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import io.penguin.core.cache.penguin;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheIngredient;
-import io.penguin.pengiunlettuce.connection.RedisConfig;
+import io.penguin.pengiunlettuce.cofig.LettuceConnectionIngredient;
+import io.penguin.pengiunlettuce.connection.RedisConnection;
 import io.penguin.penguincodec.Codec;
 import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
@@ -42,12 +43,12 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
     private final Counter reupdate = MetricCreator.counter("lettuce_reupdate_count", "kind", this.getClass().getSimpleName());
     private final Plugin<Context<V>>[] plugins;
 
-    public LettuceCache(LettuceCacheIngredient cacheConfig) throws Exception {
+    public LettuceCache(LettuceConnectionIngredient connection, LettuceCacheIngredient cacheConfig) throws Exception {
         super(cacheConfig.getFromDownStream());
         Objects.requireNonNull(cacheConfig);
 
-        this.reactive = RedisConfig.connection(cacheConfig).reactive();
-        this.expireMilliseconds = cacheConfig.getExpireMilliseconds();
+        this.reactive = RedisConnection.connection(connection).reactive();
+        this.expireMilliseconds = connection.getExpireMilliseconds();
         this.prefix = cacheConfig.getPrefix();
         AllIngredient ingredient = AllIngredient.builder().build();
         this.codec = cacheConfig.getCodec();

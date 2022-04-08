@@ -9,6 +9,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
+import io.penguin.pengiuncassandra.config.CassandraConnectionIngredient;
 import io.penguin.pengiuncassandra.config.CassandraIngredient;
 import io.penguin.pengiuncassandra.util.CasandraUtil;
 import io.penguin.penguincore.metric.MetricCreator;
@@ -47,9 +48,9 @@ public class CassandraSource<K, V> implements Reader<K, Context<V>> {
     private final Timer latency = MetricCreator.timer("cassandra_latency",
             "kind", this.getClass().getSimpleName());
 
-    public CassandraSource(CassandraIngredient cassandraConfig) {
+    public CassandraSource(CassandraConnectionIngredient connection, CassandraIngredient cassandraConfig) {
         valueType = (Class<V>) cassandraConfig.getValueType();
-        this.session = cassandraConfig.getSession();
+        this.session = connection.getSession();
         AllIngredient ingredient = AllIngredient.builder().build();
 
         List<Plugin<Object>> pluginList = new ArrayList<>();
@@ -63,10 +64,10 @@ public class CassandraSource<K, V> implements Reader<K, Context<V>> {
         this.mappingManager = CasandraUtil.mappingManager(
                 this.session,
                 this.valueType,
-                cassandraConfig.getKeyspace()
+                connection.getKeyspace()
         );
 
-        this.statement = this.mappingManager.getSession().prepare(CasandraUtil.queryGenerator(cassandraConfig.getKeyspace(),
+        this.statement = this.mappingManager.getSession().prepare(CasandraUtil.queryGenerator(connection.getKeyspace(),
                 cassandraConfig.getTable(),
                 cassandraConfig.getColumns(),
                 cassandraConfig.getIdColumn()));

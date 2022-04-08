@@ -18,12 +18,8 @@ import java.util.stream.Stream;
 @Builder
 public class LettuceCacheIngredient {
 
-    private long expireMilliseconds;
     private RedisCodec<?, byte[]> connectionCodec;
-    private int queueSize;
     private String prefix;
-    private List<String> redisUris;
-    private int port;
     private Reader fromDownStream;
     private Codec codec;
     private Compression compression;
@@ -33,11 +29,7 @@ public class LettuceCacheIngredient {
 
     public static LettuceCacheIngredient.LettuceCacheIngredientBuilder base() {
         return LettuceCacheIngredient.builder()
-                .expireMilliseconds(10)
-                .queueSize(50000)
                 .connectionCodec(DefaultCodec.getInstance())
-                .redisUris(Stream.of("127.0.0.1").collect(Collectors.toList()))
-                .port(6379)
                 .pluginInput(PluginInput.base().build());
     }
 
@@ -46,16 +38,12 @@ public class LettuceCacheIngredient {
         LettuceCacheIngredient build = LettuceCacheIngredient.base()
                 .build();
 
-        Optional.ofNullable(config.getExpireMilliseconds()).ifPresent(build::setExpireMilliseconds);
-        Optional.ofNullable(config.getQueueSize()).ifPresent(build::setQueueSize);
-        Optional.ofNullable(config.getPort()).ifPresent(build::setPort);
         Optional.ofNullable(config.getPrefix()).ifPresent(build::setPrefix);
-        Optional.ofNullable(config.getRedisUris()).map(i -> Arrays.stream(i.split(",")).collect(Collectors.toList())).ifPresent(build::setRedisUris);
         Optional.ofNullable(config.getDownStreamName()).ifPresent(i -> build.setFromDownStream(readers.get(i)));
         Optional.ofNullable(config.getCodecConfig()).ifPresent(i -> build.setCodec(CodecFactory.create(i.getCodec(), i.getTarget())));
-        Optional.ofNullable(config.getCompression()).map(Compression::defaultOrValueOf).ifPresent(build::setCompression);
 
         return build;
     }
+
 
 }

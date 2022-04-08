@@ -25,7 +25,6 @@ penguin:
               idColumn: id
               columns: first, id
               table: first_table
-              timeout: 200
               valueType: io.penguin.penguincore.model.MyModel
 
           - name: First
@@ -33,7 +32,6 @@ penguin:
             spec:
               prefix: p
               downStreamName: source
-              timeout: 200
               codecConfig:
                 codec: io.penguin.penguincodec.JsonCodec
                 target: io.penguin.penguincore.model.MyModel

@@ -11,21 +11,26 @@ import io.lettuce.core.event.DefaultEventPublisherOptions;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
 import io.penguin.pengiunlettuce.codec.DefaultCodec;
-import io.penguin.pengiunlettuce.cofig.LettuceCacheIngredient;
+import io.penguin.pengiunlettuce.cofig.LettuceConnectionIngredient;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class RedisConfig {
+public class RedisConnection {
 
+    private static StatefulRedisClusterConnection<String, byte[]> cached;
 
-    public static StatefulRedisClusterConnection<String, byte[]> connection(LettuceCacheIngredient ingredient) {
+    synchronized public static StatefulRedisClusterConnection<String, byte[]> connection(LettuceConnectionIngredient ingredient) {
 
+        if (cached != null) {
+            return cached;
+        }
         List<RedisURI> collect = ingredient.getRedisUris().stream()
                 .map(i -> RedisURI.create(i, ingredient.getPort()))
                 .collect(Collectors.toList());
-        return connection(ingredient, collect);
+        cached = connection(ingredient, collect);
+        return cached;
     }
 
     private static ClientResources clientResources() {
@@ -37,7 +42,7 @@ public class RedisConfig {
                 .build();
     }
 
-    private static StatefulRedisClusterConnection<String, byte[]> connection(LettuceCacheIngredient ingredient, List<RedisURI> redisURI) {
+    private static StatefulRedisClusterConnection<String, byte[]> connection(LettuceConnectionIngredient ingredient, List<RedisURI> redisURI) {
         RedisClusterClient redisClusterClient = RedisClusterClient.create(clientResources(), redisURI);
 
         redisClusterClient.setOptions(ClusterClientOptions.builder()
