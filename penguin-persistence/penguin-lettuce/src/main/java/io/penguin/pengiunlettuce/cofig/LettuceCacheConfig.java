@@ -20,4 +20,5 @@ public class LettuceCacheConfig {
     private Integer port;
     private String downStreamName;
     private CodecConfig codecConfig;
+    private String compression;
 }

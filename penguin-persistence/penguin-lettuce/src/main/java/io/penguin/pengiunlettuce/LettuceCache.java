@@ -46,7 +46,7 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
         super(cacheConfig.getFromDownStream());
         Objects.requireNonNull(cacheConfig);
 
-        this.reactive = RedisConfig.connection(cacheConfig.getRedisUris(), cacheConfig.getPort()).reactive();
+        this.reactive = RedisConfig.connection(cacheConfig).reactive();
         this.expireMilliseconds = cacheConfig.getExpireMilliseconds();
         this.prefix = cacheConfig.getPrefix();
         AllIngredient ingredient = AllIngredient.builder().build();
