@@ -1,6 +1,5 @@
 package io.penguin.pengiuncassandra.config;
 
-import io.penguin.penguincore.plugin.PluginInput;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,5 +15,4 @@ public class CassandraConnectionConfig {
     private String hosts;
     private Integer port;
 
-    private PluginInput pluginInput;
 }
