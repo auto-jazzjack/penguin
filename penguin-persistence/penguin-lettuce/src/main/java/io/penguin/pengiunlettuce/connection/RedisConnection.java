@@ -11,7 +11,6 @@ import io.lettuce.core.event.DefaultEventPublisherOptions;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
 import io.penguin.pengiunlettuce.codec.DefaultCodec;
-import io.penguin.pengiunlettuce.cofig.LettuceConnectionIngredient;
 
 import java.time.Duration;
 import java.util.List;

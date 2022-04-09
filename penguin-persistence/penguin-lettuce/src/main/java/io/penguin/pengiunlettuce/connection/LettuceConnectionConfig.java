@@ -1,4 +1,4 @@
-package io.penguin.pengiunlettuce.cofig;
+package io.penguin.pengiunlettuce.connection;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

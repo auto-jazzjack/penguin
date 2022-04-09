@@ -6,7 +6,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import io.penguin.core.cache.penguin;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheIngredient;
-import io.penguin.pengiunlettuce.cofig.LettuceConnectionIngredient;
+import io.penguin.pengiunlettuce.connection.LettuceConnectionIngredient;
 import io.penguin.pengiunlettuce.connection.RedisConnection;
 import io.penguin.penguincodec.Codec;
 import io.penguin.penguincore.metric.MetricCreator;

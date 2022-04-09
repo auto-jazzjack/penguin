@@ -2,7 +2,6 @@ package io.penguin.pengiuncassandra.connect;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
-import io.penguin.pengiuncassandra.config.CassandraConnectionConfig;
 
 import java.util.Arrays;
 import java.util.Optional;

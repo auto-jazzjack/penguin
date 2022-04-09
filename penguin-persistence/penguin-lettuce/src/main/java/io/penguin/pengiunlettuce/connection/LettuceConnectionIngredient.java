@@ -1,5 +1,6 @@
-package io.penguin.pengiunlettuce.cofig;
+package io.penguin.pengiunlettuce.connection;
 
+import io.penguin.pengiunlettuce.cofig.Compression;
 import lombok.Builder;
 import lombok.Data;
 

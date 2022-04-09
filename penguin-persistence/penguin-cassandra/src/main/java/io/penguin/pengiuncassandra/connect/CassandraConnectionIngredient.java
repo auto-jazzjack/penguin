@@ -1,8 +1,7 @@
-package io.penguin.pengiuncassandra.config;
+package io.penguin.pengiuncassandra.connect;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
-import io.penguin.pengiuncassandra.connect.CassandraConnection;
 import lombok.Builder;
 import lombok.Data;
 
