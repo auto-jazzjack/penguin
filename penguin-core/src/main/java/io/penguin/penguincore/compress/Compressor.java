@@ -12,4 +12,12 @@ public interface Compressor {
     default OutputStream compress(InputStream inputStream) throws Exception {
         throw new UnsupportedOperationException(this.getClass().getName() + " is not implemented");
     }
+
+    default byte[] decompress(byte[] input) throws Exception {
+        throw new UnsupportedOperationException(this.getClass().getName() + " is not implemented");
+    }
+
+    default OutputStream decompress(InputStream inputStream) throws Exception {
+        throw new UnsupportedOperationException(this.getClass().getName() + " is not implemented");
+    }
 }
