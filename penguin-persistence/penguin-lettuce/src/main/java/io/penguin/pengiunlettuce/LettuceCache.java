@@ -24,6 +24,7 @@ import io.penguin.penguincore.util.Pair;
 import io.penguin.penguincore.util.ProtoUtil;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -87,6 +88,7 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
         long start = System.currentTimeMillis();
         reactive.setex(this.prefix() + key, this.expireMilliseconds, withTime(value.getValue()))
                 .doOnSuccess(i -> writer.record(Duration.ofMillis(System.currentTimeMillis() - start)))
+                .subscribeOn(Schedulers.parallel())
                 .subscribe();
     }
 
@@ -124,7 +126,8 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
         return mono
                 .onErrorReturn(this.failFindOne(key))
                 .doOnError(e -> log.error("", e))
-                .doOnSuccess(i -> reader.record(Duration.ofMillis(System.currentTimeMillis() - start)));
+                .doOnSuccess(i -> reader.record(Duration.ofMillis(System.currentTimeMillis() - start)))
+                .subscribeOn(Schedulers.parallel());
     }
 
     @Override

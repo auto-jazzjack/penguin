@@ -20,6 +20,7 @@ import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
 import io.penguin.penguincore.reader.Context;
 import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,6 +110,7 @@ public class CassandraSource<K, V> implements Reader<K, Context<V>> {
                 .doOnSuccess(i -> {
                     success.increment();
                     latency.record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
-                });
+                })
+                .subscribeOn(Schedulers.parallel());
     }
 }
