@@ -1,6 +1,6 @@
-package io.penguin.pengiunlettuce.cofig;
+package io.penguin.pengiunlettuce.connection;
 
-import io.penguin.penguincore.plugin.PluginInput;
+import io.penguin.pengiunlettuce.cofig.Compression;
 import lombok.Builder;
 import lombok.Data;
 
@@ -22,21 +22,17 @@ public class LettuceConnectionIngredient {
     private Integer port;
     private Compression compression;
 
-
-    private PluginInput pluginInput;
-
     public static LettuceConnectionIngredient.LettuceConnectionIngredientBuilder base() {
         return LettuceConnectionIngredient.builder()
                 .expireMilliseconds(10L)
                 .queueSize(50000)
                 .redisUris(Stream.of("127.0.0.1").collect(Collectors.toList()))
-                .port(6379)
-                .pluginInput(PluginInput.base().build());
+                .port(6379);
     }
 
     public static LettuceConnectionIngredient toInternal(LettuceConnectionConfig config) {
-
         Objects.requireNonNull(config);
+
         LettuceConnectionIngredient build = LettuceConnectionIngredient.base()
                 .expireMilliseconds(Optional.ofNullable(config.getExpireMilliseconds()).orElse(1000000L))
                 .queueSize(Optional.ofNullable(config.getQueueSize()).orElse(30000))
