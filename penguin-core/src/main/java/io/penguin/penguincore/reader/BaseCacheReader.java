@@ -33,11 +33,9 @@ public abstract class BaseCacheReader<K, V> implements CacheReader<K, V> {
         watcher.asFlux()
                 .windowTimeout(100, Duration.ofSeconds(5))
                 .flatMap(Flux::distinct)
-                .flatMap(i -> this.fromDownStream.findOne(i).map(j -> Pair.of(i, j)))
+                .flatMap(i -> this.fromDownStream.findOne(i).onErrorResume(k -> Mono.empty())
+                        .map(j -> Pair.of(i, j)))
                 .filter(i -> i.getKey() != null && i.getValue() != null)
-                .doOnError(e -> {
-                    log.error("", e);
-                })
                 .subscribe(i -> writeOne(i.getKey().toString(), i.getValue()), e -> log.error("", e));
     }
 
