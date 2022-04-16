@@ -35,6 +35,7 @@ penguin:
               codecConfig:
                 codec: io.penguin.penguincodec.JsonCodec
                 target: io.penguin.penguincore.model.MyModel
+                compress: GZIP
 
           - name: OverWrite
             kind: OVER_WRITER

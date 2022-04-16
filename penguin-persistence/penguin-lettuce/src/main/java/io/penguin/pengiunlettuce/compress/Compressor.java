@@ -22,7 +22,7 @@ public abstract class Compressor<V> implements Codec<V> {
 
     public static Kind kindValueOf(String kind) {
         try {
-            return Kind.valueOf(kind);
+            return Kind.valueOf(kind.toUpperCase());
         } catch (Exception e) {
             return Kind.NONE;
         }
