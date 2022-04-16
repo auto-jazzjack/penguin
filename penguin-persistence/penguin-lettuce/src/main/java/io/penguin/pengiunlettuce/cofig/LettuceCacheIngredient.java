@@ -2,6 +2,8 @@ package io.penguin.pengiunlettuce.cofig;
 
 import io.lettuce.core.codec.RedisCodec;
 import io.penguin.pengiunlettuce.codec.DefaultCodec;
+import io.penguin.pengiunlettuce.compress.Compressor;
+import io.penguin.pengiunlettuce.compress.CompressorFactory;
 import io.penguin.penguincodec.Codec;
 import io.penguin.penguincodec.factory.CodecFactory;
 import io.penguin.penguincore.plugin.PluginInput;
@@ -10,8 +12,6 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 @Data
@@ -40,7 +40,10 @@ public class LettuceCacheIngredient {
 
         Optional.ofNullable(config.getPrefix()).ifPresent(build::setPrefix);
         Optional.ofNullable(config.getDownStreamName()).ifPresent(i -> build.setFromDownStream(readers.get(i)));
-        Optional.ofNullable(config.getCodecConfig()).ifPresent(i -> build.setCodec(CodecFactory.create(i.getCodec(), i.getTarget())));
+        Optional.ofNullable(config.getCodecConfig()).ifPresent(i -> {
+            Codec codec = CodecFactory.create(i.getCodec(), i.getTarget());
+            build.setCodec(CompressorFactory.generate(Compressor.kindValueOf(i.getCompress()), codec));
+        });
 
         return build;
     }
