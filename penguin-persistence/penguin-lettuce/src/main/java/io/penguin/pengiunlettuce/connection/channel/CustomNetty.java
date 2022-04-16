@@ -4,11 +4,7 @@ import io.lettuce.core.ConnectionEvents;
 import io.lettuce.core.RedisChannelInitializer;
 import io.lettuce.core.codec.RedisCodec;
 import io.lettuce.core.codec.StringCodec;
-import io.lettuce.core.output.ArrayOutput;
-import io.lettuce.core.output.StatusOutput;
 import io.lettuce.core.protocol.AsyncCommand;
-import io.lettuce.core.protocol.BaseRedisCommandBuilder;
-import io.lettuce.core.protocol.Command;
 import io.lettuce.core.resource.NettyCustomizer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -23,15 +19,13 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static io.lettuce.core.protocol.CommandType.PING;
-import static io.lettuce.core.protocol.CommandType.ROLE;
-
 @Slf4j
 public class CustomNetty<K, V> implements NettyCustomizer {
-    private PingCommandGenerator<K, V> pingCommandGenerator;
+
+    private final RedisCommandSender<K, V> sender;
 
     public CustomNetty(RedisCodec<K, V> redisCodec) {
-        this.pingCommandGenerator = new PingCommandGenerator<>(redisCodec);
+        sender = new RedisCommandSender<>(redisCodec);
     }
 
     @Override
@@ -40,25 +34,27 @@ public class CustomNetty<K, V> implements NettyCustomizer {
 
     @Override
     public void afterChannelInitialized(Channel channel) {
+
+        //As-is activator
         RedisChannelInitializer redisChannelInitializer = channel.pipeline().get(RedisChannelInitializer.class);
 
-        channel.pipeline().replace(RedisChannelInitializer.class, "customChannelActivator",
-                new ChannelActivator(redisChannelInitializer));
+        //delegate it.
+        channel.pipeline().replace(RedisChannelInitializer.class, "TunnedChannelActivator", new ChannelActivator(redisChannelInitializer));
 
+        //To trigger Event
         channel.pipeline().addFirst(new IdleStateHandler(1, 1, 0));
         channel.pipeline().addLast(new ChannelDuplexHandler() {
             @Override
             public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
 
+                //IdleStateHandler will make event
                 if (evt instanceof IdleStateEvent) {
 
                     IdleStateEvent idleStateEvent = (IdleStateEvent) evt;
-                    if (idleStateEvent.state().equals(IdleState.READER_IDLE) && !idleStateEvent.isFirst()) {
-                        log.info(String.format("read inactive on this channel(%s)", ctx.channel()));
+                    if (idleStateEvent.state().equals(IdleState.READER_IDLE)) {
                         ctx.channel().close();
-
                     } else if (idleStateEvent.state().equals(IdleState.WRITER_IDLE)) {
-                        channel.writeAndFlush(pingCommandGenerator.ping());
+                        channel.writeAndFlush(sender.ping());
                     }
                 }
             }
@@ -70,44 +66,60 @@ public class CustomNetty<K, V> implements NettyCustomizer {
 
     static class ChannelActivator extends ChannelDuplexHandler implements RedisChannelInitializer {
 
-        RedisChannelInitializer redisChannelInitializer;
-        RoleGenerator<String, String> roleGenerator;
+        private final RedisChannelInitializer delegate;
+        private final RedisCommandSender<String, String> sender;
 
         public ChannelActivator(RedisChannelInitializer redisChannelInitializer) {
-            this.redisChannelInitializer = redisChannelInitializer;
-            this.roleGenerator = new RoleGenerator<>(StringCodec.UTF8);
+            this.delegate = redisChannelInitializer;
+            this.sender = new RedisCommandSender<>(StringCodec.UTF8);
         }
 
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            ((ChannelInboundHandler) redisChannelInitializer).channelInactive(ctx);
+            ((ChannelInboundHandler) delegate).channelInactive(ctx);
         }
 
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-            ((ChannelInboundHandler) redisChannelInitializer).userEventTriggered(ctx, evt);
+            ((ChannelInboundHandler) delegate).userEventTriggered(ctx, evt);
         }
 
         @Override
         public void channelActive(ChannelHandlerContext ctx) {
 
-            AsyncCommand<String, String, List<Object>> roleAsyncCommand = new AsyncCommand<>(roleGenerator.role());
+            AsyncCommand<String, String, List<Object>> roleAsyncCommand = new AsyncCommand<>(sender.role());
             ctx.fireUserEventTriggered(new ConnectionEvents.PingBeforeActivate(roleAsyncCommand));
 
             roleAsyncCommand.whenComplete((roleResult, exceptionOfRole) -> {
                 log.info("role result : " + roleResult.toString());
 
-                //if it is master, then let's connect to the server without condition.
+                /*
+                 * https://redis.io/commands/role/
+                 * The master output is composed of the following parts:
+                 * (0) The string master.
+                 * (1) The current master replication offset.
+                 * (2) An array composed of three elements array representing the connected replicas.
+                 * */
                 if ("master".equals(roleResult.get(0))) {
                     triggerChannelActive(ctx);
                     return;
                 }
 
-                //if slave and not connected, pend the connection.
+                /*
+                 * The replica output is composed of the following parts:
+                 *
+                 * (0) The string slave
+                 * (1) The IP of the master.
+                 * (2) The port number of the master.
+                 * (3) The state of the replication from the point of view of the master,
+                 *      - connect (the instance needs to connect to its master)
+                 *      - connecting (the master-replica connection is in progress)
+                 *      - sync (the master and replica are trying to perform the synchronization)
+                 *      - connected (the replica is online).
+                 * (4) The amount of data received from the replica so far in terms of master replication offset.
+                 * */
                 if (!"connected".equals(roleResult.get(3))) {
-                    redisChannelInitializer
-                            .channelInitialized()
-                            .completeExceptionally(new IllegalStateException("this is not connected"));
+                    delegate.channelInitialized().completeExceptionally(new IllegalStateException("this is not connected"));
                     return;
                 }
 
@@ -119,7 +131,7 @@ public class CustomNetty<K, V> implements NettyCustomizer {
 
         private void triggerChannelActive(ChannelHandlerContext ctx) {
             try {
-                ((ChannelInboundHandler) redisChannelInitializer).channelActive(ctx);
+                ((ChannelInboundHandler) delegate).channelActive(ctx);
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
@@ -128,36 +140,14 @@ public class CustomNetty<K, V> implements NettyCustomizer {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            ((ChannelInboundHandler) redisChannelInitializer).exceptionCaught(ctx, cause);
+            ((ChannelInboundHandler) delegate).exceptionCaught(ctx, cause);
         }
 
         @Override
         public CompletableFuture<Boolean> channelInitialized() {
-            return redisChannelInitializer.channelInitialized();
+            return delegate.channelInitialized();
         }
     }
 
-    static class RoleGenerator<K, V> extends BaseRedisCommandBuilder<K, V> {
 
-        public RoleGenerator(RedisCodec<K, V> codec) {
-            super(codec);
-        }
-
-        public Command<K, V, List<Object>> role() {
-            return createCommand(ROLE, new ArrayOutput<>(codec));
-        }
-
-    }
-
-    static class PingCommandGenerator<K, V> extends BaseRedisCommandBuilder<K, V> {
-
-        public PingCommandGenerator(RedisCodec<K, V> codec) {
-            super(codec);
-        }
-
-        public Command<K, V, String> ping() {
-            return createCommand(PING, new StatusOutput<>(codec));
-        }
-
-    }
 }

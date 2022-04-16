@@ -8,9 +8,8 @@ import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.event.DefaultEventPublisherOptions;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
-import io.lettuce.core.resource.NettyCustomizer;
-import io.netty.bootstrap.Bootstrap;
 import io.penguin.pengiunlettuce.codec.DefaultCodec;
+import io.penguin.pengiunlettuce.connection.channel.CustomNetty;
 
 import java.time.Duration;
 import java.util.List;
@@ -38,12 +37,7 @@ public class RedisConnection {
                         .eventEmitInterval(Duration.ofMinutes(1))
                         .build())
                 .ioThreadPoolSize(Runtime.getRuntime().availableProcessors() * 2)
-                .nettyCustomizer(new NettyCustomizer() {
-                    @Override
-                    public void afterBootstrapInitialized(Bootstrap bootstrap) {
-                        NettyCustomizer.super.afterBootstrapInitialized(bootstrap);
-                    }
-                })
+                .nettyCustomizer(new CustomNetty<>(DefaultCodec.getInstance()))
                 .build();
     }
 
