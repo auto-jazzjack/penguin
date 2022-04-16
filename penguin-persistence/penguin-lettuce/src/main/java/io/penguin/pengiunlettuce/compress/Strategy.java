@@ -9,5 +9,5 @@ public enum Strategy {
 
     GZIP(1);
 
-    int mode;
+    final int mode;
 }

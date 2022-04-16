@@ -5,12 +5,11 @@ import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
-import io.lettuce.core.codec.CompressionCodec;
-import io.lettuce.core.codec.RedisCodec;
 import io.lettuce.core.event.DefaultEventPublisherOptions;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
 import io.penguin.pengiunlettuce.codec.DefaultCodec;
+import io.penguin.pengiunlettuce.connection.channel.CustomNetty;
 
 import java.time.Duration;
 import java.util.List;
@@ -28,7 +27,7 @@ public class RedisConnection {
         List<RedisURI> collect = ingredient.getRedisUris().stream()
                 .map(i -> RedisURI.create(i, ingredient.getPort()))
                 .collect(Collectors.toList());
-        cached = connection(ingredient, collect);
+        cached = connection(collect);
         return cached;
     }
 
@@ -38,10 +37,11 @@ public class RedisConnection {
                         .eventEmitInterval(Duration.ofMinutes(1))
                         .build())
                 .ioThreadPoolSize(Runtime.getRuntime().availableProcessors() * 2)
+                .nettyCustomizer(new CustomNetty<>(DefaultCodec.getInstance()))
                 .build();
     }
 
-    private static StatefulRedisClusterConnection<String, byte[]> connection(LettuceConnectionIngredient ingredient, List<RedisURI> redisURI) {
+    private static StatefulRedisClusterConnection<String, byte[]> connection(List<RedisURI> redisURI) {
         RedisClusterClient redisClusterClient = RedisClusterClient.create(clientResources(), redisURI);
 
         redisClusterClient.setOptions(ClusterClientOptions.builder()
@@ -53,20 +53,7 @@ public class RedisConnection {
                 .build());
 
 
-        RedisCodec<String, byte[]> codec;
-        switch (ingredient.getCompression()) {
-            case GZIP:
-                codec = CompressionCodec.valueCompressor(DefaultCodec.getInstance(), CompressionCodec.CompressionType.GZIP);
-                break;
-            case DEFLATE:
-                codec = CompressionCodec.valueCompressor(DefaultCodec.getInstance(), CompressionCodec.CompressionType.DEFLATE);
-                break;
-            case NONE:
-            default:
-                codec = DefaultCodec.getInstance();
-        }
-
-        return redisClusterClient.connect(codec);
+        return redisClusterClient.connect(DefaultCodec.getInstance());
     }
 
 

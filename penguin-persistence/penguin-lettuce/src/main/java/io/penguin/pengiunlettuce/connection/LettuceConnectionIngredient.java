@@ -1,6 +1,5 @@
 package io.penguin.pengiunlettuce.connection;
 
-import io.penguin.pengiunlettuce.cofig.Compression;
 import lombok.Builder;
 import lombok.Data;
 
@@ -20,7 +19,6 @@ public class LettuceConnectionIngredient {
     private Integer queueSize;
     private List<String> redisUris;
     private Integer port;
-    private Compression compression;
 
     public static LettuceConnectionIngredient.LettuceConnectionIngredientBuilder base() {
         return LettuceConnectionIngredient.builder()
@@ -33,17 +31,13 @@ public class LettuceConnectionIngredient {
     public static LettuceConnectionIngredient toInternal(LettuceConnectionConfig config) {
         Objects.requireNonNull(config);
 
-        LettuceConnectionIngredient build = LettuceConnectionIngredient.base()
+        return LettuceConnectionIngredient.base()
                 .expireMilliseconds(Optional.ofNullable(config.getExpireMilliseconds()).orElse(1000000L))
                 .queueSize(Optional.ofNullable(config.getQueueSize()).orElse(30000))
                 .port(Optional.ofNullable(config.getPort()).orElse(6379))
                 .redisUris(Optional.ofNullable(config.getRedisUris()).map(i -> Arrays.stream(i.split(",")).collect(Collectors.toList()))
                         .orElseThrow(() -> new IllegalArgumentException("Redice host should be supplied")))
-                .compression(Optional.ofNullable(config.getCompression()).map(Compression::defaultOrValueOf).orElse(Compression.NONE))
                 .build();
-
-
-        return build;
     }
 
 }
