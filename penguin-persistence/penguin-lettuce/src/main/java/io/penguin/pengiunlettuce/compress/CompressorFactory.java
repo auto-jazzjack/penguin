@@ -1,5 +1,6 @@
 package io.penguin.pengiunlettuce.compress;
 
+import io.lettuce.core.codec.RedisCodec;
 import io.penguin.penguincodec.Codec;
 
 public class CompressorFactory {
