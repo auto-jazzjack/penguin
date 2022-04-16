@@ -1,3 +1,7 @@
+spring:
+  mvc:
+    async:
+      request-timeout: 5s
 penguin:
   version: v1
   metadata:
@@ -35,6 +39,7 @@ penguin:
               codecConfig:
                 codec: io.penguin.penguincodec.JsonCodec
                 target: io.penguin.penguincore.model.MyModel
+                compress: GZIP
 
           - name: OverWrite
             kind: OVER_WRITER

@@ -13,4 +13,5 @@ import lombok.NoArgsConstructor;
 public class CodecConfig {
     private Class<Codec> codec;
     private Class target;
+    private String compress;
 }

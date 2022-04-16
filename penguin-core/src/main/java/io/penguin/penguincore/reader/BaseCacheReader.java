@@ -5,7 +5,9 @@ import io.micrometer.core.instrument.Timer;
 import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.util.Pair;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.SignalType;
 import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
@@ -29,18 +31,24 @@ public abstract class BaseCacheReader<K, V> implements CacheReader<K, V> {
 
         this.fromDownStream = fromDownStream;
         watcher.asFlux()
+                .windowTimeout(100, Duration.ofSeconds(5))
+                .flatMap(Flux::distinct)
                 .flatMap(i -> this.fromDownStream.findOne(i).map(j -> Pair.of(i, j)))
                 .filter(i -> i.getKey() != null && i.getValue() != null)
-                .windowTimeout(100, Duration.ofSeconds(5))
-                .distinct()
-                .flatMap(i -> i)
+                .doOnError(e -> {
+                    log.error("", e);
+                })
                 .subscribe(i -> writeOne(i.getKey().toString(), i.getValue()), e -> log.error("", e));
-
     }
 
 
     public void insertQueue(K k) {
-        watcher.tryEmitNext(k);
+        watcher.emitNext(k, new Sinks.EmitFailureHandler() {
+            @Override
+            public boolean onEmitFailure(SignalType signalType, Sinks.EmitResult emitResult) {
+                return true;
+            }
+        });
     }
 
     @Override
