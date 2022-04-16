@@ -81,7 +81,7 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
     @Override
     public void writeOne(String key, Context<V> value) {
 
-        if (value.getValue() == null) {
+        if (value == null || value.getValue() == null) {
             return;
         }
 
