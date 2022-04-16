@@ -1,3 +1,7 @@
+spring:
+  mvc:
+    async:
+      request-timeout: 5s
 penguin:
   version: v1
   metadata:
