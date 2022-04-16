@@ -11,7 +11,9 @@ import io.penguin.penguincore.reader.Reader;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 
 @Data
@@ -23,8 +25,6 @@ public class LettuceCacheIngredient {
     private String prefix;
     private Reader fromDownStream;
     private Codec codec;
-    private Compression compression;
-
 
     private PluginInput pluginInput;
 
