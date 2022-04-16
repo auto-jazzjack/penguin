@@ -16,6 +16,7 @@ import java.util.*;
 
 @Data
 @Builder
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class LettuceCacheIngredient {
 
     private RedisCodec<?, byte[]> connectionCodec;
