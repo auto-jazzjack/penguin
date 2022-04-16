@@ -8,7 +8,7 @@ import org.springframework.web.method.support.AsyncHandlerMethodReturnValueHandl
 import org.springframework.web.method.support.ModelAndViewContainer;
 import reactor.core.publisher.Mono;
 
-public class ObservableReturnValueHandler implements AsyncHandlerMethodReturnValueHandler {
+public class MonoReturnValueHandler implements AsyncHandlerMethodReturnValueHandler {
     @Override
     public boolean isAsyncReturnValue(Object returnValue, MethodParameter returnType) {
         return returnValue != null && supportsReturnType(returnType);
@@ -28,14 +28,14 @@ public class ObservableReturnValueHandler implements AsyncHandlerMethodReturnVal
             return;
         }
 
-        final Mono<?> observable = Mono.class.cast(returnValue);
+        final Mono<?> Mono = Mono.class.cast(returnValue);
         WebAsyncUtils.getAsyncManager(webRequest)
-                .startDeferredResultProcessing(new ObservableAdapter<>(observable), mavContainer);
+                .startDeferredResultProcessing(new MonoAdapter<>(Mono), mavContainer);
     }
 
-    public class ObservableAdapter<T> extends DeferredResult<T> {
-        public ObservableAdapter(Mono<T> observable) {
-            observable.subscribe(this::setResult, this::setErrorResult);
+    public class MonoAdapter<T> extends DeferredResult<T> {
+        public MonoAdapter(Mono<T> Mono) {
+            Mono.subscribe(this::setResult, this::setErrorResult);
         }
     }
 }
