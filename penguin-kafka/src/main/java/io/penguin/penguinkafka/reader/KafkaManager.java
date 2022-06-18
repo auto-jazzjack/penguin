@@ -1,6 +1,8 @@
 package io.penguin.penguinkafka.reader;
 
 import io.penguin.penguinkafka.config.CommonConfiguration;
+import io.penguin.penguinkafka.model.Actor;
+import io.penguin.penguinkafka.model.KafkaProps;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,8 @@ import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import static io.penguin.penguinkafka.util.KafkaUtil.createActor;
 
 @Slf4j
 @Component
@@ -21,8 +25,22 @@ public class KafkaManager {
 
     @PostConstruct
     public void init() {
-        System.out.println();
+        kafkaProcessorMap = new HashMap<>();
 
+        for (Map.Entry<String, KafkaProps> i : properties.getKafkaProps().entrySet()) {
+            Actor actor = createActor(i.getValue().getActor());
+            kafkaProcessorMap.put(i.getKey(), new KafkaProcessor<>(i.getValue()) {
+                @Override
+                public void action(Object key, Object value) {
+                    actor.action(key, value);
+                }
+
+                @Override
+                public Object deserialize(byte[] bytes) {
+                    return actor.deserialize(bytes);
+                }
+            });
+        }
     }
 
     public Map<String, Integer> revive() {

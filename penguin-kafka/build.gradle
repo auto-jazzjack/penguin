@@ -6,6 +6,10 @@ plugins {
 
 sourceCompatibility = '11'
 
+bootJar {
+    enabled(false)
+}
+
 repositories {
     mavenCentral()
 }

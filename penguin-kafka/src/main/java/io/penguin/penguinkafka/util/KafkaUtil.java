@@ -1,9 +1,11 @@
 package io.penguin.penguinkafka.util;
 
+import io.penguin.penguinkafka.model.Actor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,6 +21,16 @@ public class KafkaUtil {
                 retv.add(Pair.of(record.key(), deserializer.apply(record.value())));
             }
             return retv;
+        }
+    }
+
+    public static Actor createActor(Class<? extends Actor> clazz) {
+        try {
+            Constructor<? extends Actor> constructor = clazz.getConstructor();
+            Actor actor = constructor.newInstance();
+            return actor;
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot craete actor");
         }
     }
 }

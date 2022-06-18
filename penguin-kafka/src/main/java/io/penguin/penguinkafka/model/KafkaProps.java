@@ -1,12 +1,12 @@
 package io.penguin.penguinkafka.model;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import lombok.*;
 import org.apache.kafka.common.serialization.Serializer;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class KafkaProps {
     private Class<? extends Serializer<?>> keySerializer;
 
@@ -18,6 +18,7 @@ public class KafkaProps {
     private Long poll;
     private RedisProps redisProps;
     private Integer concurrency;
+    private Class<? extends Actor> actor;
 
     enum OffSet {
         EARLIEST,
