@@ -7,5 +7,6 @@ include 'penguin-kafka'
 
 include 'penguin-springboot-starter'
 include 'sample:application'
+include 'sample:consumer'
 include 'penguin-codec'
 
