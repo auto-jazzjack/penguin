@@ -31,7 +31,7 @@ public class RedisConnection {
         return cached;
     }
 
-    private static ClientResources clientResources() {
+    public static ClientResources clientResources() {
         return DefaultClientResources.builder()
                 .commandLatencyPublisherOptions(DefaultEventPublisherOptions.builder()
                         .eventEmitInterval(Duration.ofMinutes(1))
@@ -41,7 +41,7 @@ public class RedisConnection {
                 .build();
     }
 
-    private static StatefulRedisClusterConnection<String, byte[]> connection(List<RedisURI> redisURI) {
+    public static StatefulRedisClusterConnection<String, byte[]> connection(List<RedisURI> redisURI) {
         RedisClusterClient redisClusterClient = RedisClusterClient.create(clientResources(), redisURI);
 
         redisClusterClient.setOptions(ClusterClientOptions.builder()
@@ -55,6 +55,4 @@ public class RedisConnection {
 
         return redisClusterClient.connect(DefaultCodec.getInstance());
     }
-
-
 }
