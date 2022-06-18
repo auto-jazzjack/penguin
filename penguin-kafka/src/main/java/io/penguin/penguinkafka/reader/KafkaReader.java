@@ -2,7 +2,7 @@ package io.penguin.penguinkafka.reader;
 
 public interface KafkaReader<K, V> {
 
-    void consume();
+    int consume();
 
     void action(K key, V value);
 

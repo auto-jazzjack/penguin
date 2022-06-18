@@ -56,32 +56,38 @@ public abstract class KafkaProcessor<K, V> implements KafkaReader<K, V> {
         });
     }
 
+    /**
+     * Return
+     */
     @Override
-    public void consume() {
+    public int consume() {
         if (concurrency.get() >= targetConcurrency.get()) {
-            return;
+            return 0;
         }
-        concurrency.getAndIncrement();
 
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        try {
-            executorService.submit((Runnable) () -> {
-                while (true) {
-                    ConsumerRecords<K, byte[]> consumerRecords = consumer.poll(poll);
-                    KafkaUtil.aggregate(consumerRecords, bytes -> deserialize(bytes))
-                            .forEach(i -> action(i.getKey(), i.getValue()));
-                    consumer.commitSync();
+        int targetCnt = targetConcurrency.get() - concurrency.get();
+        ExecutorService executorService = Executors.newFixedThreadPool(targetCnt);
+
+        for (int j = 0; j < targetCnt; j++) {
+            executorService.submit(() -> {
+                try {
+                    concurrency.getAndIncrement();
+                    while (true) {
+                        ConsumerRecords<K, byte[]> consumerRecords = consumer.poll(poll);
+                        KafkaUtil.aggregate(consumerRecords, this::deserialize)
+                                .forEach(i -> action(i.getKey(), i.getValue()));
+                        consumer.commitSync();
+                    }
+                } catch (Exception e) {
+                    log.error("");
+                } finally {
+                    executorService.shutdown();
+                    concurrency.decrementAndGet();
+                    currentPartition.clear();
+                    consumer.close();
                 }
             });
-        } catch (Exception e) {
-
-        } finally {
-            executorService.shutdown();
-            concurrency.decrementAndGet();
-            currentPartition.clear();
-            consumer.close();
         }
+        return targetCnt;
     }
-
-
 }
