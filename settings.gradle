@@ -3,8 +3,10 @@ rootProject.name = 'penguin'
 include 'penguin-core'
 include 'penguin-persistence:penguin-lettuce'
 include 'penguin-persistence:penguin-cassandra'
+include 'penguin-kafka'
 
 include 'penguin-springboot-starter'
 include 'sample:application'
+include 'sample:consumer'
 include 'penguin-codec'
 
