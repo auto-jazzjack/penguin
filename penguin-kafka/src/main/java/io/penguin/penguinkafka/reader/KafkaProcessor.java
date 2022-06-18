@@ -57,7 +57,7 @@ public abstract class KafkaProcessor<K, V> implements KafkaReader<K, V> {
     }
 
     /**
-     * Return
+     * Return the number of revived
      */
     @Override
     public int consume() {

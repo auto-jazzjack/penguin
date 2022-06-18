@@ -1,0 +1,14 @@
+server:
+  port: 10001
+
+processor:
+  bootStrap: 11
+  topic: 11
+  keySerializer: 11
+  groupId: 11
+  offset: 11
+  poll: 11
+  concurrency: 11
+  redisProps:
+    expireTime: 11
+    redisHosts: 11
