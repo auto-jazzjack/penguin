@@ -5,13 +5,14 @@ import io.penguin.penguinkafka.model.Actor;
 import io.penguin.penguinkafka.model.KafkaProps;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
+import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static io.penguin.penguinkafka.util.KafkaUtil.createActor;
 
@@ -59,7 +60,12 @@ public class KafkaManager {
         return retv;
     }
 
-    public Map<String, Long> rewind() {
-        return Collections.emptyMap();
+    public Map<Integer, Long> rewind(String processor, Date date) {
+        Map<TopicPartition, OffsetAndTimestamp> rewind = kafkaProcessorMap.get(processor).rewind(date);
+        return Optional.ofNullable(rewind)
+                .orElse(Collections.emptyMap())
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(i -> i.getKey().partition(), i -> i.getValue().timestamp()));
     }
 }
