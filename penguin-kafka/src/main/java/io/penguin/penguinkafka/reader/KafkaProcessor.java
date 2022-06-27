@@ -6,12 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Properties;
+import java.time.Duration;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 public abstract class KafkaProcessor<K, V> implements KafkaReader<K, V> {
 
     private final KafkaConsumer<K, byte[]> consumer;
+    //Value is meaning less. Just used ConsurrentMap to support atomicity.
     private final ConcurrentMap<TopicPartition, Object> currentPartition;
     private final long poll;
     private final AtomicInteger concurrency;
@@ -89,5 +90,25 @@ public abstract class KafkaProcessor<K, V> implements KafkaReader<K, V> {
             });
         }
         return targetCnt;
+    }
+
+    public Map<TopicPartition, OffsetAndTimestamp> rewind(Date date) {
+
+        long time = date.getTime();
+
+        Map<TopicPartition, Long> collect = Optional.ofNullable(currentPartition)
+                .orElse(new ConcurrentHashMap<>())
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, i -> time));
+
+        //Actually 1 second is magic number. But it is enough number timeout
+        Map<TopicPartition, OffsetAndTimestamp> topics = consumer.offsetsForTimes(collect, Duration.ofMillis(1000));
+        Map<TopicPartition, Long> partitionOffsetMap = topics.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, i -> i.getValue().offset()));
+
+        return consumer.offsetsForTimes(partitionOffsetMap, Duration.ofMillis(1000));
+
     }
 }
