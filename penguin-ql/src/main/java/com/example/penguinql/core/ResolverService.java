@@ -13,7 +13,7 @@ public class ResolverService<I, O> {
         this.executionPlanExecutor = new ExecutionPlanExecutor();
     }
 
-    public Mono<I> exec(O sampleRequest, String query) {
+    public Mono<O> exec(I request, String query) {
         ExecutionPlan generate = executionPlanGenerator.generate(GqlParser.parseFrom(query));
         return executionPlanExecutor.exec(generate);
     }
