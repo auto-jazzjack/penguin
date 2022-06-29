@@ -1,0 +1,26 @@
+dependencies {
+    compileOnly("ch.qos.logback:logback-classic:1.2.6")
+    implementation("com.google.protobuf:protobuf-java:${protobuf_version}")
+    implementation("io.projectreactor:reactor-core:${reactor_version}")
+    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    implementation("org.apache.commons:commons-lang3:3.5")
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.19.3'
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
