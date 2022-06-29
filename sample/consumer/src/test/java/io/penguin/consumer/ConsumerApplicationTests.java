@@ -1,13 +1,6 @@
 package io.penguin.consumer;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+public class ConsumerApplicationTests {
 
-@SpringBootTest
-class ConsumerApplicationTests {
-
-    @Test
-    void contextLoads() {
-    }
 
 }
