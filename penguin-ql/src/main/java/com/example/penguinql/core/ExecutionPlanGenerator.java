@@ -19,7 +19,7 @@ public class ExecutionPlanGenerator {
         this.resolverMapper = resolverMapper;
     }
 
-    public ExecutionPlan generate(Query query) {
+    public ExecutionPlan generate(Object request, Query query) {
         return generate(rootResolver, new ContextQL(), query);
     }
 
