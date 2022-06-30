@@ -20,10 +20,10 @@ public class ExecutionPlanGenerator {
     }
 
     public ExecutionPlan generate(Query query) {
-        return generate(rootResolver, new Context(), query);
+        return generate(rootResolver, new ContextQL(), query);
     }
 
-    private ExecutionPlan generate(Resolver current, Context context, Query query) {
+    private ExecutionPlan generate(Resolver current, ContextQL context, Query query) {
 
         if (current == null) {
             return null;

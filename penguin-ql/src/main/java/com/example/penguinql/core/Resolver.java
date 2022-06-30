@@ -14,7 +14,7 @@ public interface Resolver<Parent, Myself> {
         return Collections.emptyMap();
     }
 
-    default void preHandler(Context context) {
+    default void preHandler(ContextQL context) {
         //do nothing
     }
 

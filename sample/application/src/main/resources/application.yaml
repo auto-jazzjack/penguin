@@ -17,7 +17,6 @@ penguin:
           expireMilliseconds: 100
           redisUris: 127.0.0.1
       - name: OVER_WRITER
-
     workers:
       - name: myFirst
         kind: BASE

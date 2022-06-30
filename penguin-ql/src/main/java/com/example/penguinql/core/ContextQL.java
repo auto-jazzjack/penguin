@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Context {
+public class ContextQL {
     private List<String> executedResolver;
 
     public void addExecutedResolver(String str) {

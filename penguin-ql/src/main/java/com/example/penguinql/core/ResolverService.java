@@ -8,7 +8,7 @@ public class ResolverService<I, O> {
     private final ExecutionPlanGenerator executionPlanGenerator;
     private final ExecutionPlanExecutor executionPlanExecutor;
 
-    public ResolverService(Resolver<Void, O> rootResolver, ResolverMapper resolverMapper) {
+    public ResolverService(RootResolver<O> rootResolver, ResolverMapper resolverMapper) {
         this.executionPlanGenerator = new ExecutionPlanGenerator(rootResolver, resolverMapper);
         this.executionPlanExecutor = new ExecutionPlanExecutor();
     }
