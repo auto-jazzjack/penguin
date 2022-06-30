@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ContextQL {
     private List<String> executedResolver;
+    private Object request;
 
     public void addExecutedResolver(String str) {
         if (executedResolver == null) {

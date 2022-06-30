@@ -20,7 +20,9 @@ public class ExecutionPlanGenerator {
     }
 
     public ExecutionPlan generate(Object request, Query query) {
-        return generate(rootResolver, new ContextQL(), query);
+        ContextQL contextQL = new ContextQL();
+        contextQL.setRequest(request);
+        return generate(rootResolver, contextQL, query);
     }
 
     private ExecutionPlan generate(Resolver current, ContextQL context, Query query) {

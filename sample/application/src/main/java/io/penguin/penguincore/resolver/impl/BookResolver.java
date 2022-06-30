@@ -5,6 +5,8 @@ import com.example.penguinql.core.DataFetchingEnv;
 import com.example.penguinql.core.Resolver;
 import io.penguin.penguincore.model.Book;
 import io.penguin.penguincore.model.BookStore;
+import io.penguin.penguincore.reader.BookReader;
+import io.penguin.penguincore.reader.BookStoreReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,7 +20,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class BookResolver implements Resolver<BookStore, List<Book>> {
 
-    private final BookStoreResolver bookStoreResolver;
+    private final BookReader bookReader;
 
     @Override
     public void setData(BookStore bookStore, List<Book> books) {
