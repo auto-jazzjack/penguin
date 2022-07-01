@@ -18,9 +18,8 @@ public interface Penguin<K, V> extends Repository<K, V> {
 
     void refreshOne(K key);
 
-    default Mono<Map<K, V>> findAll(Collection<K> keys) {
+    default Flux<Pair<K, V>> findAll(Collection<K> keys) {
         return Flux.fromIterable(keys)
-                .flatMap(i -> this.findOne(i).map(j -> Pair.of(i, j)))
-                .collectMap(Pair::getKey, Pair::getValue);
+                .flatMap(i -> this.findOne(i).map(j -> Pair.of(i, j)));
     }
 }

@@ -30,7 +30,9 @@ public class BookStoreResolver implements Resolver<SampleResponse, List<BookStor
     public Mono<List<BookStore>> generate(DataFetchingEnv condition) {
         List<Long> ids = ((SampleRequest) condition.getContext().getRequest()).getIds();
 
-        return Mono.empty();
+        return bookStoreReader.findAll(ids)
+                .map(i -> BookStore.builder().build())
+                .collectList();
     }
 
     @Override
