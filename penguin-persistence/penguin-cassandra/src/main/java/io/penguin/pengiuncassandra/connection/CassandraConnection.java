@@ -1,4 +1,4 @@
-package io.penguin.pengiuncassandra.connect;
+package io.penguin.pengiuncassandra.connection;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;

@@ -18,6 +18,15 @@ import java.util.stream.Collectors;
 public class ExecutionPlanExecutor {
 
     public <T> Mono<T> exec(ExecutionPlan executionPlan) {
+        ExecutionPlan ignoreRoot = executionPlan.getNext().entrySet().stream()
+                .findFirst()
+                .map(Map.Entry::getValue)
+                .orElse(null);
+
+        return exec0(ignoreRoot);
+    }
+
+    public <T> Mono<T> exec0(ExecutionPlan executionPlan) {
         if (executionPlan == null) {
             return Mono.empty();
         }
@@ -39,7 +48,7 @@ public class ExecutionPlanExecutor {
                                 j.getValue().getDataFetchingEnv()
                                         .setRoot(executionPlan.getDataFetchingEnv().getRoot())
                                         .setNearRoot(KeyValue.of(k1, result.get(k1)));
-                                return this.exec(j.getValue()).map(l -> Triple.of(j.getValue().getMySelf(), k1, l));
+                                return this.exec0(j.getValue()).map(l -> Triple.of(j.getValue().getMySelf(), k1, l));
                             }));
                 }
                 return tripleFlux;
@@ -54,7 +63,7 @@ public class ExecutionPlanExecutor {
                                 j.getValue().getDataFetchingEnv()
                                         .setRoot(executionPlan.getDataFetchingEnv().getRoot())
                                         .setNearRoot(KeyValue.of(entry.getKey(), result.get(k1)));
-                                return this.exec(j.getValue()).map(l -> Triple.of(j.getValue().getMySelf(), k1, l));
+                                return this.exec0(j.getValue()).map(l -> Triple.of(j.getValue().getMySelf(), k1, l));
                             }));
                 }
                 return tripleFlux;
@@ -65,7 +74,7 @@ public class ExecutionPlanExecutor {
                             value.getDataFetchingEnv()
                                     .setRoot(executionPlan.getDataFetchingEnv().getRoot())
                                     .setNearRoot(executionPlan.getDataFetchingEnv().getNearRoot());
-                            return this.exec(value).map(l -> Triple.of(j.getValue().getMySelf(), null, l));
+                            return this.exec0(value).map(l -> Triple.of(j.getValue().getMySelf(), null, l));
                         });
             }
         }).collect(Collectors.toMap(Triple::getMiddle, i -> Pair.of(i.getLeft(), i.getRight())));

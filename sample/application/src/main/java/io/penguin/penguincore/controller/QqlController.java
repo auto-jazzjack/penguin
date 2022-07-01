@@ -1,8 +1,9 @@
 package io.penguin.penguincore.controller;
 
+import com.example.penguinql.core.ResolverService;
 import io.penguin.penguincore.http.SampleRequest;
 import io.penguin.penguincore.http.SampleResponse;
-import io.penguin.penguincore.reader.FirstExample;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,14 +15,14 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Component
 @RestController
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class QqlController {
 
-    @Autowired
-    FirstExample firstExample;
+    private final ResolverService<SampleRequest, SampleResponse> resolverService;
 
     @PostMapping(path = "/hello")
     public Mono<SampleResponse> request(@RequestBody SampleRequest request) {
-        return Mono.empty();
+        return resolverService.exec(request, request.getQuery());
     }
 
 

@@ -7,14 +7,16 @@ public class ResolverService<I, O> {
 
     private final ExecutionPlanGenerator executionPlanGenerator;
     private final ExecutionPlanExecutor executionPlanExecutor;
+    private final GqlParser gqlParser;
 
-    public ResolverService(Resolver<Void, O> rootResolver, ResolverMapper resolverMapper) {
+    public ResolverService(RootResolver<O> rootResolver, ResolverMapper resolverMapper) {
         this.executionPlanGenerator = new ExecutionPlanGenerator(rootResolver, resolverMapper);
         this.executionPlanExecutor = new ExecutionPlanExecutor();
+        this.gqlParser = new GqlParser();
     }
 
     public Mono<O> exec(I request, String query) {
-        ExecutionPlan generate = executionPlanGenerator.generate(GqlParser.parseFrom(query));
+        ExecutionPlan generate = executionPlanGenerator.generate(request, gqlParser.parseFrom(query));
         return executionPlanExecutor.exec(generate);
     }
 }

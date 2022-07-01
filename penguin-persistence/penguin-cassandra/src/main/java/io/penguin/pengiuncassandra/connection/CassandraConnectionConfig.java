@@ -1,4 +1,4 @@
-package io.penguin.pengiuncassandra.connect;
+package io.penguin.pengiuncassandra.connection;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

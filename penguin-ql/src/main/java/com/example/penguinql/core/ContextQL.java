@@ -13,8 +13,9 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Context {
+public class ContextQL {
     private List<String> executedResolver;
+    private Object request;
 
     public void addExecutedResolver(String str) {
         if (executedResolver == null) {

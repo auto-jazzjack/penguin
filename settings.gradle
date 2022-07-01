@@ -3,6 +3,7 @@ rootProject.name = 'penguin'
 include 'penguin-core'
 include 'penguin-persistence:penguin-lettuce'
 include 'penguin-persistence:penguin-cassandra'
+include 'penguin-persistence:penguin-mysql'
 include 'penguin-kafka'
 
 include 'penguin-springboot-starter'

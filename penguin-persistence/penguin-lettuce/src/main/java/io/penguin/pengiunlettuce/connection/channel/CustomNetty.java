@@ -91,7 +91,7 @@ public class CustomNetty<K, V> implements NettyCustomizer {
             ctx.fireUserEventTriggered(new ConnectionEvents.PingBeforeActivate(roleAsyncCommand));
 
             roleAsyncCommand.whenComplete((roleResult, exceptionOfRole) -> {
-                log.info("role result : " + roleResult.toString());
+                log.trace("role result : " + roleResult.toString());
 
                 /*
                  * https://redis.io/commands/role/

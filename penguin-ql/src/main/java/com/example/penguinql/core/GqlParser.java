@@ -10,7 +10,7 @@ public class GqlParser {
     /**
      * Since there isn't any state, this method will be thread-safe
      */
-    public static Query parseFrom(String gql) {
+    public Query parseFrom(String gql) {
         AtomicInteger atomicInteger = new AtomicInteger(0);
         Query query = queryGen(gql, atomicInteger);
 
@@ -21,7 +21,7 @@ public class GqlParser {
         return query;
     }
 
-    private static Query queryGen(String list, AtomicInteger idx) {
+    private Query queryGen(String list, AtomicInteger idx) {
         Query query = new Query();
         query.setFields(new HashSet<>());
         query.setQueryByResolverName(new HashMap<>());
@@ -64,7 +64,7 @@ public class GqlParser {
 
     //This me method get string and index.
     //Return the first world exist between idx to next whitespace.
-    private static String getWord(String list, AtomicInteger idx) {
+    private String getWord(String list, AtomicInteger idx) {
         StringBuilder retv = new StringBuilder();
         skipBlank(list, idx);
         while (list.length() > idx.get()) {
@@ -91,7 +91,7 @@ public class GqlParser {
     }
 
     //helper to skip blank
-    private static void skipBlank(String list, AtomicInteger idx) {
+    private void skipBlank(String list, AtomicInteger idx) {
         while (list.length() > idx.get()) {
             switch (list.charAt(idx.getAndIncrement())) {
                 case '\n':

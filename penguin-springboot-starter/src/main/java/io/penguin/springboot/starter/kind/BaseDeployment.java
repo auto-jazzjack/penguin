@@ -74,16 +74,18 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                     return Mono.just(i);
                 })
                 .map(Context::getValue);
-
-        Mono<Map<Class<? extends BaseOverWriteReader>, Object>> overWriterOne = overWriter.findOne(key).defaultIfEmpty(Collections.emptyMap());
-
-        return Mono.zip(withoutOverWrite, overWriterOne)
-                .map(i -> {
-                    V origin = i.getT1();
-                    Map<Class<? extends BaseOverWriteReader>, Object> t2 = i.getT2();
-                    t2.forEach((key1, value) -> mergers.get(key1).accept(origin, value));
-                    return origin;
-                });
+        if (overWriter != null) {
+            Mono<Map<Class<? extends BaseOverWriteReader>, Object>> overWriterOne = overWriter.findOne(key).defaultIfEmpty(Collections.emptyMap());
+            return Mono.zip(withoutOverWrite, overWriterOne)
+                    .map(i -> {
+                        V origin = i.getT1();
+                        Map<Class<? extends BaseOverWriteReader>, Object> t2 = i.getT2();
+                        t2.forEach((key1, value) -> mergers.get(key1).accept(origin, value));
+                        return origin;
+                    });
+        } else {
+            return withoutOverWrite;
+        }
     }
 
     @Override

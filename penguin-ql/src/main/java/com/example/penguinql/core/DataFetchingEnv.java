@@ -13,10 +13,10 @@ public class DataFetchingEnv {
 
     private KeyValue<Object, Object> root;
     private KeyValue<Object, Object> nearRoot;
-    private Context context;
+    private ContextQL context;
 
 
-    public DataFetchingEnv setContext(Context context) {
+    public DataFetchingEnv setContext(ContextQL context) {
         this.context = context;
         return this;
     }

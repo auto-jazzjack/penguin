@@ -19,11 +19,13 @@ public class ExecutionPlanGenerator {
         this.resolverMapper = resolverMapper;
     }
 
-    public ExecutionPlan generate(Query query) {
-        return generate(rootResolver, new Context(), query);
+    public ExecutionPlan generate(Object request, Query query) {
+        ContextQL contextQL = new ContextQL();
+        contextQL.setRequest(request);
+        return generate(rootResolver, contextQL, query);
     }
 
-    private ExecutionPlan generate(Resolver current, Context context, Query query) {
+    private ExecutionPlan generate(Resolver current, ContextQL context, Query query) {
 
         if (current == null) {
             return null;
