@@ -3,17 +3,22 @@ package io.penguin.penguincore.resolver.impl;
 import com.example.penguinql.core.DataFetchingEnv;
 import com.example.penguinql.core.Resolver;
 import com.google.common.collect.ImmutableMap;
+import io.penguin.penguincore.http.Book;
 import io.penguin.penguincore.http.BookStore;
 import io.penguin.penguincore.http.SampleRequest;
 import io.penguin.penguincore.http.SampleResponse;
+import io.penguin.penguincore.model.CBookStore;
 import io.penguin.penguincore.reader.BookStoreReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -31,7 +36,18 @@ public class BookStoreResolver implements Resolver<SampleResponse, List<BookStor
         List<Long> ids = ((SampleRequest) condition.getContext().getRequest()).getIds();
 
         return bookStoreReader.findAll(ids)
-                .map(i -> BookStore.builder().build())
+                .map(i -> {
+                    List<Book> collect = Optional.ofNullable(i.getValue()).map(CBookStore::getBook_ids).orElse(Collections.emptyList())
+                            .stream()
+                            .map(j -> Book.builder().id(j).build())
+                            .collect(Collectors.toList());
+
+                    return BookStore.builder()
+                            .id(i.getKey())
+                            .books(collect)
+                            .contact(Optional.ofNullable(i.getValue()).map(CBookStore::getContact).orElse(null))
+                            .build();
+                })
                 .collectList();
     }
 

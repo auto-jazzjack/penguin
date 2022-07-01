@@ -20,12 +20,11 @@ public class ResolverMapperImpl implements com.example.penguinql.core.ResolverMa
 
     @PostConstruct
     public void hello() {
-        System.out.println();
         mapper = resolvers.stream().collect(Collectors.toMap(Resolver::getClass, i -> i));
     }
 
     @Override
     public Resolver toInstant(Class<? extends Resolver> resolver) {
-        return null;
+        return mapper.get(resolver);
     }
 }

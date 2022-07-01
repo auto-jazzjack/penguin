@@ -5,16 +5,16 @@ import com.example.penguinql.core.DataFetchingEnv;
 import com.example.penguinql.core.Resolver;
 import io.penguin.penguincore.http.Book;
 import io.penguin.penguincore.http.BookStore;
-import io.penguin.penguincore.model.CBookStore;
 import io.penguin.penguincore.reader.BookReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -33,19 +33,18 @@ public class BookResolver implements Resolver<BookStore, List<Book>> {
 
     @Override
     public Mono<List<Book>> generate(DataFetchingEnv condition) {
-        CBookStore nearRoot = (CBookStore) condition.getNearRoot().getValueByKey();
-
-        return Mono.just(Stream.of(
-                        Book.builder()
-                                .title(nearRoot.getContact())
-                                .price(80000L)
-                                .build(),
-                        Book.builder()
-                                .title(nearRoot.getContact())
-                                .price(50000L)
-                                .build()
-                )
-                .collect(Collectors.toList()));
+        BookStore nearRoot = (BookStore) condition.getNearRoot().getValueByKey();
+        List<Long> collect = Optional.ofNullable(nearRoot.getBooks()).orElse(Collections.emptyList())
+                .stream()
+                .map(Book::getId)
+                .collect(Collectors.toList());
+        return bookReader.findAll(collect)
+                .map(i -> Book.builder()
+                        .id(i.getKey())
+                        .price(i.getValue().getPrice())
+                        .title(i.getValue().getTitle())
+                        .build())
+                .collectList();
     }
 
 
