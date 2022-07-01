@@ -9,7 +9,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
-import io.penguin.pengiuncassandra.connect.CassandraConnectionIngredient;
+import io.penguin.pengiuncassandra.connection.CassandraConnectionIngredient;
 import io.penguin.pengiuncassandra.config.CassandraIngredient;
 import io.penguin.pengiuncassandra.util.CasandraUtil;
 import io.penguin.penguincore.metric.MetricCreator;

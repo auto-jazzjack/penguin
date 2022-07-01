@@ -33,13 +33,6 @@ public class BookStoreResolver implements Resolver<SampleResponse, List<BookStor
 
         return bookStoreReader.findAll(ids)
                 .map(i -> new ArrayList<>(i.values()));
-        /*return Mono.just(Stream.of(BookStore.builder()
-                        .contact("123457")
-                        .build(),
-                BookStore.builder()
-                        .contact("123456")
-                        .build()
-        ).collect(Collectors.toList()));*/
     }
 
     @Override
