@@ -26,9 +26,9 @@ penguin:
             kind: CASSANDRA
             spec:
               idColumn: id
-              columns: id, books, contact
+              columns: id, book_ids, contact
               table: book_store
-              valueType: io.penguin.penguincore.model.BookStore
+              valueType: io.penguin.penguincore.model.CBookStore
           - name: BookStore_cache
             kind: LETTUCE_CACHE
             spec:
@@ -36,7 +36,7 @@ penguin:
               downStreamName: source
               codecConfig:
                 codec: io.penguin.penguincodec.JsonCodec
-                target: io.penguin.penguincore.model.BookStore
+                target: io.penguin.penguincore.model.CBookStore
                 compress: GZIP
       - name: Book
         kind: BASE
@@ -48,7 +48,7 @@ penguin:
               idColumn: id
               columns: id, price, title
               table: book
-              valueType: io.penguin.penguincore.model.Book
+              valueType: io.penguin.penguincore.model.CBook
           - name: Book_cache
             kind: LETTUCE_CACHE
             spec:
@@ -56,5 +56,5 @@ penguin:
               downStreamName: source
               codecConfig:
                 codec: io.penguin.penguincodec.JsonCodec
-                target: io.penguin.penguincore.model.Book
+                target: io.penguin.penguincore.model.CBook
                 compress: GZIP

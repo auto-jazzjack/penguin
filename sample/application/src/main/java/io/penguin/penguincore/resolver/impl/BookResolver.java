@@ -4,7 +4,7 @@ import com.example.penguinql.core.ContextQL;
 import com.example.penguinql.core.DataFetchingEnv;
 import com.example.penguinql.core.Resolver;
 import io.penguin.penguincore.http.Book;
-import io.penguin.penguincore.model.CBook;
+import io.penguin.penguincore.http.BookStore;
 import io.penguin.penguincore.model.CBookStore;
 import io.penguin.penguincore.reader.BookReader;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +18,12 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class BookResolver implements Resolver<CBookStore, List<Book>> {
+public class BookResolver implements Resolver<BookStore, List<Book>> {
 
     private final BookReader bookReader;
 
     @Override
-    public void setData(CBookStore bookStore, List<Book> books) {
+    public void setData(BookStore bookStore, List<Book> books) {
         bookStore.setBooks(books);
     }
 

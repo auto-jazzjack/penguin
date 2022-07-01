@@ -1,4 +1,4 @@
-CREATE TABLE local.bool (
+CREATE TABLE local.book (
 	id bigint PRIMARY KEY,
 	title text,
 	price bigint

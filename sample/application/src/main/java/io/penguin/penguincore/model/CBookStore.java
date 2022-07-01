@@ -19,6 +19,6 @@ public class CBookStore {
     @PartitionKey
     private Long id;
 
-    private List<Long> books;
+    private List<Long> book_ids;
     private String contact;
 }
