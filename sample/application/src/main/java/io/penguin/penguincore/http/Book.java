@@ -1,4 +1,4 @@
-package io.penguin.penguincore.model;
+package io.penguin.penguincore.http;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 public class Book {
+
+    private Long id;
     private String title;
     private Long price;
 }

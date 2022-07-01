@@ -9,7 +9,7 @@ public class MysqlConnection {
 
     private static Connection connection;
 
-    public synchronized static Connection MysqlConnection(MysqlIngredient mysqlIngredient) throws Exception {
+    public synchronized static Connection connection(MysqlIngredient mysqlIngredient) throws Exception {
         if (connection == null) {
             Class.forName(mysqlIngredient.getDriverClass());
             connection = DriverManager.getConnection(mysqlIngredient.getUrl(), mysqlIngredient.getUserName(), mysqlIngredient.getPassword());

@@ -3,16 +3,15 @@ package io.penguin.penguincore.resolver.impl;
 import com.example.penguinql.core.DataFetchingEnv;
 import com.example.penguinql.core.Resolver;
 import com.google.common.collect.ImmutableMap;
+import io.penguin.penguincore.http.BookStore;
 import io.penguin.penguincore.http.SampleRequest;
 import io.penguin.penguincore.http.SampleResponse;
-import io.penguin.penguincore.model.BookStore;
 import io.penguin.penguincore.reader.BookStoreReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -31,8 +30,7 @@ public class BookStoreResolver implements Resolver<SampleResponse, List<BookStor
     public Mono<List<BookStore>> generate(DataFetchingEnv condition) {
         List<Long> ids = ((SampleRequest) condition.getContext().getRequest()).getIds();
 
-        return bookStoreReader.findAll(ids)
-                .map(i -> new ArrayList<>(i.values()));
+        return Mono.empty();
     }
 
     @Override

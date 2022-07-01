@@ -1,4 +1,4 @@
-package io.penguin.penguincore.model;
+package io.penguin.penguincore.http;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +12,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 public class BookStore {
+
+    private Long id;
     private List<Book> books;
     private String contact;
 }

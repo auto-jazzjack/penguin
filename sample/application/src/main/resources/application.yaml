@@ -18,30 +18,43 @@ penguin:
           redisUris: 127.0.0.1
       - name: OVER_WRITER
     workers:
-      - name: myFirst
+      - name: BookStore
         kind: BASE
-        aggregatedTarget: io.penguin.penguincore.reader.FirstExample
+        aggregatedTarget: io.penguin.penguincore.reader.BookStoreReader
         containers:
           - name: source
             kind: CASSANDRA
             spec:
               idColumn: id
-              columns: first, id
-              table: first_table
-              valueType: io.penguin.penguincore.model.MyModel
-
-          - name: First
+              columns: id, books, contact
+              table: book_store
+              valueType: io.penguin.penguincore.model.BookStore
+          - name: BookStore_cache
+            kind: LETTUCE_CACHE
+            spec:
+              prefix: bs
+              downStreamName: source
+              codecConfig:
+                codec: io.penguin.penguincodec.JsonCodec
+                target: io.penguin.penguincore.model.BookStore
+                compress: GZIP
+      - name: Book
+        kind: BASE
+        aggregatedTarget: io.penguin.penguincore.reader.BookReader
+        containers:
+          - name: source
+            kind: CASSANDRA
+            spec:
+              idColumn: id
+              columns: id, price, title
+              table: book
+              valueType: io.penguin.penguincore.model.Book
+          - name: Book_cache
             kind: LETTUCE_CACHE
             spec:
               prefix: p
               downStreamName: source
               codecConfig:
                 codec: io.penguin.penguincodec.JsonCodec
-                target: io.penguin.penguincore.model.MyModel
+                target: io.penguin.penguincore.model.Book
                 compress: GZIP
-
-          - name: OverWrite
-            kind: OVER_WRITER
-            spec:
-              - io.penguin.penguincore.overwrite.ValueOverWriter
-              - io.penguin.penguincore.overwrite.Value2OverWriter
