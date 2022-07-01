@@ -37,7 +37,8 @@ public class BookStoreResolver implements Resolver<SampleResponse, List<BookStor
 
         return bookStoreReader.findAll(ids)
                 .map(i -> {
-                    List<Book> collect = Optional.ofNullable(i.getValue()).map(CBookStore::getBook_ids).orElse(Collections.emptyList())
+                    List<Book> collect = Optional.ofNullable(i.getValue()).map(CBookStore::getBook_ids)
+                            .orElse(Collections.emptyList())
                             .stream()
                             .map(j -> Book.builder().id(j).build())
                             .collect(Collectors.toList());

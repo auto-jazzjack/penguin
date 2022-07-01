@@ -5,7 +5,7 @@ import reactor.core.publisher.Mono;
 public interface RootResolver<Myself> extends Resolver<Void, Myself> {
     @Override
     default Mono<Myself> generate(DataFetchingEnv condition) {
-        return null;
+        return Mono.empty();
     }
 
     @Override

@@ -22,7 +22,7 @@ penguin:
         kind: BASE
         aggregatedTarget: io.penguin.penguincore.reader.BookStoreReader
         containers:
-          - name: source
+          - name: BookStore_source
             kind: CASSANDRA
             spec:
               idColumn: id
@@ -33,7 +33,7 @@ penguin:
             kind: LETTUCE_CACHE
             spec:
               prefix: bs
-              downStreamName: source
+              downStreamName: BookStore_source
               codecConfig:
                 codec: io.penguin.penguincodec.JsonCodec
                 target: io.penguin.penguincore.model.CBookStore
@@ -42,7 +42,7 @@ penguin:
         kind: BASE
         aggregatedTarget: io.penguin.penguincore.reader.BookReader
         containers:
-          - name: source
+          - name: Book_source
             kind: CASSANDRA
             spec:
               idColumn: id
@@ -53,7 +53,7 @@ penguin:
             kind: LETTUCE_CACHE
             spec:
               prefix: p
-              downStreamName: source
+              downStreamName: Book_source
               codecConfig:
                 codec: io.penguin.penguincodec.JsonCodec
                 target: io.penguin.penguincore.model.CBook
