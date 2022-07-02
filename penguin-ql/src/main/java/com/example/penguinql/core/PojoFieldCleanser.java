@@ -7,6 +7,7 @@ import com.example.penguinql.core.setter.POJOFieldMethod;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import static com.example.penguinql.core.setter.FieldUtils.PRIMITIVES;
 
 
+@Slf4j
 public class PojoFieldCleanser<T> {
 
     private final FieldCleanerMeta<T> fieldCleanerMeta;
@@ -33,6 +35,7 @@ public class PojoFieldCleanser<T> {
         try {
             return exec0(result, this.fieldCleanerMeta, executionPlan);
         } catch (Exception e) {
+            log.error("");
             throw new RuntimeException(e);
         }
     }
@@ -58,16 +61,18 @@ public class PojoFieldCleanser<T> {
                         case MAP:
                         case NONE:
                             T1 res = exec0((T1) nextFieldMeta.getMethod().getData(result), nextFieldMeta, next);
-                            fieldMeta.getMethod().setData(retv, res);
+                            nextFieldMeta.getMethod().setData(retv, res);
                             break;
                         case LIST:
-                            List<Object> collect = ((List<Object>) result)
+                            FieldCleanerMeta<T1> listValue = (FieldCleanerMeta<T1>) nextFieldMeta.getExtendableChildren().get(VALUE);
+
+                            List<Object> collect = ((List<Object>) nextFieldMeta.getMethod().getData(result))
                                     .stream()
                                     .map(j -> {
-                                        return exec0((T1) j, (FieldCleanerMeta<T1>) nextFieldMeta.getExtendableChildren().get(VALUE), next);
+                                        return exec0((T1) j, listValue, next);
                                     })
                                     .collect(Collectors.toList());
-                            fieldMeta.getMethod().setData(retv, collect);
+                            nextFieldMeta.getMethod().setData(retv, collect);
                             break;
                         case SET:
                         default:
@@ -101,10 +106,16 @@ public class PojoFieldCleanser<T> {
             switch (genericType) {
                 case LIST:
                 case SET:
-                case MAP:
-                    FieldCleanerMeta<P> cleanerMeta = new FieldCleanerMeta<>(root, GenericType.NONE);
-                    cleanerMeta.setMethod(new POJOFieldMethod<>((Constructor<Object>) root.getConstructor(), GenericType.NONE));
-                    this.extendableChildren.put(VALUE, cleanerMeta);
+                    if (root.isAssignableFrom(List.class)) {
+                        FieldCleanerMeta<P> cleanerMeta = new FieldCleanerMeta<>(root, GenericType.LIST);
+                        cleanerMeta.setMethod(new POJOFieldMethod<>((Constructor<Object>) root.getConstructor(), GenericType.LIST));
+                        this.extendableChildren.put(VALUE, cleanerMeta);
+                    } else {
+                        FieldCleanerMeta<P> cleanerMeta = new FieldCleanerMeta<>(root, GenericType.NONE);
+                        cleanerMeta.setMethod(new POJOFieldMethod<>((Constructor<Object>) root.getConstructor(), GenericType.NONE));
+                        this.extendableChildren.put(VALUE, cleanerMeta);
+                    }
+
                     break;
                 case NONE:
                 default:

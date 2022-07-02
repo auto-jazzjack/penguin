@@ -39,6 +39,7 @@ public class POJOFieldMethod<P, M> implements GeneralFieldMethod<P, M> {
         } else {
             this.genericType = GenericType.NONE;
         }
+
         if (!FieldUtils.PRIMITIVES.contains(targetField.getType()) && genericType.equals(GenericType.NONE)) {
             newInstance = (Constructor<M>) targetField.getType().getConstructor();
         } else {
