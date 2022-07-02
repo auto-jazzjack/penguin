@@ -22,13 +22,11 @@ public class PojoFieldCleanser<T> {
 
     private final FieldCleanerMeta<T> fieldCleanerMeta;
 
+    private static final String VALUE = "value";
 
     public PojoFieldCleanser(Class<T> root) throws Exception {
-        fieldCleanerMeta = new FieldCleanerMeta<>(root);
-        fieldCleanerMeta.setGenericType(GenericType.NONE);
-        fieldCleanerMeta.setMethod(POJOFieldMethod.<T, Object>builder()
-                .newInstance((Constructor<Object>) root.getConstructor())
-                .build());
+        fieldCleanerMeta = new FieldCleanerMeta<>(root, GenericType.NONE);
+        fieldCleanerMeta.setMethod(new POJOFieldMethod<>((Constructor<Object>) root.getConstructor(), GenericType.NONE));
     }
 
     public T exec(T result, ExecutionPlan executionPlan) {
@@ -56,17 +54,18 @@ public class PojoFieldCleanser<T> {
                 .forEach(i -> {
                     FieldCleanerMeta<T1> nextFieldMeta = (FieldCleanerMeta<T1>) fieldMeta.getExtendableChildren().get(i);
                     ExecutionPlan next = executionPlan.getNext().get(i);
-                    switch (fieldMeta.getGenericType()) {
+                    switch (nextFieldMeta.getGenericType()) {
                         case MAP:
-
                         case NONE:
-                            T1 res = exec0((T1) fieldMeta.getMethod().getData(result), nextFieldMeta, next);
+                            T1 res = exec0((T1) nextFieldMeta.getMethod().getData(result), nextFieldMeta, next);
                             fieldMeta.getMethod().setData(retv, res);
                             break;
                         case LIST:
                             List<Object> collect = ((List<Object>) result)
                                     .stream()
-                                    .map(j -> exec0((T1) j, nextFieldMeta, next))
+                                    .map(j -> {
+                                        return exec0((T1) j, (FieldCleanerMeta<T1>) nextFieldMeta.getExtendableChildren().get(VALUE), next);
+                                    })
                                     .collect(Collectors.toList());
                             fieldMeta.getMethod().setData(retv, collect);
                             break;
@@ -93,43 +92,55 @@ public class PojoFieldCleanser<T> {
         private Map<String, FieldCleanerMeta<?>> extendableChildren;
 
 
-        public FieldCleanerMeta(Class<P> root) throws Exception {
-            List<Field> allFields = Arrays.stream(root.getDeclaredFields()).collect(Collectors.toList());
-
-            Set<Field> leaf = allFields.stream().filter(i -> PRIMITIVES.contains(i.getType())).collect(Collectors.toSet());
-            Set<Field> nonLeaf = allFields.stream().filter(i -> !PRIMITIVES.contains(i.getType())).collect(Collectors.toSet());
+        public FieldCleanerMeta(Class<P> root, GenericType genericType) throws Exception {
 
             this.leafChildren = new HashMap<>();
+            this.genericType = genericType;
             this.extendableChildren = new HashMap<>();
 
-            for (Field i : leaf) {
-                this.leafChildren.put(i.getName(), FieldCleanerMeta.builder()
-                        .method(new POJOFieldMethod<>((Class<Object>) root, i, GenericType.NONE))
-                        .genericType(GenericType.NONE)
-                        .build());
+            switch (genericType) {
+                case LIST:
+                case SET:
+                case MAP:
+                    FieldCleanerMeta<P> cleanerMeta = new FieldCleanerMeta<>(root, GenericType.NONE);
+                    cleanerMeta.setMethod(new POJOFieldMethod<>((Constructor<Object>) root.getConstructor(), GenericType.NONE));
+                    this.extendableChildren.put(VALUE, cleanerMeta);
+                    break;
+                case NONE:
+                default:
+                    List<Field> allFields = Arrays.stream(root.getDeclaredFields()).collect(Collectors.toList());
+
+                    Set<Field> leaf = allFields.stream().filter(i -> PRIMITIVES.contains(i.getType())).collect(Collectors.toSet());
+                    Set<Field> nonLeaf = allFields.stream().filter(i -> !PRIMITIVES.contains(i.getType())).collect(Collectors.toSet());
+                    for (Field i : leaf) {
+                        this.leafChildren.put(i.getName(), FieldCleanerMeta.builder()
+                                .method(new POJOFieldMethod<>((Class<Object>) root, i))
+                                .genericType(GenericType.NONE)
+                                .build());
+                    }
+
+                    for (Field i : nonLeaf) {
+
+                        if (i.getType().isAssignableFrom(List.class) || i.getType().isAssignableFrom(Set.class)) {
+                            Type actualTypeArgument = ((ParameterizedType) i.getGenericType()).getActualTypeArguments()[0];
+                            GenericType childGeneric = i.getType().isAssignableFrom(List.class) ? GenericType.LIST : GenericType.SET;
+                            FieldCleanerMeta<?> build = new FieldCleanerMeta<>((Class<? extends Object>) actualTypeArgument, childGeneric);
+                            build.setMethod(new POJOFieldMethod(root, i));
+                            this.extendableChildren.put(i.getName(), build);
+                        } else if (i.getType().isAssignableFrom(Map.class)) {
+                            Type actualTypeArgument = ((ParameterizedType) i.getGenericType()).getActualTypeArguments()[1];
+                            FieldCleanerMeta<?> build = new FieldCleanerMeta<>((Class<?>) actualTypeArgument, GenericType.MAP);
+                            build.setMethod(new POJOFieldMethod(root, i));
+                            this.extendableChildren.put(i.getName(), build);
+                        } else {
+                            FieldCleanerMeta<?> build = new FieldCleanerMeta<>(i.getType(), GenericType.NONE);
+                            build.setMethod(new POJOFieldMethod(root, i));
+                            this.extendableChildren.put(i.getName(), build);
+                        }
+                    }
+                    break;
             }
 
-            for (Field i : nonLeaf) {
-                if (i.getType().isAssignableFrom(List.class) || i.getType().isAssignableFrom(Set.class)) {
-                    Type actualTypeArgument = ((ParameterizedType) i.getGenericType()).getActualTypeArguments()[0];
-                    FieldCleanerMeta<?> build = new FieldCleanerMeta<>((Class<?>) actualTypeArgument);
-                    GenericType childGeneric = i.getType().isAssignableFrom(List.class) ? GenericType.LIST : GenericType.SET;
-                    build.setMethod(new POJOFieldMethod(root, i, childGeneric));
-                    build.setGenericType(childGeneric);
-                    this.extendableChildren.put(i.getName(), build);
-                } else if (i.getType().isAssignableFrom(Map.class)) {
-                    Type actualTypeArgument = ((ParameterizedType) i.getGenericType()).getActualTypeArguments()[1];
-                    FieldCleanerMeta<?> build = new FieldCleanerMeta<>((Class<?>) actualTypeArgument);
-                    build.setMethod(new POJOFieldMethod(root, i, GenericType.MAP));
-                    build.setGenericType(GenericType.MAP);
-                    this.extendableChildren.put(i.getName(), build);
-                } else {
-                    FieldCleanerMeta<?> build = new FieldCleanerMeta<>(i.getDeclaringClass());
-                    build.setMethod(new POJOFieldMethod(root, i, GenericType.NONE));
-                    build.setGenericType(GenericType.NONE);
-                    this.extendableChildren.put(i.getName(), build);
-                }
-            }
 
         }
     }

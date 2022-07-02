@@ -1,17 +1,16 @@
 package com.example.penguinql.core.setter;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Data
-@Builder
-@AllArgsConstructor
 public class POJOFieldMethod<P, M> implements GeneralFieldMethod<P, M> {
 
     private Method setter;
@@ -19,14 +18,27 @@ public class POJOFieldMethod<P, M> implements GeneralFieldMethod<P, M> {
     private GenericType genericType;
     private Constructor<M> newInstance;
 
-    public POJOFieldMethod(Class<P> containingType, Field targetField, GenericType genericType) throws Exception {
+    public POJOFieldMethod(Constructor<M> newInstance, GenericType genericType) {
+        this.newInstance = newInstance;
+        this.genericType = genericType;
+    }
+
+    public POJOFieldMethod(Class<P> containingType, Field targetField) throws Exception {
 
         PropertyDescriptor propertyDescriptor = Arrays.stream(Introspector.getBeanInfo(containingType).getPropertyDescriptors())
                 .filter(i -> i.getName().equalsIgnoreCase(targetField.getName()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Cannot find getter/setter" + containingType + " " + targetField));
 
-        this.genericType = genericType;
+        if (targetField.getType().isAssignableFrom(Set.class)) {
+            this.genericType = GenericType.SET;
+        } else if (targetField.getType().isAssignableFrom(List.class)) {
+            this.genericType = GenericType.LIST;
+        } else if (targetField.getType().isAssignableFrom(Map.class)) {
+            this.genericType = GenericType.MAP;
+        } else {
+            this.genericType = GenericType.NONE;
+        }
         if (!FieldUtils.PRIMITIVES.contains(targetField.getType()) && genericType.equals(GenericType.NONE)) {
             newInstance = (Constructor<M>) targetField.getType().getConstructor();
         } else {
