@@ -6,13 +6,8 @@ import lombok.Data;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @Data
 @Builder
@@ -21,23 +16,35 @@ public class POJOFieldMethod<P, M> implements GeneralFieldMethod<P, M> {
 
     private Method setter;
     private Method getter;
+    private GenericType genericType;
     private Constructor<M> newInstance;
 
-    public POJOFieldMethod(Class<P> containingType, Field targetField) throws Exception {
+    public POJOFieldMethod(Class<P> containingType, Field targetField, GenericType genericType) throws Exception {
 
         PropertyDescriptor propertyDescriptor = Arrays.stream(Introspector.getBeanInfo(containingType).getPropertyDescriptors())
                 .filter(i -> i.getName().equalsIgnoreCase(targetField.getName()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Cannot find getter/setter" + containingType + " " + targetField));
 
-
-        if (!FieldUtils.PRIMITIVES.contains(targetField.getType())
-                && !targetField.getType().isAssignableFrom(List.class)
-                && !targetField.getType().isAssignableFrom(Set.class)
-                && !targetField.getType().isAssignableFrom(Map.class)) {
+        this.genericType = genericType;
+        if (!FieldUtils.PRIMITIVES.contains(targetField.getType()) && genericType.equals(GenericType.NONE)) {
             newInstance = (Constructor<M>) targetField.getType().getConstructor();
         } else {
-            newInstance = null;
+            Type actualTypeArgument;
+            switch (genericType) {
+                case LIST:
+                case SET:
+                    actualTypeArgument = ((ParameterizedType) targetField.getGenericType()).getActualTypeArguments()[0];
+                    newInstance = ((Class) actualTypeArgument).getConstructor();
+                    break;
+                case MAP:
+                    actualTypeArgument = ((ParameterizedType) targetField.getGenericType()).getActualTypeArguments()[1];
+                    newInstance = ((Class) actualTypeArgument).getConstructor();
+                    break;
+                case NONE:
+                default:
+                    newInstance = null;
+            }
         }
         getter = propertyDescriptor.getReadMethod();
         setter = propertyDescriptor.getWriteMethod();
@@ -59,7 +66,7 @@ public class POJOFieldMethod<P, M> implements GeneralFieldMethod<P, M> {
     @Override
     public M getData(P parent) {
         try {
-            return (M)getter.invoke(parent);
+            return (M) getter.invoke(parent);
         } catch (Exception e) {
             throw new RuntimeException("Cannot read value");
         }
