@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class ResolverConfiguration {
 
     @Bean
-    public ResolverService<SampleRequest, SampleResponse> resolverService(RootResolver rootResolver, ResolverMapperImpl resolverMapper) {
+    public ResolverService<SampleRequest, SampleResponse> resolverService(RootResolver rootResolver, ResolverMapperImpl resolverMapper) throws Exception {
         return new ResolverService<>(rootResolver, resolverMapper);
     }
 }
