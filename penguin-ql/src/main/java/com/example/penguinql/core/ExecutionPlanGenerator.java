@@ -2,10 +2,7 @@ package com.example.penguinql.core;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -33,6 +30,7 @@ public class ExecutionPlanGenerator {
         ExecutionPlan executionPlan = ExecutionPlan.builder()
                 .mySelf(current)
                 .currFields(query.getFields())
+                .currObjects(query.getQueryByResolverName().keySet())
                 .dataFetchingEnv(new DataFetchingEnv().setContext(context))
                 .build();
 

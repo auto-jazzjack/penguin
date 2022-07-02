@@ -21,7 +21,7 @@ public class QqlController {
     private final ResolverService<SampleRequest, SampleResponse> resolverService;
 
     @PostMapping(path = "/hello")
-    public Mono<SampleResponse> request(@RequestBody SampleRequest request) {
+    public Mono<SampleResponse> request(@RequestBody SampleRequest request) throws Exception {
         return resolverService.exec(request, request.getQuery());
     }
 

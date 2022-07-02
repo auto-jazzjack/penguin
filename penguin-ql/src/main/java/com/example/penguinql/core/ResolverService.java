@@ -12,7 +12,7 @@ public class ResolverService<I, O> {
 
     private final ExecutionPlanGenerator executionPlanGenerator;
     private final ExecutionPlanExecutor executionPlanExecutor;
-    private final PojoFieldCleanser pojoFieldCleanser;
+    private final PojoFieldCleanser<O> pojoFieldCleanser;
     private final GqlParser gqlParser;
 
     public ResolverService(RootResolver<O> rootResolver, ResolverMapper resolverMapper) throws Exception {
@@ -24,7 +24,8 @@ public class ResolverService<I, O> {
 
     public Mono<O> exec(I request, String query) {
         ExecutionPlan generate = executionPlanGenerator.generate(request, gqlParser.parseFrom(query));
-        return executionPlanExecutor.exec(generate);
+        return executionPlanExecutor.exec(generate)
+                .map(i -> pojoFieldCleanser.exec((O)i, generate));
     }
 
     private Class<O> extractResolverType(RootResolver<O> rootResolver) {
