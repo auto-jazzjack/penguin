@@ -15,9 +15,10 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 public class ExecutionPlan {
-    private Resolver mySelf;
+    private Resolver<?, Object> mySelf;
     private Map<String, ExecutionPlan> next;
     private Set<String> currFields;
+    private Set<String> currObjects;
     private DataFetchingEnv dataFetchingEnv;
 
     /**

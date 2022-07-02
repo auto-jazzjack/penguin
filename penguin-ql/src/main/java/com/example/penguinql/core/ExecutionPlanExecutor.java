@@ -23,7 +23,7 @@ public class ExecutionPlanExecutor {
                 .map(Map.Entry::getValue)
                 .orElse(null);
 
-        return exec0(ignoreRoot);
+        return exec0(executionPlan);
     }
 
     public <T> Mono<T> exec0(ExecutionPlan executionPlan) {
