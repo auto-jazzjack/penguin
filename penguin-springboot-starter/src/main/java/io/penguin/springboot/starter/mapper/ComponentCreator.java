@@ -3,9 +3,9 @@ package io.penguin.springboot.starter.mapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.penguin.pengiuncassandra.CassandraSource;
+import io.penguin.pengiuncassandra.config.CassandraSourceConfig;
 import io.penguin.pengiuncassandra.connection.CassandraConnectionConfig;
 import io.penguin.pengiuncassandra.connection.CassandraConnectionIngredient;
-import io.penguin.pengiuncassandra.config.CassandraSourceConfig;
 import io.penguin.pengiunlettuce.LettuceCache;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheConfig;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheIngredient;
@@ -17,10 +17,15 @@ import io.penguin.penguincore.util.Pair;
 import io.penguin.springboot.starter.Penguin;
 import io.penguin.springboot.starter.config.PenguinProperties;
 import io.penguin.springboot.starter.config.Validator;
+import io.penguin.springboot.starter.factoy.ReaderFactory;
 import io.penguin.springboot.starter.kind.BaseDeployment;
 import io.penguin.springboot.starter.model.MultiBaseOverWriteReaders;
 import io.penguin.springboot.starter.model.ReaderBundle;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,30 +33,31 @@ import java.util.stream.Collectors;
 import static io.penguin.pengiuncassandra.config.CassandraIngredient.toInternal;
 import static io.penguin.springboot.starter.mapper.ContainerKind.*;
 
-
+@Component
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ComponentCreator {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     private Map<String, ReaderBundle> readers;
     private final PenguinProperties penguinProperties;
     private Map<String, Map<String, Object>> collectedResources;
+    private final List<ReaderFactory> factories;
+    private Map<ContainerKind, ReaderFactory> factoriesByKind;
 
 
-    public ComponentCreator(PenguinProperties penguinProperties) {
-        this.penguinProperties = penguinProperties;
+    @PostConstruct
+    public void init() {
         this.readers = new HashMap<>();
         Validator.validate(this.penguinProperties);
-        init();
 
-    }
-
-
-    private void init() {
         collectedResources = this.penguinProperties.getSpec()
                 .getResources()
                 .stream()
                 .collect(Collectors.toMap(PenguinProperties.Resource::getName, i -> Optional.of(i).map(PenguinProperties.Resource::getSpec).orElse(Collections.emptyMap())
                 ));
+
+        factoriesByKind = this.factories.stream()
+                .collect(Collectors.toMap(ReaderFactory::getContainerType, i -> i));
 
         this.penguinProperties.getSpec()
                 .getWorkers()
@@ -96,6 +102,12 @@ public class ComponentCreator {
                     return ReaderBundle.builder()
                             .kind(OVER_WRITER)
                             .reader(createReader(overWriters))
+                            .build();
+
+                case BEAN:
+                    return ReaderBundle.builder()
+                            .kind(BEAN)
+                            .reader(factoriesByKind.get(BEAN).generate(container.getSpec()))
                             .build();
                 default:
                     throw new IllegalStateException("No such Kind");
