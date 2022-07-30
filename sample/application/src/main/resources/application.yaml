@@ -42,13 +42,12 @@ penguin:
         kind: BASE
         aggregatedTarget: io.penguin.penguincore.reader.BookReader
         containers:
-          - name: Book_source
-            kind: CASSANDRA
+          - name: Book_sourceV2
+            kind: Bean
             spec:
-              idColumn: id
-              columns: id, price, title
-              table: book
-              valueType: io.penguin.penguincore.model.CBook
+              name: bookStoreBeanReader
+              domainClass: io.penguin.penguincore.model.CBookStore
+              idClass: java.lang.Long
           - name: Book_cache
             kind: LETTUCE_CACHE
             spec:

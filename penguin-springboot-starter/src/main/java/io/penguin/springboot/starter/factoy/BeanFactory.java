@@ -39,6 +39,4 @@ public class BeanFactory implements ReaderFactory {
         private Class<T> domainClass;
         private Class<ID> idClass;
     }
-
-    ;
 }
