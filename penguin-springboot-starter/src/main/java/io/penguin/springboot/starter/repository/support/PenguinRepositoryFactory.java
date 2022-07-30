@@ -16,8 +16,8 @@ public class PenguinRepositoryFactory extends RepositoryFactorySupport {
     private final ComponentCreator creator;
     private final Map<String, PenguinProperties.Worker> workerByName;
 
-    public PenguinRepositoryFactory(PenguinProperties penguinProperties) {
-        creator = new ComponentCreator(penguinProperties);
+    public PenguinRepositoryFactory(PenguinProperties penguinProperties, ComponentCreator creator) {
+        this.creator = creator;
         workerByName = penguinProperties.getSpec().getWorkers()
                 .stream()
                 .map(i -> Pair.of(i.getAggregatedTarget().getName(), i))

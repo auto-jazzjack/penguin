@@ -5,4 +5,5 @@ public enum ContainerKind {
     CASSANDRA,
     OVER_WRITER,//This is unknown for general usecase
     HELLO,
+    BEAN,
 }
