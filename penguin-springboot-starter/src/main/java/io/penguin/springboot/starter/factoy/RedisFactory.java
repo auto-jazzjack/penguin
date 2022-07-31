@@ -11,17 +11,20 @@ import io.penguin.penguincore.reader.Reader;
 import io.penguin.springboot.starter.mapper.ContainerKind;
 import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+import static io.penguin.springboot.starter.mapper.ContainerKind.LETTUCE_CACHE;
+
 @Component
-public class RedisFactory implements ReaderFactory<RedisFactory.RedisFactoryInput> {
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+
+public class RedisFactory implements ReaderFactory {
     private static final ObjectMapper objectMapper = new ObjectMapper();
-
-
-    public RedisFactory() {
-    }
+    private final Map<String, Map<String, Object>> collectedResources;
 
     @Override
     public ContainerKind getContainerType() {
@@ -29,12 +32,16 @@ public class RedisFactory implements ReaderFactory<RedisFactory.RedisFactoryInpu
     }
 
     @Override
-    public Reader<Object, Context<Object>> generate(RedisFactoryInput reidFactoryInput, Map<String, Object> spec) throws Exception {
-        LettuceCacheConfig config = objectMapper.convertValue(spec, LettuceCacheConfig.class);
-
-        return new LettuceCache<>(LettuceConnectionIngredient.toInternal(reidFactoryInput.getConnection()), LettuceCacheIngredient.toInternal(config, reidFactoryInput.getReaders()));
+    public Reader<Object, Context<Object>> generate(Map<String, Object> spec) throws Exception {
+        throw new IllegalStateException("RedisFactory require other Reader");
     }
 
+    @Override
+    public Reader<Object, Context<Object>> generateWithReaderPool(Map<String, Object> spec, Map<String, Reader<Object, Context<Object>>> readers) throws Exception {
+        LettuceConnectionConfig connection = objectMapper.convertValue(collectedResources.get(LETTUCE_CACHE.name()), LettuceConnectionConfig.class);
+        LettuceCacheConfig config = objectMapper.convertValue(spec, LettuceCacheConfig.class);
+        return new LettuceCache<>(LettuceConnectionIngredient.toInternal(connection), LettuceCacheIngredient.toInternal(config, readers));
+    }
 
     @Data
     @Builder

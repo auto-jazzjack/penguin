@@ -1,8 +1,5 @@
 package io.penguin.springboot.starter.mapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.penguin.pengiuncassandra.connection.CassandraConnectionConfig;
-import io.penguin.pengiunlettuce.connection.LettuceConnectionConfig;
 import io.penguin.penguincore.reader.Context;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.penguincore.util.Pair;
@@ -10,7 +7,6 @@ import io.penguin.springboot.starter.Penguin;
 import io.penguin.springboot.starter.config.PenguinProperties;
 import io.penguin.springboot.starter.config.Validator;
 import io.penguin.springboot.starter.factoy.ReaderFactory;
-import io.penguin.springboot.starter.factoy.RedisFactory;
 import io.penguin.springboot.starter.kind.BaseDeployment;
 import io.penguin.springboot.starter.model.ReaderBundle;
 import lombok.RequiredArgsConstructor;
@@ -18,21 +14,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static io.penguin.springboot.starter.mapper.ContainerKind.*;
+import static io.penguin.springboot.starter.mapper.ContainerKind.LETTUCE_CACHE;
+import static io.penguin.springboot.starter.mapper.ContainerKind.valueOf;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ComposedReaderFactory {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
     private Map<String, ReaderBundle<Object, Object>> readers;
     private final PenguinProperties penguinProperties;
-    private Map<String, Map<String, Object>> collectedResources;
-    private final List<ReaderFactory<?>> factories;
-    private Map<ContainerKind, ReaderFactory<Object>> factoriesByKind;
+    private final List<ReaderFactory> factories;
+    private Map<ContainerKind, ReaderFactory> factoriesByKind;
 
 
     @PostConstruct
@@ -40,15 +38,9 @@ public class ComposedReaderFactory {
         this.readers = new HashMap<>();
         Validator.validate(this.penguinProperties);
 
-        collectedResources = this.penguinProperties.getSpec()
-                .getResources()
-                .stream()
-                .collect(Collectors.toMap(PenguinProperties.Resource::getName, i -> Optional.of(i).map(PenguinProperties.Resource::getSpec).orElse(Collections.emptyMap())
-                ));
-
         factoriesByKind = this.factories
                 .stream()
-                .collect(Collectors.toMap(ReaderFactory::getContainerType, i -> (ReaderFactory) i));
+                .collect(Collectors.toMap(ReaderFactory::getContainerType, i -> i));
 
         this.penguinProperties.getSpec()
                 .getWorkers()
@@ -67,25 +59,17 @@ public class ComposedReaderFactory {
             ContainerKind containerKind = valueOf(container.getKind().toUpperCase());
             switch (containerKind) {
                 case LETTUCE_CACHE:
-                    LettuceConnectionConfig connection = objectMapper.convertValue(collectedResources.get(LETTUCE_CACHE.name()), LettuceConnectionConfig.class);
+
                     return ReaderBundle.builder()
-                            .reader(factoriesByKind.get(LETTUCE_CACHE).generate(RedisFactory.RedisFactoryInput.builder()
-                                    .connection(connection)
-                                    .readers(flattenReader)
-                                    .build(), container.getSpec()))
+                            .reader(factoriesByKind.get(LETTUCE_CACHE).generateWithReaderPool(container.getSpec(), flattenReader))
                             .kind(ContainerKind.LETTUCE_CACHE)
                             .build();
                 case CASSANDRA:
-                    CassandraConnectionConfig cassandra = objectMapper.convertValue(collectedResources.get(CASSANDRA.name()), CassandraConnectionConfig.class);
-                    return ReaderBundle.builder()
-                            .kind(CASSANDRA)
-                            .reader(factoriesByKind.get(CASSANDRA).generate(cassandra, container.getSpec()))
-                            .build();
                 case OVER_WRITER:
                 case BEAN:
                     return ReaderBundle.builder()
                             .kind(containerKind)
-                            .reader(factoriesByKind.get(containerKind).generate(null, container.getSpec()))
+                            .reader(factoriesByKind.get(containerKind).generate(container.getSpec()))
                             .build();
                 default:
                     throw new IllegalStateException("No such Kind");
