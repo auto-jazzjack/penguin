@@ -52,7 +52,7 @@ penguin:
             kind: LETTUCE_CACHE
             spec:
               prefix: p
-              downStreamName: Book_source
+              downStreamName: Book_sourceV2
               codecConfig:
                 codec: io.penguin.penguincodec.JsonCodec
                 target: io.penguin.penguincore.model.CBook
