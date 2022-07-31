@@ -45,6 +45,7 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
     private final Plugin<Context<V>>[] plugins;
 
     public LettuceCache(LettuceConnectionIngredient connection, LettuceCacheIngredient cacheConfig) throws Exception {
+
         super(cacheConfig.getFromDownStream());
         Objects.requireNonNull(cacheConfig);
 
