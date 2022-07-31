@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 @Component
-public class BeanFactory implements ReaderFactory {
+public class BeanFactory implements ReaderFactory<Void> {
     private final ApplicationContext applicationContext;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -27,7 +27,7 @@ public class BeanFactory implements ReaderFactory {
     }
 
     @Override
-    public Reader<Object, Context<Object>> generate(Map<String, Object> spec) {
+    public Reader<Object, Context<Object>> generate(Void empty, Map<String, Object> spec) {
         Properties<Object, Context<Object>> properties = objectMapper.convertValue(spec, new TypeReference<>() {
         });
         return (Reader<Object, Context<Object>>) applicationContext.getBean(properties.getName(), Reader.class);

@@ -6,8 +6,8 @@ import io.penguin.springboot.starter.mapper.ContainerKind;
 
 import java.util.Map;
 
-public interface ReaderFactory {
+public interface ReaderFactory<R> {
     ContainerKind getContainerType();
 
-    Reader<Object, Context<Object>> generate(Map<String, Object> spec);
+    Reader<Object, Context<Object>> generate(R resource, Map<String, Object> spec) throws Exception;
 }

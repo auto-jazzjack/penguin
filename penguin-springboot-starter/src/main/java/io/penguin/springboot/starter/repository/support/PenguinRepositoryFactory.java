@@ -2,7 +2,7 @@ package io.penguin.springboot.starter.repository.support;
 
 import io.penguin.penguincore.util.Pair;
 import io.penguin.springboot.starter.config.PenguinProperties;
-import io.penguin.springboot.starter.mapper.ComponentCreator;
+import io.penguin.springboot.starter.mapper.ComposedReaderFactory;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -13,10 +13,10 @@ import java.util.stream.Collectors;
 
 public class PenguinRepositoryFactory extends RepositoryFactorySupport {
 
-    private final ComponentCreator creator;
+    private final ComposedReaderFactory creator;
     private final Map<String, PenguinProperties.Worker> workerByName;
 
-    public PenguinRepositoryFactory(PenguinProperties penguinProperties, ComponentCreator creator) {
+    public PenguinRepositoryFactory(PenguinProperties penguinProperties, ComposedReaderFactory creator) {
         this.creator = creator;
         workerByName = penguinProperties.getSpec().getWorkers()
                 .stream()

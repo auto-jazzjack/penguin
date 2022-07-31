@@ -51,7 +51,6 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                     }
                     break;
                 case CASSANDRA:
-                case HELLO:
                     this.source = readerBundle.getReader();
                     break;
                 default:
