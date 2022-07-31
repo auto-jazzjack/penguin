@@ -13,7 +13,6 @@ public class BookStoreBeanReader implements Reader<Long, CBookStore> {
 
     @Override
     public Mono<CBookStore> findOne(Long key) {
-
-        return null;
+        return Mono.empty();
     }
 }
