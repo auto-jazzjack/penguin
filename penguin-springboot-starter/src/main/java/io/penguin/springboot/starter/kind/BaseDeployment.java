@@ -29,8 +29,8 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
     /**
      * Each Column can be overWritten
      */
-    private MultiBaseOverWriteReaders<K> overWriter;
-    private Map<? extends Class<? extends BaseOverWriteReader>, BiConsumer<V, Object>> mergers;
+    private MultiBaseOverWriteReaders<K, V> overWriter;
+    private Map<? extends Class<? extends BaseOverWriteReader<K, Object, V>>, BiConsumer<V, Object>> mergers;
     private final String name;
 
     public BaseDeployment(PenguinProperties.Worker worker, Map<String, ReaderBundle<K, V>> readerBundleMap, String name) {
@@ -51,7 +51,7 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                     }
                     break;
                 case CASSANDRA:
-                case HELLO:
+                case BEAN:
                     this.source = readerBundle.getReader();
                     break;
                 default:
@@ -75,11 +75,11 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                 })
                 .map(Context::getValue);
         if (overWriter != null) {
-            Mono<Map<Class<? extends BaseOverWriteReader>, Object>> overWriterOne = overWriter.findOne(key).defaultIfEmpty(Collections.emptyMap());
+            Mono<Map<Class<? extends BaseOverWriteReader<K, Object, V>>, Object>> overWriterOne = overWriter.findOne(key).defaultIfEmpty(Collections.emptyMap());
             return Mono.zip(withoutOverWrite, overWriterOne)
                     .map(i -> {
                         V origin = i.getT1();
-                        Map<Class<? extends BaseOverWriteReader>, Object> t2 = i.getT2();
+                        Map<Class<? extends BaseOverWriteReader<K, Object, V>>, Object> t2 = i.getT2();
                         t2.forEach((key1, value) -> mergers.get(key1).accept(origin, value));
                         return origin;
                     });

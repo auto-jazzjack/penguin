@@ -1,13 +1,13 @@
 package io.penguin.penguincore.controller;
 
+import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-import reactor.core.publisher.Mono;
 
+import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -20,15 +20,28 @@ import java.util.concurrent.TimeUnit;
 @RestController
 public class TestController {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private RestTemplate restTemplate;
     private final ExecutorService executorService = Executors.newFixedThreadPool(2000);
+    private Map<String, Object> request;
 
 
-    /*@PostMapping(path = "/hello")
-    public Mono<Map<String, String>> read() {
-        return firstExample.findOne(123L);
-    }*/
-
+    @PostConstruct
+    public void init() {
+        restTemplate = new RestTemplate();
+        request = ImmutableMap.<String, Object>builder()
+                .put("ids", new Long[]{1L})
+                .put("query", "{\n" +
+                        "bookStores {\n" +
+                        "    id\n" +
+                        "    contact\n" +
+                        "    books  {\n" +
+                        "                id\n" +
+                        "                title\n" +
+                        "           }\n" +
+                        "    }\n" +
+                        "}")
+                .build();
+    }
 
     @GetMapping(path = "/stress")
     public String stress() throws Exception {
@@ -48,7 +61,7 @@ public class TestController {
                 executorService.submit(() -> {
                     try {
                         restTemplate
-                                .postForEntity(URI.create("http://localhost:9876/hello"), null, Map.class);
+                                .postForEntity(URI.create("http://localhost:9876/hello"), request, Map.class);
                     } catch (Exception e) {
                         //System.out.println(e);
                     }

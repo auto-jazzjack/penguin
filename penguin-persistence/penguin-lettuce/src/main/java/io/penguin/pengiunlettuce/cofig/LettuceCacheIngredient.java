@@ -7,6 +7,7 @@ import io.penguin.pengiunlettuce.compress.CompressorFactory;
 import io.penguin.penguincodec.Codec;
 import io.penguin.penguincodec.factory.CodecFactory;
 import io.penguin.penguincore.plugin.PluginInput;
+import io.penguin.penguincore.reader.Context;
 import io.penguin.penguincore.reader.Reader;
 import lombok.Builder;
 import lombok.Data;
@@ -34,7 +35,7 @@ public class LettuceCacheIngredient {
                 .pluginInput(PluginInput.base().build());
     }
 
-    public static LettuceCacheIngredient toInternal(LettuceCacheConfig config, Map<String, Reader> readers) {
+    public static LettuceCacheIngredient toInternal(LettuceCacheConfig config, Map<String, Reader<Object, Context<Object>>> readers) {
         Objects.requireNonNull(config);
         LettuceCacheIngredient build = LettuceCacheIngredient.base()
                 .build();

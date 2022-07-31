@@ -11,6 +11,7 @@ import reactor.core.publisher.SignalType;
 import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
+import java.util.Objects;
 
 @Slf4j
 public abstract class BaseCacheReader<K, V> implements CacheReader<K, V> {
@@ -25,6 +26,7 @@ public abstract class BaseCacheReader<K, V> implements CacheReader<K, V> {
     private final Counter counter = MetricCreator.counter(SOURCE_CACHE_REFRESH_COUNT, "kind", this.getClass().getSimpleName());
 
     public BaseCacheReader(Reader<K, V> fromDownStream) {
+        Objects.requireNonNull(fromDownStream);
         watcher = Sinks.many()
                 .unicast()
                 .onBackpressureBuffer();
