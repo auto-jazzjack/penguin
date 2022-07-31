@@ -2,15 +2,12 @@ package io.penguin.springboot.starter.factoy;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.penguin.pengiunlettuce.connection.LettuceConnectionConfig;
 import io.penguin.penguincore.reader.BaseOverWriteReader;
 import io.penguin.penguincore.reader.Context;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.penguincore.util.Pair;
 import io.penguin.springboot.starter.mapper.ContainerKind;
 import io.penguin.springboot.starter.model.MultiBaseOverWriteReaders;
-import lombok.Builder;
-import lombok.Data;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Constructor;
@@ -29,31 +26,22 @@ public class OverWriterFactory implements ReaderFactory {
 
     @Override
     public Reader<Object, Context<Object>> generate(Map<String, Object> spec) throws Exception {
-        Map<String, Class<? extends BaseOverWriteReader>> overWriters = objectMapper.convertValue(spec, new TypeReference<>() {
+        Map<String, Class<? extends BaseOverWriteReader<?, ?, ?>>> overWriters = objectMapper.convertValue(spec, new TypeReference<>() {
         });
 
-        Map<Class<? extends BaseOverWriteReader>, BaseOverWriteReader> value = overWriters
+        return new MultiBaseOverWriteReaders(overWriters
                 .values()
                 .stream()
                 .map(aClass -> {
                     try {
-                        Constructor declaredConstructor = aClass.getDeclaredConstructor();
-                        return Pair.of(aClass, (BaseOverWriteReader) declaredConstructor.newInstance());
+                        Constructor<?> declaredConstructor = aClass.getDeclaredConstructor();
+                        return Pair.of(aClass, (BaseOverWriteReader<?, ?, ?>) declaredConstructor.newInstance());
                     } catch (Exception e) {
                         throw new IllegalStateException();
                     }
                 })
-                .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
-
-        return new MultiBaseOverWriteReaders(value);
+                .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
     }
 
 
-    @Data
-    @Builder
-    static public class RedisFactoryInput {
-        private LettuceConnectionConfig connection;
-        private Map<String, Reader<Object, Context<Object>>> readers;
-
-    }
 }

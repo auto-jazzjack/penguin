@@ -9,8 +9,6 @@ import io.penguin.pengiunlettuce.connection.LettuceConnectionIngredient;
 import io.penguin.penguincore.reader.Context;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.springboot.starter.mapper.ContainerKind;
-import lombok.Builder;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -43,11 +41,4 @@ public class RedisFactory implements ReaderFactory {
         return new LettuceCache<>(LettuceConnectionIngredient.toInternal(connection), LettuceCacheIngredient.toInternal(config, readers));
     }
 
-    @Data
-    @Builder
-    static public class RedisFactoryInput {
-        private LettuceConnectionConfig connection;
-        private Map<String, Reader<Object, Context<Object>>> readers;
-
-    }
 }
