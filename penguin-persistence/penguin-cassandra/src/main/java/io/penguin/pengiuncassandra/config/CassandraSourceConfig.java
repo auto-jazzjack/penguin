@@ -15,10 +15,5 @@ import java.util.List;
 @AllArgsConstructor
 public class CassandraSourceConfig {
     private Class<?> valueType;
-    //private String table;
-    //private String idColumn;
-    //private String keySpace;
-    //private String columns;
-
     private PluginInput pluginInput;
 }

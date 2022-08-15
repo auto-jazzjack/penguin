@@ -45,7 +45,7 @@ public class CassandraIngredient {
         ingredient.setValueType(config.getValueType());
 
         //Partition Key
-        ingredient.setColumns(Optional.of(config.getValueType())
+        ingredient.setIdColumn(Optional.of(config.getValueType())
                 .map(i -> Arrays.stream(i.getDeclaredFields())
                         .filter(j -> j.isAnnotationPresent(PartitionKey.class))
                         .map(Field::getName)
@@ -54,7 +54,7 @@ public class CassandraIngredient {
         );
 
         //Target column
-        ingredient.setIdColumn(Optional.of(config.getValueType())
+        ingredient.setColumns(Optional.of(config.getValueType())
                 .map(i -> Arrays.stream(i.getDeclaredFields())
                         .map(j -> {
                             if (j.isAnnotationPresent(Column.class)) {

@@ -23,10 +23,15 @@ public class CasandraUtil {
             query = query.column(i);
         }
 
-        //TODO currently id column supposed using single column
+        Select from = query.from(keyspace, table);
+        idColumn.forEach(i -> from.where(QueryBuilder.eq(i, QueryBuilder.bindMarker())));
+        from.limit(10);
+
+        return from;
+        /*//TODO currently id column supposed using single column
         return query.from(keyspace, table)
                 .where(QueryBuilder.eq(idColumn.get(0), QueryBuilder.bindMarker()))
-                .limit(1);
+                .limit(1);*/
 
     }
 }
