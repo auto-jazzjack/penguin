@@ -15,7 +15,7 @@ public class CasandraUtil {
         return mappingManager;
     }
 
-    public static Select queryGenerator(String keyspace, String table, List<String> columns, String idColumn) {
+    public static Select queryGenerator(String keyspace, String table, List<String> columns, List<String> idColumn) {
 
         Select.Selection query = QueryBuilder.select();
 
@@ -23,9 +23,10 @@ public class CasandraUtil {
             query = query.column(i);
         }
 
-        return query.from(keyspace, table)
-                .where(QueryBuilder.eq(idColumn, QueryBuilder.bindMarker()))
-                .limit(1);
+        Select from = query.from(keyspace, table);
+        idColumn.forEach(i -> from.where(QueryBuilder.eq(i, QueryBuilder.bindMarker())));
+        from.limit(10);
 
+        return from;
     }
 }

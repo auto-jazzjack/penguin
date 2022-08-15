@@ -25,9 +25,6 @@ penguin:
           - name: BookStore_source
             kind: CASSANDRA
             spec:
-              idColumn: id
-              columns: id, book_ids, contact
-              table: book_store
               valueType: io.penguin.penguincore.model.CBookStore
           - name: BookStore_cache
             kind: LETTUCE_CACHE

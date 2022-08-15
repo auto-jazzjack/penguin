@@ -13,22 +13,26 @@ import io.penguin.pengiunlettuce.connection.channel.CustomNetty;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class RedisConnection {
 
-    private static StatefulRedisClusterConnection<String, byte[]> cached;
+    private static Map<LettuceConnectionIngredient, StatefulRedisClusterConnection<String, byte[]>> cached = new ConcurrentHashMap<>();
+
 
     synchronized public static StatefulRedisClusterConnection<String, byte[]> connection(LettuceConnectionIngredient ingredient) {
 
-        if (cached != null) {
-            return cached;
+        if (cached.get(ingredient) != null) {
+            return cached.get(ingredient);
         }
+
         List<RedisURI> collect = ingredient.getRedisUris().stream()
                 .map(i -> RedisURI.create(i, ingredient.getPort()))
                 .collect(Collectors.toList());
-        cached = connection(collect);
-        return cached;
+        cached.put(ingredient, connection(collect));
+        return cached.get(ingredient);
     }
 
     public static ClientResources clientResources() {
