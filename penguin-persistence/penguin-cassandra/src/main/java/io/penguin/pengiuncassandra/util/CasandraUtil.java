@@ -15,7 +15,7 @@ public class CasandraUtil {
         return mappingManager;
     }
 
-    public static Select queryGenerator(String keyspace, String table, List<String> columns, String idColumn) {
+    public static Select queryGenerator(String keyspace, String table, List<String> columns, List<String> idColumn) {
 
         Select.Selection query = QueryBuilder.select();
 
@@ -23,8 +23,9 @@ public class CasandraUtil {
             query = query.column(i);
         }
 
+        //TODO currently id column supposed using single column
         return query.from(keyspace, table)
-                .where(QueryBuilder.eq(idColumn, QueryBuilder.bindMarker()))
+                .where(QueryBuilder.eq(idColumn.get(0), QueryBuilder.bindMarker()))
                 .limit(1);
 
     }
