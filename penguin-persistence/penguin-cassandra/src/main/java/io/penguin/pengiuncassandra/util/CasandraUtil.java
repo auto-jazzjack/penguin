@@ -28,10 +28,5 @@ public class CasandraUtil {
         from.limit(10);
 
         return from;
-        /*//TODO currently id column supposed using single column
-        return query.from(keyspace, table)
-                .where(QueryBuilder.eq(idColumn.get(0), QueryBuilder.bindMarker()))
-                .limit(1);*/
-
     }
 }

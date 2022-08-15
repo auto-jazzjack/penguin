@@ -135,17 +135,17 @@ public class PojoFieldCleanser<T> {
                         if (i.getType().isAssignableFrom(List.class) || i.getType().isAssignableFrom(Set.class)) {
                             Type actualTypeArgument = ((ParameterizedType) i.getGenericType()).getActualTypeArguments()[0];
                             GenericType childGeneric = i.getType().isAssignableFrom(List.class) ? GenericType.LIST : GenericType.SET;
-                            FieldCleanerMeta<?> build = new FieldCleanerMeta<>((Class<? extends Object>) actualTypeArgument, childGeneric);
-                            build.setMethod(new POJOFieldMethod(root, i));
+                            FieldCleanerMeta<P> build = new FieldCleanerMeta<>((Class<P>) actualTypeArgument, childGeneric);
+                            build.setMethod(new POJOFieldMethod<>(root, i));
                             this.extendableChildren.put(i.getName(), build);
                         } else if (i.getType().isAssignableFrom(Map.class)) {
                             Type actualTypeArgument = ((ParameterizedType) i.getGenericType()).getActualTypeArguments()[1];
-                            FieldCleanerMeta<?> build = new FieldCleanerMeta<>((Class<?>) actualTypeArgument, GenericType.MAP);
-                            build.setMethod(new POJOFieldMethod(root, i));
+                            FieldCleanerMeta<P> build = new FieldCleanerMeta<>((Class<P>) actualTypeArgument, GenericType.MAP);
+                            build.setMethod(new POJOFieldMethod<>(root, i));
                             this.extendableChildren.put(i.getName(), build);
                         } else {
-                            FieldCleanerMeta<?> build = new FieldCleanerMeta<>(i.getType(), GenericType.NONE);
-                            build.setMethod(new POJOFieldMethod(root, i));
+                            FieldCleanerMeta<P> build = new FieldCleanerMeta<>((Class<P>) i.getType(), GenericType.NONE);
+                            build.setMethod(new POJOFieldMethod<>(root, i));
                             this.extendableChildren.put(i.getName(), build);
                         }
                     }
