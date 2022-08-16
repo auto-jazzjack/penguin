@@ -44,6 +44,8 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
     private final Counter reupdate = MetricCreator.counter("lettuce_reupdate_count", "kind", this.getClass().getSimpleName());
     private final Plugin<Context<V>>[] plugins;
 
+    public static Context<byte[]> defaultInstance = Context.<byte[]>builder().build();
+
     public LettuceCache(LettuceConnectionIngredient connection, LettuceCacheIngredient cacheConfig) throws Exception {
 
         super(cacheConfig.getFromDownStream());
@@ -109,12 +111,22 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
         long start = System.currentTimeMillis();
         Mono<Context<V>> mono = reactive.get(this.prefix + key.toString())
                 .defaultIfEmpty(new byte[0])
-                .map(i -> ProtoUtil.safeParseFrom(penguin.Codec.parser(), i, penguin.Codec.newBuilder().getDefaultInstanceForType()))
-                .map(i -> Pair.of(i.getTimestamp(), deserialize(i.getPayload().toByteArray())))
+                .map(i -> defaultInstance)
+                .map(i -> {
+                    if (i.getValue().length == 0) {
+                        return Pair.<Long, V>of(Long.MIN_VALUE, null);
+                    }
+                    penguin.Codec codec = ProtoUtil.safeParseFrom(penguin.Codec.parser(), i.getValue(), penguin.Codec.newBuilder().getDefaultInstanceForType());
+                    Pair<Long, V> of = Pair.of(codec.getTimestamp(), deserialize(codec.getPayload().toByteArray()));
+
+                    return of;
+                })
                 .doOnNext(i -> {
-                    if (i.getKey() + expireMilliseconds > System.currentTimeMillis()) {
-                        reupdate.increment();
-                        writeOne(key.toString(), Context.<V>builder().value(i.getValue()).build());
+                    if (i.getKey() > 0) {
+                        if (i.getKey() + expireMilliseconds > System.currentTimeMillis()) {
+                            reupdate.increment();
+                            writeOne(key.toString(), Context.<V>builder().value(i.getValue()).build());
+                        }
                     }
                 })
                 .map(i -> Context.<V>builder().value(i.getValue()).build());
@@ -140,6 +152,7 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
         try {
             return this.codec.serialize(v);
         } catch (Exception e) {
+            log.error("", e);
             throw new IllegalStateException("Cannot serialize " + v);
         }
     }
@@ -148,6 +161,7 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
         try {
             return this.codec.deserialize(bytes);
         } catch (Exception e) {
+            log.error("", e);
             throw new IllegalStateException("Cannot deserialize " + new String(bytes));
         }
     }

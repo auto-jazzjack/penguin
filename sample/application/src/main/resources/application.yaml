@@ -35,6 +35,11 @@ penguin:
                 codec: io.penguin.penguincodec.JsonCodec
                 target: io.penguin.penguincore.model.CBookStore
                 compress: GZIP
+          - name: BookOverWriter
+            kind: OVER_WRITER
+            spec:
+              - io.penguin.penguincore.overwrite.Value2OverWriter
+
       - name: Book
         kind: BASE
         aggregatedTarget: io.penguin.penguincore.reader.BookReader
@@ -54,7 +59,3 @@ penguin:
                 codec: io.penguin.penguincodec.JsonCodec
                 target: io.penguin.penguincore.model.CBook
                 compress: GZIP
-          - name: BookOverWriter
-            kind: OVER_WRITER
-            spec:
-              - io.penguin.penguincore.overwrite.Value2OverWriter
