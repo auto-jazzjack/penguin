@@ -21,17 +21,16 @@ import java.util.Map;
 public class UpdateController {
 
     private final Map<String, Penguin<Object, Object>> deployments;
-    private final String OK = "OK";
 
 
     @PutMapping(path = "/{key}/{idType}/{id}")
-    public String refreshByKeyAndId(@PathVariable("key") String key, @PathVariable String idType, @PathVariable("id") String id) throws Exception {
+    public String refreshByKeyAndId(@PathVariable("key") String key, @PathVariable String idType, @PathVariable("id") String id) {
         Penguin<Object, Object> baseDeployment = deployments.get(key);
         if (baseDeployment == null) {
             throw HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "No Such Deployment", new HttpHeaders(), null, StandardCharsets.UTF_8);
         }
 
         baseDeployment.refreshOne(IdTypeDetermineUtil.getConverter(idType).apply(id));
-        return OK;
+        return "OK";
     }
 }

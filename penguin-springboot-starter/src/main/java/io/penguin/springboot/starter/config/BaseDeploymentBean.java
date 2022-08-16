@@ -20,7 +20,7 @@ public class BaseDeploymentBean {
     private final PenguinProperties penguinProperties;
 
     @Bean
-    public Map<String, Penguin> penguinMap(List<Penguin> baseDeployment) {
+    public Map<String, Penguin<?, ?>> penguinMap(List<Penguin<?, ?>> baseDeployment) {
         return baseDeployment.stream()
                 .map(i -> Pair.of(i.getName(), i))
                 .collect(Collectors.toMap(Pair::getKey, Pair::getValue));

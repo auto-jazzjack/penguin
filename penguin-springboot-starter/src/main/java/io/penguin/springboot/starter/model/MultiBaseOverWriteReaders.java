@@ -18,18 +18,13 @@ public class MultiBaseOverWriteReaders<K, V> implements Reader<K, Map<Class<? ex
         this.readers = readers;
     }
 
-    public Map<Class<? extends BaseOverWriteReader<K, Object, V>>, BiConsumer<Object, V>> createMergers() {
+    public Map<Class<? extends BaseOverWriteReader<K, Object, V>>, BiConsumer<V, Object>> createMergers() {
 
         return this.readers.entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, i -> {
                     BaseOverWriteReader<K, Object, V> value = (BaseOverWriteReader<K, Object, V>) i.getValue();
-                    return new BiConsumer<Object, V>() {
-                        @Override
-                        public void accept(Object o, V v) {
-                            value.merge(v, o);
-                        }
-                    };
+                    return value::merge;
                 }));
     }
 

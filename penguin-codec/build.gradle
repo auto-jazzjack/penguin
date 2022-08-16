@@ -1,6 +1,7 @@
 dependencies {
-    implementation ("com.fasterxml.jackson.core:jackson-databind:${jackson_version}")
-    implementation("com.google.protobuf:protobuf-java:${protobuf_version}")
+    api("com.fasterxml.jackson.core:jackson-databind:${jackson_version}")
+    api("com.fasterxml.jackson.core:jackson-core:${jackson_version}")
+    api("com.google.protobuf:protobuf-java:${protobuf_version}")
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'

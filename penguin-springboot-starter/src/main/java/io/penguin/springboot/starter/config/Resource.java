@@ -7,5 +7,5 @@ import java.util.Map;
 
 @Data
 public class Resource {
-    private Map<String, Reader> readers;
+    private Map<String, Reader<?, ?>> readers;
 }

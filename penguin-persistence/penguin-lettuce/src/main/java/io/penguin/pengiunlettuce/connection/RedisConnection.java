@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 public class RedisConnection {
 
-    private static Map<LettuceConnectionIngredient, StatefulRedisClusterConnection<String, byte[]>> cached = new ConcurrentHashMap<>();
+    private final static Map<LettuceConnectionIngredient, StatefulRedisClusterConnection<String, byte[]>> cached = new ConcurrentHashMap<>();
 
 
     synchronized public static StatefulRedisClusterConnection<String, byte[]> connection(LettuceConnectionIngredient ingredient) {

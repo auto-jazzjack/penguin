@@ -45,7 +45,7 @@ public class PenguinProperties {
     @Data
     public static class Worker {
         private List<Container> containers;
-        private Class aggregatedTarget;
+        private Class<?> aggregatedTarget;
         private String name;
         private String kind;
     }

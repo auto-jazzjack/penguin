@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Slf4j
-public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
+public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
     protected final RedisAdvancedClusterReactiveCommands<String, byte[]> reactive;
     private final long expireMilliseconds;
@@ -44,7 +44,9 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
     private final Counter reupdate = MetricCreator.counter("lettuce_reupdate_count", "kind", this.getClass().getSimpleName());
     private final Plugin<Context<V>>[] plugins;
 
-    public LettuceCache(LettuceConnectionIngredient connection, LettuceCacheIngredient cacheConfig) throws Exception {
+    public static Context<byte[]> defaultInstance = Context.<byte[]>builder().build();
+
+    public LettuceCache(LettuceConnectionIngredient connection, LettuceCacheIngredient<K, V> cacheConfig) throws Exception {
 
         super(cacheConfig.getFromDownStream());
         Objects.requireNonNull(cacheConfig);
@@ -82,15 +84,20 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
     @Override
     public void writeOne(String key, Context<V> value) {
 
-        if (value == null || value.getValue() == null) {
+        if (value == null) {
             return;
         }
-
         long start = System.currentTimeMillis();
-        reactive.setex(this.prefix() + key, this.expireMilliseconds, withTime(value.getValue()))
-                .doOnSuccess(i -> writer.record(Duration.ofMillis(System.currentTimeMillis() - start)))
-                .subscribeOn(Schedulers.parallel())
-                .subscribe();
+
+        Mono<String> setex;
+        if (value.getValue() == null) {
+            setex = reactive.setex(this.prefix() + key, this.expireMilliseconds, withTimeEmpty());
+        } else {
+            setex = reactive.setex(this.prefix() + key, this.expireMilliseconds, withTime(value.getValue()));
+        }
+
+        setex.doOnSuccess(i -> writer.record(Duration.ofMillis(System.currentTimeMillis() - start)))
+                .subscribeOn(Schedulers.parallel()).subscribe();
     }
 
     @Override
@@ -108,24 +115,29 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
 
         long start = System.currentTimeMillis();
         Mono<Context<V>> mono = reactive.get(this.prefix + key.toString())
-                .defaultIfEmpty(new byte[0])
-                .map(i -> ProtoUtil.safeParseFrom(penguin.Codec.parser(), i, penguin.Codec.newBuilder().getDefaultInstanceForType()))
-                .map(i -> Pair.of(i.getTimestamp(), deserialize(i.getPayload().toByteArray())))
-                .doOnNext(i -> {
-                    if (i.getKey() + expireMilliseconds > System.currentTimeMillis()) {
-                        reupdate.increment();
-                        writeOne(key.toString(), Context.<V>builder().value(i.getValue()).build());
+                .map(i -> Context.<byte[]>builder().value(i).build())
+                .defaultIfEmpty(defaultInstance)
+                .map(i -> {
+                    if (i == defaultInstance || i.getValue().length <= 0) {
+                        return Pair.of(Long.MIN_VALUE, deserialize(new byte[0]));
+                    } else {
+                        penguin.Codec codec = ProtoUtil.safeParseFrom(penguin.Codec.parser(), i.getValue(), penguin.Codec.newBuilder().getDefaultInstanceForType());
+                        return Pair.of(codec.getTimestamp(), deserialize(codec.getPayload().toByteArray()));
                     }
-                })
-                .map(i -> Context.<V>builder().value(i.getValue()).build());
+                }).doOnNext(i -> {
+                    if (i.getKey() > 0) {
+                        if (i.getKey() + expireMilliseconds < System.currentTimeMillis()) {
+                            reupdate.increment();
+                            writeOne(key.toString(), i.getValue());
+                        }
+                    }
+                }).map(Pair::getValue);
 
         for (Plugin<Context<V>> plugin : plugins) {
             mono = plugin.decorateSource(mono);
         }
 
-
-        return mono
-                .onErrorReturn(this.failFindOne(key))
+        return mono.onErrorReturn(this.failFindOne(key))
                 .doOnError(e -> log.error("", e))
                 .doOnSuccess(i -> reader.record(Duration.ofMillis(System.currentTimeMillis() - start)))
                 .subscribeOn(Schedulers.parallel());
@@ -136,18 +148,30 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
         return Context.<V>builder().build();
     }
 
-    public byte[] serialize(V v) {
+    public byte[] serialize(Context<V> v) {
+        if (v == null || v.getValue() == null) {
+            return new byte[0];
+        }
+
         try {
-            return this.codec.serialize(v);
+            return this.codec.serialize(v.getValue());
         } catch (Exception e) {
+            log.error("", e);
             throw new IllegalStateException("Cannot serialize " + v);
         }
     }
 
-    public V deserialize(byte[] bytes) {
+    public Context<V> deserialize(byte[] bytes) {
+        if (bytes.length == 0) {
+            return null;
+        }
+
         try {
-            return this.codec.deserialize(bytes);
+            return Context.<V>builder()
+                    .value(this.codec.deserialize(bytes))
+                    .build();
         } catch (Exception e) {
+            log.error("", e);
             throw new IllegalStateException("Cannot deserialize " + new String(bytes));
         }
     }
@@ -155,8 +179,16 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
     private byte[] withTime(V v) {
         return penguin.Codec.newBuilder()
                 .setTimestamp(System.currentTimeMillis())
-                .setPayload(ByteString.copyFrom(serialize(v)))
-                .build().toByteArray();
+                .setPayload(ByteString.copyFrom(serialize(Context.<V>builder().value(v).build())))
+                .build()
+                .toByteArray();
+    }
+
+    private byte[] withTimeEmpty() {
+        return penguin.Codec.newBuilder()
+                .setTimestamp(System.currentTimeMillis())
+                .setPayload(ByteString.copyFrom(new byte[0])).build()
+                .toByteArray();
     }
 
 
