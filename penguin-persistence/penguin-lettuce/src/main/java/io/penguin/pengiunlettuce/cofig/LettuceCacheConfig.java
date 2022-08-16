@@ -5,15 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LettuceCacheConfig {
+public class LettuceCacheConfig<T> {
     private String prefix;
     private String downStreamName;
-    private CodecConfig codecConfig;
+    private CodecConfig<T> codecConfig;
 }

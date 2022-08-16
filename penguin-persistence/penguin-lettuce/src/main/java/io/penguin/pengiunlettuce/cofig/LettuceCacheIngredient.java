@@ -42,10 +42,11 @@ public class LettuceCacheIngredient {
 
         Optional.ofNullable(config.getPrefix()).ifPresent(build::setPrefix);
         Optional.ofNullable(config.getDownStreamName()).ifPresent(i -> build.setFromDownStream(readers.get(i)));
-        Optional.ofNullable(config.getCodecConfig()).ifPresent(i -> {
-            Codec codec = CodecFactory.create(i.getCodec(), i.getTarget());
-            build.setCodec(CompressorFactory.generate(Compressor.kindValueOf(i.getCompress()), codec));
-        });
+        Optional.ofNullable(config.getCodecConfig())
+                .ifPresent(i -> {
+                    Codec<?> codec = CodecFactory.create(i.getCodec(), i.getTarget());
+                    build.setCodec(CompressorFactory.generate(Compressor.kindValueOf(i.getCompress()), codec));
+                });
 
         return build;
     }

@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CodecConfig {
-    private Class<Codec> codec;
-    private Class target;
+public class CodecConfig<T> {
+    private Class<Codec<T>> codec;
+    private Class<T> target;
     private String compress;
 }

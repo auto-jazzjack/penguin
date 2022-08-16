@@ -45,7 +45,7 @@ public class CustomNetty<K, V> implements NettyCustomizer {
         channel.pipeline().addFirst(new IdleStateHandler(1, 1, 0));
         channel.pipeline().addLast(new ChannelDuplexHandler() {
             @Override
-            public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+            public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
 
                 //IdleStateHandler will make event
                 if (evt instanceof IdleStateEvent) {
