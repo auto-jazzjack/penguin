@@ -32,12 +32,12 @@ import java.util.List;
 import java.util.Objects;
 
 @Slf4j
-public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
+public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
     protected final RedisAdvancedClusterReactiveCommands<String, byte[]> reactive;
     private final long expireMilliseconds;
     private final String prefix;
-    private final Codec<Context<V>> codec;
+    private final Codec<V> codec;
 
     private final Timer reader = MetricCreator.timer("lettuce_reader", "kind", this.getClass().getSimpleName());
     private final Timer writer = MetricCreator.timer("lettuce_writer", "kind", this.getClass().getSimpleName());
@@ -46,7 +46,7 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
 
     public static Context<byte[]> defaultInstance = Context.<byte[]>builder().build();
 
-    public LettuceCache(LettuceConnectionIngredient connection, LettuceCacheIngredient<K, Context<V>> cacheConfig) throws Exception {
+    public LettuceCache(LettuceConnectionIngredient connection, LettuceCacheIngredient<K, V> cacheConfig) throws Exception {
 
         super(cacheConfig.getFromDownStream());
         Objects.requireNonNull(cacheConfig);
@@ -137,7 +137,6 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
             mono = plugin.decorateSource(mono);
         }
 
-
         return mono.onErrorReturn(this.failFindOne(key))
                 .doOnError(e -> log.error("", e))
                 .doOnSuccess(i -> reader.record(Duration.ofMillis(System.currentTimeMillis() - start)))
@@ -150,8 +149,12 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
     }
 
     public byte[] serialize(Context<V> v) {
+        if (v == null || v.getValue() == null) {
+            return new byte[0];
+        }
+
         try {
-            return this.codec.serialize(v);
+            return this.codec.serialize(v.getValue());
         } catch (Exception e) {
             log.error("", e);
             throw new IllegalStateException("Cannot serialize " + v);
@@ -164,7 +167,9 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, Context<V>> {
         }
 
         try {
-            return this.codec.deserialize(bytes);
+            return Context.<V>builder()
+                    .value(this.codec.deserialize(bytes))
+                    .build();
         } catch (Exception e) {
             log.error("", e);
             throw new IllegalStateException("Cannot deserialize " + new String(bytes));

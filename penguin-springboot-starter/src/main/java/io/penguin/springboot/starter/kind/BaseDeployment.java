@@ -24,7 +24,7 @@ import java.util.function.BiConsumer;
 public class BaseDeployment<K, V> implements Penguin<K, V> {
 
     private Reader<K, Context<V>> source;
-    private BaseCacheReader<K, Context<V>> remoteCache;
+    private BaseCacheReader<K, V> remoteCache;
 
     /**
      * Each Column can be overWritten
@@ -41,7 +41,7 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
 
             switch (readerBundle.getKind()) {
                 case LETTUCE_CACHE:
-                    this.remoteCache = (BaseCacheReader<K, Context<V>>) readerBundle.getReader();
+                    this.remoteCache = (BaseCacheReader<K, V>) readerBundle.getReader();
                     break;
                 case OVER_WRITER:
                     System.out.println();
