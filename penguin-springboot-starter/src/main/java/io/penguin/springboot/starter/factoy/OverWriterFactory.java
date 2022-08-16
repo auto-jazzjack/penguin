@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 public class OverWriterFactory implements ReaderFactory {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-
     @Override
     public ContainerKind getContainerType() {
         return ContainerKind.OVER_WRITER;

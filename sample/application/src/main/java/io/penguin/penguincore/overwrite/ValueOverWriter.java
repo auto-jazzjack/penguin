@@ -4,8 +4,6 @@ import io.penguin.penguincore.model.MyModel;
 import io.penguin.penguincore.reader.BaseOverWriteReader;
 import reactor.core.publisher.Mono;
 
-import java.util.Map;
-
 public class ValueOverWriter extends BaseOverWriteReader<Long, String, MyModel> {
 
     public ValueOverWriter() {

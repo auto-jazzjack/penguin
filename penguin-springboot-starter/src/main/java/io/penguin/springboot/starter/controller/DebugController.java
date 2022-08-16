@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -24,11 +23,6 @@ import java.util.Map;
 public class DebugController {
 
     private final Map<String, Penguin<Object, Object>> deployments;
-
-    @PostConstruct
-    public void hello() {
-        System.out.println("Hello");
-    }
 
     @GetMapping(path = "/{key}/{idType}/{id}")
     public Mono<Map<From, Object>> debugKeyAndId(@PathVariable String key, @PathVariable String idType, @PathVariable String id) {
