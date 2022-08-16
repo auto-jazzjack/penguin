@@ -40,7 +40,9 @@ public class LettuceCacheIngredient<K, V> {
                 .build();
 
         Optional.ofNullable(config.getPrefix()).ifPresent(build::setPrefix);
-        Optional.ofNullable(config.getDownStreamName()).ifPresent(i -> build.setFromDownStream((Reader/*<K_, Context<V_>>*/) readers.get(i)));
+        Optional.ofNullable(config.getDownStreamName())
+                .ifPresent(i -> build.setFromDownStream((Reader) readers.get(i)));
+
         Optional.ofNullable(config.getCodecConfig())
                 .ifPresent(i -> {
                     Codec<V_> codec = CodecFactory.create(i.getCodec(), i.getTarget());
