@@ -18,11 +18,6 @@ import java.util.stream.Collectors;
 public class ExecutionPlanExecutor {
 
     public <T> Mono<T> exec(ExecutionPlan executionPlan) {
-        ExecutionPlan ignoreRoot = executionPlan.getNext().entrySet().stream()
-                .findFirst()
-                .map(Map.Entry::getValue)
-                .orElse(null);
-
         return exec0(executionPlan);
     }
 
