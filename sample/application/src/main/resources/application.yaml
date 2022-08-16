@@ -14,7 +14,7 @@ penguin:
           hosts: 127.0.0.1
       - name: LETTUCE_CACHE
         spec:
-          expireMilliseconds: 100
+          expireMilliseconds: 10000
           redisUris: 127.0.0.1
       - name: OVER_WRITER
     workers:
