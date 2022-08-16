@@ -34,14 +34,13 @@ public class LettuceCacheIngredient<K, V> {
                 .pluginInput(PluginInput.base().build());
     }
 
-    public static <K_, V_> LettuceCacheIngredient<K_, V_> toInternal(LettuceCacheConfig<V_> config, Map<String, Reader<Object, Context<Object>>> readers) {
+    public static <K_, V_> LettuceCacheIngredient<K_, V_> toInternal(LettuceCacheConfig<V_> config, Map<String, Reader<K_, Context<V_>>> readers) {
         Objects.requireNonNull(config);
         LettuceCacheIngredient<K_, V_> build = LettuceCacheIngredient.<K_, V_>base()
                 .build();
 
         Optional.ofNullable(config.getPrefix()).ifPresent(build::setPrefix);
-        Optional.ofNullable(config.getDownStreamName())
-                .ifPresent(i -> build.setFromDownStream((Reader) readers.get(i)));
+        Optional.ofNullable(config.getDownStreamName()).ifPresent(i -> build.setFromDownStream(readers.get(i)));
 
         Optional.ofNullable(config.getCodecConfig())
                 .ifPresent(i -> {
