@@ -19,32 +19,31 @@ import java.util.Optional;
 
 @Data
 @Builder
-@SuppressWarnings({"unchecked", "rawtypes"})
-public class LettuceCacheIngredient {
+public class LettuceCacheIngredient<K, V> {
 
     private RedisCodec<?, byte[]> connectionCodec;
     private String prefix;
-    private Reader fromDownStream;
-    private Codec codec;
+    private Reader<K, V> fromDownStream;
+    private Codec<V> codec;
 
     private PluginInput pluginInput;
 
-    public static LettuceCacheIngredient.LettuceCacheIngredientBuilder base() {
-        return LettuceCacheIngredient.builder()
+    public static <K_, V_> LettuceCacheIngredient.LettuceCacheIngredientBuilder<K_, V_> base() {
+        return LettuceCacheIngredient.<K_, V_>builder()
                 .connectionCodec(DefaultCodec.getInstance())
                 .pluginInput(PluginInput.base().build());
     }
 
-    public static LettuceCacheIngredient toInternal(LettuceCacheConfig config, Map<String, Reader<Object, Context<Object>>> readers) {
+    public static <K_, V_> LettuceCacheIngredient<K_, V_> toInternal(LettuceCacheConfig<V_> config, Map<String, Reader<Object, Context<Object>>> readers) {
         Objects.requireNonNull(config);
-        LettuceCacheIngredient build = LettuceCacheIngredient.base()
+        LettuceCacheIngredient<K_, V_> build = LettuceCacheIngredient.<K_, V_>base()
                 .build();
 
         Optional.ofNullable(config.getPrefix()).ifPresent(build::setPrefix);
-        Optional.ofNullable(config.getDownStreamName()).ifPresent(i -> build.setFromDownStream(readers.get(i)));
+        Optional.ofNullable(config.getDownStreamName()).ifPresent(i -> build.setFromDownStream((Reader<K_, V_>) readers.get(i)));
         Optional.ofNullable(config.getCodecConfig())
                 .ifPresent(i -> {
-                    Codec<?> codec = CodecFactory.create(i.getCodec(), i.getTarget());
+                    Codec<V_> codec = CodecFactory.create(i.getCodec(), i.getTarget());
                     build.setCodec(CompressorFactory.generate(Compressor.kindValueOf(i.getCompress()), codec));
                 });
 

@@ -24,12 +24,7 @@ public class MultiBaseOverWriteReaders<K, V> implements Reader<K, Map<Class<? ex
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, i -> {
                     BaseOverWriteReader<K, Object, V> value = (BaseOverWriteReader<K, Object, V>) i.getValue();
-                    return new BiConsumer<Object, V>() {
-                        @Override
-                        public void accept(Object o, V v) {
-                            value.merge(v, o);
-                        }
-                    };
+                    return (o, v) -> value.merge(v, o);
                 }));
     }
 

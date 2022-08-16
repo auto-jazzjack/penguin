@@ -21,7 +21,7 @@ import java.util.Map;
 @RestController
 @RequestMapping(value = "/api/v1/debug")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class DebugController<K> {
+public class DebugController {
 
     private final Map<String, Penguin<Object, Object>> deployments;
 
@@ -31,7 +31,7 @@ public class DebugController<K> {
     }
 
     @GetMapping(path = "/{key}/{idType}/{id}")
-    public Mono<Map<From, Object>> debugKeyAndId(@PathVariable String key, @PathVariable String idType, @PathVariable String id) throws Exception {
+    public Mono<Map<From, Object>> debugKeyAndId(@PathVariable String key, @PathVariable String idType, @PathVariable String id) {
         Penguin<Object, Object> baseDeployment = deployments.get(key);
         if (baseDeployment == null) {
             throw HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "No Such Deployment", new HttpHeaders(), null, StandardCharsets.UTF_8);
