@@ -26,17 +26,7 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
 
     private Reader<K, V> source;
     private final List<BaseCacheReader<K, V>> caches;
-    private final CacheContext<V> empty = new CacheContext<V>() {
-        @Override
-        public V getValue() {
-            return null;
-        }
 
-        @Override
-        public long getTimeStamp() {
-            return 0;
-        }
-    };
 
     /**
      * Each Column can be overWritten
@@ -90,14 +80,16 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
 
         }
 
-        //if result still empty, we need to use source
+
         cacheChain = cacheChain
                 .doOnNext(i -> {
                     int i1 = lastIdxCache.get();
+                    //cache will be backfilled by right before one
                     if (i1 - 1 >= 0) {
                         caches.get(lastIdxCache.get()).writeOneLazy(key, i);
                     }
                 })
+                //if result still empty, we need to use source
                 .switchIfEmpty(source.findOne(key)
                         .map(i -> Pair.of(i, System.currentTimeMillis()))
                         .map(i -> new CacheContext<V>() {
@@ -131,11 +123,7 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                         return Mono.just(origin.getValue());
                     });
         } else {
-            return cacheChain
-                    .doOnNext(i -> {
-                        System.out.println();
-                    })
-                    .map(CacheContext::getValue);
+            return cacheChain.map(CacheContext::getValue);
         }
     }
 
