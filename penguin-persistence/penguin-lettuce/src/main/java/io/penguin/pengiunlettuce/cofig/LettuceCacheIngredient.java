@@ -7,7 +7,7 @@ import io.penguin.pengiunlettuce.compress.CompressorFactory;
 import io.penguin.penguincodec.Codec;
 import io.penguin.penguincodec.factory.CodecFactory;
 import io.penguin.penguincore.plugin.PluginInput;
-import io.penguin.penguincore.reader.Context;
+import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguincore.reader.Reader;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +23,7 @@ public class LettuceCacheIngredient<K, V> {
 
     private RedisCodec<?, byte[]> connectionCodec;
     private String prefix;
-    private Reader<K, Context<V>> fromDownStream;
+    private Reader<K, V> fromDownStream;
     private Codec<V> codec;
 
     private PluginInput pluginInput;
@@ -34,7 +34,7 @@ public class LettuceCacheIngredient<K, V> {
                 .pluginInput(PluginInput.base().build());
     }
 
-    public static <K_, V_> LettuceCacheIngredient<K_, V_> toInternal(LettuceCacheConfig<V_> config, Map<String, Reader<K_, Context<V_>>> readers) {
+    public static <K_, V_> LettuceCacheIngredient<K_, V_> toInternal(LettuceCacheConfig<V_> config, Map<String, Reader<K_, CacheContext<V_>>> readers) {
         Objects.requireNonNull(config);
         LettuceCacheIngredient<K_, V_> build = LettuceCacheIngredient.<K_, V_>base()
                 .build();

@@ -1,6 +1,5 @@
 package io.penguin.pengiunlettuce;
 
-import com.google.protobuf.ByteString;
 import io.lettuce.core.cluster.api.reactive.RedisAdvancedClusterReactiveCommands;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
@@ -19,8 +18,8 @@ import io.penguin.penguincore.plugin.circuit.CircuitPlugin;
 import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
 import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
 import io.penguin.penguincore.reader.BaseCacheReader;
-import io.penguin.penguincore.reader.Context;
-import io.penguin.penguincore.util.Pair;
+import io.penguin.penguincore.reader.CacheContext;
+import io.penguin.penguincore.reader.ProtoCacheContext;
 import io.penguin.penguincore.util.ProtoUtil;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -37,14 +36,12 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     protected final RedisAdvancedClusterReactiveCommands<String, byte[]> reactive;
     private final long expireMilliseconds;
     private final String prefix;
-    private final Codec<V> codec;
 
     private final Timer reader = MetricCreator.timer("lettuce_reader", "kind", this.getClass().getSimpleName());
     private final Timer writer = MetricCreator.timer("lettuce_writer", "kind", this.getClass().getSimpleName());
     private final Counter reupdate = MetricCreator.counter("lettuce_reupdate_count", "kind", this.getClass().getSimpleName());
-    private final Plugin<Context<V>>[] plugins;
+    private final Plugin<CacheContext>[] plugins;
 
-    public static Context<byte[]> defaultInstance = Context.<byte[]>builder().build();
 
     public LettuceCache(LettuceConnectionIngredient connection, LettuceCacheIngredient<K, V> cacheConfig) throws Exception {
 
@@ -55,7 +52,6 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
         this.expireMilliseconds = connection.getExpireMilliseconds();
         this.prefix = cacheConfig.getPrefix();
         AllIngredient ingredient = AllIngredient.builder().build();
-        this.codec = cacheConfig.getCodec();
 
         List<Plugin<Object>> pluginList = new ArrayList<>();
         TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(cacheConfig.getPluginInput());
@@ -82,21 +78,15 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     }
 
     @Override
-    public void writeOne(String key, Context<V> value) {
+    public void writeOne(String key, CacheContext value) {
 
         if (value == null) {
             return;
         }
+
         long start = System.currentTimeMillis();
-
-        Mono<String> setex;
-        if (value.getValue() == null) {
-            setex = reactive.setex(this.prefix() + key, this.expireMilliseconds, withTimeEmpty());
-        } else {
-            setex = reactive.setex(this.prefix() + key, this.expireMilliseconds, withTime(value.getValue()));
-        }
-
-        setex.doOnSuccess(i -> writer.record(Duration.ofMillis(System.currentTimeMillis() - start)))
+        reactive.setex(this.prefix() + key, this.expireMilliseconds, value.getValue())
+                .doOnSuccess(i -> writer.record(Duration.ofMillis(System.currentTimeMillis() - start)))
                 .subscribeOn(Schedulers.parallel()).subscribe();
     }
 
@@ -111,29 +101,32 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     }
 
     @Override
-    public Mono<Context<V>> findOne(K key) {
+    public Mono<CacheContext> findOne(K key) {
 
         long start = System.currentTimeMillis();
-        Mono<Context<V>> mono = reactive.get(this.prefix + key.toString())
-                .map(i -> Context.<byte[]>builder().value(i).build())
-                .defaultIfEmpty(defaultInstance)
+        Mono<CacheContext> mono = reactive.get(this.prefix + key.toString())
+                .map(i -> ProtoUtil.safeParseFrom(penguin.CacheCodec.parser(), i, penguin.CacheCodec.newBuilder().getDefaultInstanceForType()))
                 .map(i -> {
-                    if (i == defaultInstance || i.getValue().length <= 0) {
-                        return Pair.of(Long.MIN_VALUE, deserialize(new byte[0]));
-                    } else {
-                        penguin.Codec codec = ProtoUtil.safeParseFrom(penguin.Codec.parser(), i.getValue(), penguin.Codec.newBuilder().getDefaultInstanceForType());
-                        return Pair.of(codec.getTimestamp(), deserialize(codec.getPayload().toByteArray()));
-                    }
-                }).doOnNext(i -> {
-                    if (i.getKey() > 0) {
-                        if (i.getKey() + expireMilliseconds < System.currentTimeMillis()) {
-                            reupdate.increment();
-                            writeOne(key.toString(), i.getValue());
+                    return new CacheContext() {
+                        @Override
+                        public byte[] getValue() {
+                            return new byte[0];
                         }
-                    }
-                }).map(Pair::getValue);
 
-        for (Plugin<Context<V>> plugin : plugins) {
+                        @Override
+                        public long getTimeStamp() {
+                            return 0;
+                        }
+                    };
+                })
+                .doOnNext(i -> {
+                    if (i.getTimeStamp() + expireMilliseconds < System.currentTimeMillis()) {
+                        reupdate.increment();
+                        writeOne(key.toString(), i);
+                    }
+                });
+
+        for (Plugin<CacheContext> plugin : plugins) {
             mono = plugin.decorateSource(mono);
         }
 
@@ -144,51 +137,8 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     }
 
     @Override
-    public Context<V> failFindOne(K key) {
-        return Context.<V>builder().build();
-    }
-
-    public byte[] serialize(Context<V> v) {
-        if (v == null || v.getValue() == null) {
-            return new byte[0];
-        }
-
-        try {
-            return this.codec.serialize(v.getValue());
-        } catch (Exception e) {
-            log.error("", e);
-            throw new IllegalStateException("Cannot serialize " + v);
-        }
-    }
-
-    public Context<V> deserialize(byte[] bytes) {
-        if (bytes.length == 0) {
-            return null;
-        }
-
-        try {
-            return Context.<V>builder()
-                    .value(this.codec.deserialize(bytes))
-                    .build();
-        } catch (Exception e) {
-            log.error("", e);
-            throw new IllegalStateException("Cannot deserialize " + new String(bytes));
-        }
-    }
-
-    private byte[] withTime(V v) {
-        return penguin.Codec.newBuilder()
-                .setTimestamp(System.currentTimeMillis())
-                .setPayload(ByteString.copyFrom(serialize(Context.<V>builder().value(v).build())))
-                .build()
-                .toByteArray();
-    }
-
-    private byte[] withTimeEmpty() {
-        return penguin.Codec.newBuilder()
-                .setTimestamp(System.currentTimeMillis())
-                .setPayload(ByteString.copyFrom(new byte[0])).build()
-                .toByteArray();
+    public CacheContext failFindOne(K key) {
+        return null;
     }
 
 

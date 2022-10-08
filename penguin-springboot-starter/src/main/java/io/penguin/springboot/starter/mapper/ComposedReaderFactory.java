@@ -1,6 +1,6 @@
 package io.penguin.springboot.starter.mapper;
 
-import io.penguin.penguincore.reader.Context;
+import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.penguincore.util.Pair;
 import io.penguin.springboot.starter.Penguin;
@@ -55,7 +55,7 @@ public class ComposedReaderFactory {
             Objects.requireNonNull(container);
             Objects.requireNonNull(container.getKind());
 
-            Map<String, Reader<Object, Context<Object>>> flattenReader = flatten(readers);
+            Map<String, Reader<Object, CacheContext<Object>>> flattenReader = flatten(readers);
             ContainerKind containerKind = valueOf(container.getKind().toUpperCase());
             switch (containerKind) {
                 case LETTUCE_CACHE:
@@ -98,7 +98,7 @@ public class ComposedReaderFactory {
         }
     }
 
-    private Map<String, Reader<Object, Context<Object>>> flatten(Map<String, ReaderBundle<Object, Object>> map) {
+    private Map<String, Reader<Object, CacheContext<Object>>> flatten(Map<String, ReaderBundle<Object, Object>> map) {
         return map.entrySet()
                 .stream()
                 .map(i -> Pair.of(i.getKey(), i.getValue().getReader()))

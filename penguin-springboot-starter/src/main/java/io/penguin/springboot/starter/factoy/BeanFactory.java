@@ -2,7 +2,7 @@ package io.penguin.springboot.starter.factoy;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.penguin.penguincore.reader.Context;
+import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.springboot.starter.mapper.ContainerKind;
 import lombok.Data;
@@ -27,10 +27,10 @@ public class BeanFactory implements ReaderFactory {
     }
 
     @Override
-    public Reader<Object, Context<Object>> generate(Map<String, Object> spec) {
-        Properties<Object, Context<Object>> properties = objectMapper.convertValue(spec, new TypeReference<>() {
+    public Reader<Object, CacheContext<Object>> generate(Map<String, Object> spec) {
+        Properties<Object, CacheContext<Object>> properties = objectMapper.convertValue(spec, new TypeReference<>() {
         });
-        return (Reader<Object, Context<Object>>) applicationContext.getBean(properties.getName(), Reader.class);
+        return (Reader<Object, CacheContext<Object>>) applicationContext.getBean(properties.getName(), Reader.class);
     }
 
     @Data

@@ -7,25 +7,24 @@ import io.penguin.penguincore.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.SignalType;
 import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
 import java.util.Objects;
 
 @Slf4j
-public abstract class BaseCacheReader<K, V> implements CacheReader<K, Context<V>> {
+public abstract class BaseCacheReader<K, V> implements CacheReader<K, CacheContext> {
 
     private static final String SOURCE_CACHE_REFRESH_LATENCY = "source_refresh_cache_latency";
     private static final String SOURCE_CACHE_REFRESH_COUNT = "source_refresh_cache_count";
 
     private final Sinks.Many<K> watcher;
-    private final Reader<K, Context<V>> fromDownStream;
+    private final Reader<K, CacheContext> fromDownStream;
 
     private final Timer timer = MetricCreator.timer(SOURCE_CACHE_REFRESH_LATENCY, "kind", this.getClass().getSimpleName());
     private final Counter counter = MetricCreator.counter(SOURCE_CACHE_REFRESH_COUNT, "kind", this.getClass().getSimpleName());
 
-    public BaseCacheReader(Reader<K, Context<V>> fromDownStream) {
+    public BaseCacheReader(Reader<K, CacheContext> fromDownStream) {
         Objects.requireNonNull(fromDownStream);
         watcher = Sinks.many()
                 .unicast()
@@ -48,13 +47,8 @@ public abstract class BaseCacheReader<K, V> implements CacheReader<K, Context<V>
     }
 
     @Override
-    public Mono<Context<V>> fromDownStream(K key) {
+    public Mono<CacheContext> fromDownStream(K key) {
         long start = System.currentTimeMillis();
-        return fromDownStream.findOne(key)
-                .defaultIfEmpty(Context.<V>builder().build())
-                .doOnSuccess(i -> {
-                    timer.record(Duration.ofMillis(System.currentTimeMillis() - start));
-                    counter.increment();
-                });
+        return null;
     }
 }

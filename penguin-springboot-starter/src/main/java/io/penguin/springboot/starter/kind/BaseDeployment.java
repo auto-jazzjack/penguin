@@ -2,7 +2,7 @@ package io.penguin.springboot.starter.kind;
 
 import io.penguin.penguincore.reader.BaseCacheReader;
 import io.penguin.penguincore.reader.BaseOverWriteReader;
-import io.penguin.penguincore.reader.Context;
+import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.springboot.starter.Penguin;
 import io.penguin.springboot.starter.config.PenguinProperties;
@@ -23,7 +23,7 @@ import java.util.function.BiConsumer;
 @Getter
 public class BaseDeployment<K, V> implements Penguin<K, V> {
 
-    private Reader<K, Context<V>> source;
+    private Reader<K, CacheContext<V>> source;
     private BaseCacheReader<K, V> remoteCache;
 
     /**
@@ -65,7 +65,7 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
     @Override
     public Mono<V> findOne(K key) {
 
-        Mono<Context<V>> withoutOverWrite = Mono.defer(() -> remoteCache.findOne(key))
+        Mono<CacheContext<V>> withoutOverWrite = Mono.defer(() -> remoteCache.findOne(key))
                 .flatMap(i -> {
                     if (i.getValue() == null) {
                         remoteCache.insertQueue(key);
@@ -80,7 +80,7 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
 
             return Mono.zip(withoutOverWrite, overWriterOne)
                     .flatMap(i -> {
-                        Context<V> origin = i.getT1();
+                        CacheContext<V> origin = i.getT1();
                         if (origin.getValue() == null) {
                             return Mono.empty();
                         } else {
@@ -90,7 +90,7 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                         }
                     });
         } else {
-            return withoutOverWrite.map(Context::getValue);
+            return withoutOverWrite.map(CacheContext::getValue);
         }
     }
 
