@@ -5,7 +5,6 @@ import io.penguin.pengiuncassandra.CassandraSource;
 import io.penguin.pengiuncassandra.config.CassandraSourceConfig;
 import io.penguin.pengiuncassandra.connection.CassandraConnectionConfig;
 import io.penguin.pengiuncassandra.connection.CassandraConnectionIngredient;
-import io.penguin.penguincore.reader.Context;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.springboot.starter.mapper.ContainerKind;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,7 @@ public class CassandraFactory implements ReaderFactory {
     }
 
     @Override
-    public Reader<Object, Context<Object>> generate(Map<String, Object> spec) {
+    public Reader<Object, Object> generate(Map<String, Object> spec) {
         CassandraConnectionConfig config = objectMapper.convertValue(collectedResources.get(CASSANDRA.name()), CassandraConnectionConfig.class);
         CassandraSourceConfig cassandraSourceConfig = objectMapper.convertValue(spec, CassandraSourceConfig.class);
         return new CassandraSource<>(CassandraConnectionIngredient.toInternal(config), toInternal(cassandraSourceConfig));

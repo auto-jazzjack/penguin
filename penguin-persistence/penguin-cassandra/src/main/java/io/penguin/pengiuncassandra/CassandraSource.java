@@ -17,7 +17,7 @@ import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
 import io.penguin.penguincore.plugin.Plugin;
 import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
 import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
-import io.penguin.penguincore.reader.Context;
+import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -33,13 +33,13 @@ import java.util.concurrent.TimeUnit;
  * Circuiting to Source repository is meaningless.
  *
  * */
-public class CassandraSource<K, V> implements Reader<K, Context<V>> {
+public class CassandraSource<K, V> implements Reader<K, V> {
 
     private final Class<V> valueType;
     private final MappingManager mappingManager;
     private final PreparedStatement statement;
     private final Session session;
-    private final Plugin<Context<V>>[] plugins;
+    private final Plugin<V>[] plugins;
     private final Counter failed = MetricCreator.counter("cassandra_reader",
             "kind", this.getClass().getSimpleName(), "type", "success");
 
@@ -77,13 +77,13 @@ public class CassandraSource<K, V> implements Reader<K, Context<V>> {
 
 
     @Override
-    public Mono<Context<V>> findOne(K key) {
+    public Mono<V> findOne(K key) {
 
         long start = System.currentTimeMillis();
         ListenableFuture<Result<V>> resultListenableFuture = mappingManager.mapper(valueType)
                 .mapAsync(session.executeAsync(statement.bind(key)));
 
-        Mono<Context<V>> mono = Mono.create(i -> Futures.addCallback(resultListenableFuture, new FutureCallback<>() {
+        Mono<V> mono = Mono.create(i -> Futures.addCallback(resultListenableFuture, new FutureCallback<>() {
             @Override
             public void onSuccess(Result<V> result) {
 
@@ -91,8 +91,11 @@ public class CassandraSource<K, V> implements Reader<K, Context<V>> {
                         .map(Result::one)
                         .orElse(null);
 
-                i.success(Context.<V>builder()
-                        .value(v).build());
+                if (v != null) {
+                    i.success(v);
+                } else {
+                    i.success();
+                }
             }
 
             @Override
@@ -101,7 +104,7 @@ public class CassandraSource<K, V> implements Reader<K, Context<V>> {
             }
         }));
 
-        for (Plugin<Context<V>> plugin : plugins) {
+        for (Plugin<V> plugin : plugins) {
             mono = plugin.decorateSource(mono);
         }
 

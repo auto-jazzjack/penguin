@@ -7,7 +7,7 @@ import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
 import io.penguin.penguincore.plugin.Plugin;
 import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
 import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
-import io.penguin.penguincore.reader.Context;
+import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.penguinmysql.config.MysqlIngredient;
 import io.penguin.penguinmysql.connection.MysqlConnection;
@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MysqlSource<K, V> implements Reader<K, Context<V>> {
+public class MysqlSource<K, V> implements Reader<K, CacheContext<V>> {
 
-    private final Plugin<Context<V>>[] plugins;
+    private final Plugin<CacheContext<V>>[] plugins;
     private final Connection connection;
     private final Counter failed = MetricCreator.counter("mysql_reader",
             "kind", this.getClass().getSimpleName(), "type", "success");
@@ -48,7 +48,7 @@ public class MysqlSource<K, V> implements Reader<K, Context<V>> {
 
 
     @Override
-    public Mono<Context<V>> findOne(K key) {
+    public Mono<CacheContext<V>> findOne(K key) {
         return Mono.empty();
         //this.connection.createStatement().ex
     }
