@@ -4,6 +4,7 @@ import io.penguin.penguincore.reader.BaseCacheReader;
 import io.penguin.penguincore.reader.BaseOverWriteReader;
 import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguincore.reader.Reader;
+import io.penguin.penguincore.util.Pair;
 import io.penguin.springboot.starter.Penguin;
 import io.penguin.springboot.starter.config.PenguinProperties;
 import io.penguin.springboot.starter.flow.From;
@@ -13,9 +14,11 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
 
@@ -23,8 +26,19 @@ import java.util.function.BiConsumer;
 @Getter
 public class BaseDeployment<K, V> implements Penguin<K, V> {
 
-    private Reader<K, CacheContext<V>> source;
-    private BaseCacheReader<K, V> remoteCache;
+    private Reader<K, V> source;
+    private final List<BaseCacheReader<K, V>> caches;
+    private final CacheContext<V> empty = new CacheContext<V>() {
+        @Override
+        public V getValue() {
+            return null;
+        }
+
+        @Override
+        public long getTimeStamp() {
+            return 0;
+        }
+    };
 
     /**
      * Each Column can be overWritten
@@ -35,19 +49,20 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
 
     public BaseDeployment(PenguinProperties.Worker worker, Map<String, ReaderBundle<K, V>> readerBundleMap, String name) {
         this.name = name;
+        this.caches = new ArrayList<>();
 
         for (PenguinProperties.Container i : worker.getContainers()) {
             ReaderBundle<K, V> readerBundle = readerBundleMap.get(i.getName());
 
             switch (readerBundle.getKind()) {
                 case LETTUCE_CACHE:
-                    this.remoteCache = (BaseCacheReader<K, V>) readerBundle.getReader();
+                    caches.add((BaseCacheReader<K, V>) readerBundle.getReader());
                     break;
                 case OVER_WRITER:
                     System.out.println();
                     if (readerBundle.getReader() instanceof MultiBaseOverWriteReaders) {
                         overWriter = (MultiBaseOverWriteReaders) readerBundle.getReader();
-                        mergers = (Map) overWriter.createMergers();
+                        mergers = overWriter.createMergers();
                     }
                     break;
                 case CASSANDRA:
@@ -65,34 +80,66 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
     @Override
     public Mono<V> findOne(K key) {
 
-        Mono<CacheContext<V>> withoutOverWrite = Mono.defer(() -> remoteCache.findOne(key))
-                .flatMap(i -> {
-                    if (i.getValue() == null) {
-                        remoteCache.insertQueue(key);
-                        return source.findOne(key);
+        Mono<CacheContext<V>> cacheChain = Mono.empty();
+        AtomicInteger lastIdxCache = new AtomicInteger(-1);
+        for (int i = 0; i < caches.size(); i++) {
+            final int idx = i;
+            cacheChain = cacheChain
+                    .switchIfEmpty(Mono.defer(() -> {
+                        lastIdxCache.set(idx);
+                        return caches.get(idx).findOne(key);
+                    }));
+
+        }
+
+        cacheChain = cacheChain
+                .doOnNext(i -> {
+                    int i1 = lastIdxCache.get();
+                    if (i1 - 1 >= 0) {
+                        caches.get(lastIdxCache.get()).insertQueue(key);
                     }
-                    return Mono.just(i);
                 });
+
+        //if result still empty, we need to use source
+        cacheChain = cacheChain.switchIfEmpty(source.findOne(key)
+                .map(i -> Pair.of(i, System.currentTimeMillis()))
+                .switchIfEmpty(Mono.just(Pair.of(null, 0L)))
+                .map(i -> new CacheContext<V>() {
+                    @Override
+                    public V getValue() {
+                        return i.getKey();
+                    }
+
+                    @Override
+                    public long getTimeStamp() {
+                        return i.getValue();
+                    }
+                })
+                .doOnNext(i -> {
+                    int i1 = lastIdxCache.get();
+                    if (i1 - 1 >= 0) {
+                        caches.get(lastIdxCache.get()).writeOne(key, i);
+                    }
+                })
+        );
+
 
         if (overWriter != null) {
             Mono<Map<Class<? extends BaseOverWriteReader<K, Object, V>>, Object>> overWriterOne = overWriter.findOne(key)
                     .defaultIfEmpty(Collections.emptyMap());
 
-            return Mono.zip(withoutOverWrite, overWriterOne)
+            return Mono.zip(cacheChain, overWriterOne)
                     .flatMap(i -> {
                         CacheContext<V> origin = i.getT1();
-                        if (origin.getValue() == null) {
-                            return Mono.empty();
-                        } else {
-                            Map<Class<? extends BaseOverWriteReader<K, Object, V>>, Object> t2 = i.getT2();
-                            t2.forEach((key1, value) -> mergers.get(key1).accept(origin.getValue(), value));
-                            return Mono.just(origin.getValue());
-                        }
+                        Map<Class<? extends BaseOverWriteReader<K, Object, V>>, Object> t2 = i.getT2();
+                        t2.forEach((key1, value) -> mergers.get(key1).accept(origin.getValue(), value));
+                        return Mono.just(origin.getValue());
                     });
         } else {
-            return withoutOverWrite.map(CacheContext::getValue);
+            return cacheChain.map(CacheContext::getValue);
         }
     }
+
 
     @Override
     public void refreshOne(K key) {
@@ -102,7 +149,8 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
     @Override
     public Mono<Map<From, V>> debugOne(K key) {
 
-        return Mono.zip(
+        return Mono.empty();
+/*        return Mono.zip(
                 source.findOne(key),
                 remoteCache.findOne(key),
                 (s, r) -> {
@@ -111,7 +159,7 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                     retv.put(From.REMOTE_CACHE, r.getValue());
                     return retv;
                 }
-        );
+        );*/
 
     }
 

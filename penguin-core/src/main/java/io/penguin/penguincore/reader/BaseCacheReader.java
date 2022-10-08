@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.util.Pair;
+import io.penguin.penguincore.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -13,7 +14,7 @@ import java.time.Duration;
 import java.util.Objects;
 
 @Slf4j
-public abstract class BaseCacheReader<K, V> implements CacheReader<K, CacheContext> {
+public abstract class BaseCacheReader<K, V> implements Reader<K, CacheContext<V>>, Writer<K, CacheContext<V>> {
 
     private static final String SOURCE_CACHE_REFRESH_LATENCY = "source_refresh_cache_latency";
     private static final String SOURCE_CACHE_REFRESH_COUNT = "source_refresh_cache_count";
@@ -31,14 +32,14 @@ public abstract class BaseCacheReader<K, V> implements CacheReader<K, CacheConte
                 .onBackpressureBuffer();
 
         this.fromDownStream = fromDownStream;
-        watcher.asFlux()
+        /*watcher.asFlux()
                 .windowTimeout(100, Duration.ofSeconds(5))
                 .flatMap(Flux::distinct)
                 .flatMap(i -> fromDownStream(i)
                         .onErrorResume(k -> Mono.empty())
                         .map(j -> Pair.of(i, j)))
                 .filter(i -> i.getKey() != null && i.getValue() != null)
-                .subscribe(i -> writeOne(i.getKey().toString(), i.getValue()), e -> log.error("", e));
+                .subscribe(i -> writeOne(i.getKey().toString(), i.getValue()), e -> log.error("", e));*/
     }
 
 
@@ -46,9 +47,4 @@ public abstract class BaseCacheReader<K, V> implements CacheReader<K, CacheConte
         watcher.emitNext(k, (signalType, emitResult) -> true);
     }
 
-    @Override
-    public Mono<CacheContext> fromDownStream(K key) {
-        long start = System.currentTimeMillis();
-        return null;
-    }
 }

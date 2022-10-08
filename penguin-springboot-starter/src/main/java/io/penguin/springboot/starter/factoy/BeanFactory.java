@@ -30,7 +30,7 @@ public class BeanFactory implements ReaderFactory {
     public Reader<Object, Object> generate(Map<String, Object> spec) {
         Properties<Object, CacheContext<Object>> properties = objectMapper.convertValue(spec, new TypeReference<>() {
         });
-        return (Reader<Object, CacheContext<Object>>) applicationContext.getBean(properties.getName(), Reader.class);
+        return (Reader<Object, Object>) applicationContext.getBean(properties.getName(), Reader.class);
     }
 
     @Data
