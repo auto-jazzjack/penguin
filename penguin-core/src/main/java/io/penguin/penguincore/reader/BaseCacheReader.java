@@ -19,12 +19,12 @@ public abstract class BaseCacheReader<K, V> implements CacheReader<K, CacheConte
     private static final String SOURCE_CACHE_REFRESH_COUNT = "source_refresh_cache_count";
 
     private final Sinks.Many<K> watcher;
-    private final Reader<K, CacheContext> fromDownStream;
+    private final Reader<K, V> fromDownStream;
 
     private final Timer timer = MetricCreator.timer(SOURCE_CACHE_REFRESH_LATENCY, "kind", this.getClass().getSimpleName());
     private final Counter counter = MetricCreator.counter(SOURCE_CACHE_REFRESH_COUNT, "kind", this.getClass().getSimpleName());
 
-    public BaseCacheReader(Reader<K, CacheContext> fromDownStream) {
+    public BaseCacheReader(Reader<K, V> fromDownStream) {
         Objects.requireNonNull(fromDownStream);
         watcher = Sinks.many()
                 .unicast()

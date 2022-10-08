@@ -1,6 +1,5 @@
 package io.penguin.springboot.starter.model;
 
-import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.springboot.starter.mapper.ContainerKind;
 import lombok.AllArgsConstructor;
@@ -13,6 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class ReaderBundle<K, V> {
-    private Reader<K, CacheContext<V>> reader;
+    private Reader<K, V> reader;
     private ContainerKind kind;
 }

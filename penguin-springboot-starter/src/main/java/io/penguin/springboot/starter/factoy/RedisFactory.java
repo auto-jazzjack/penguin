@@ -30,15 +30,15 @@ public class RedisFactory implements ReaderFactory {
     }
 
     @Override
-    public Reader<Object, CacheContext<Object>> generate(Map<String, Object> spec) throws Exception {
+    public Reader<Object, Object> generate(Map<String, Object> spec) throws Exception {
         throw new IllegalStateException("RedisFactory require other Reader");
     }
 
     @Override
-    public Reader<Object, CacheContext<Object>> generateWithReaderPool(Map<String, Object> spec, Map<String, Reader<Object, CacheContext<Object>>> readers) throws Exception {
+    public Reader<Object, CacheContext<Object>> generateWithReaderPool(Map<String, Object> spec) throws Exception {
         LettuceConnectionConfig connection = objectMapper.convertValue(collectedResources.get(LETTUCE_CACHE.name()), LettuceConnectionConfig.class);
         LettuceCacheConfig config = objectMapper.convertValue(spec, LettuceCacheConfig.class);
-        return new LettuceCache<>(LettuceConnectionIngredient.toInternal(connection), LettuceCacheIngredient.toInternal(config, readers));
+        return new LettuceCache<>(LettuceConnectionIngredient.toInternal(connection), LettuceCacheIngredient.toInternal(config));
     }
 
 }

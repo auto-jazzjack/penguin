@@ -3,7 +3,6 @@ package io.penguin.springboot.starter.factoy;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.penguin.penguincore.reader.BaseOverWriteReader;
-import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.penguincore.util.Pair;
 import io.penguin.springboot.starter.mapper.ContainerKind;
@@ -24,7 +23,7 @@ public class OverWriterFactory implements ReaderFactory {
     }
 
     @Override
-    public Reader<Object, CacheContext<Object>> generate(Map<String, Object> spec) throws Exception {
+    public Reader<Object, Object> generate(Map<String, Object> spec) throws Exception {
         Map<String, Class<? extends BaseOverWriteReader<?, ?, ?>>> overWriters = objectMapper.convertValue(spec, new TypeReference<>() {
         });
 

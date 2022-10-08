@@ -27,7 +27,7 @@ public class BeanFactory implements ReaderFactory {
     }
 
     @Override
-    public Reader<Object, CacheContext<Object>> generate(Map<String, Object> spec) {
+    public Reader<Object, Object> generate(Map<String, Object> spec) {
         Properties<Object, CacheContext<Object>> properties = objectMapper.convertValue(spec, new TypeReference<>() {
         });
         return (Reader<Object, CacheContext<Object>>) applicationContext.getBean(properties.getName(), Reader.class);

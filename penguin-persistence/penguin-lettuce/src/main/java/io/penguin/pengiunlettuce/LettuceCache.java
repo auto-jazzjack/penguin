@@ -7,7 +7,6 @@ import io.penguin.core.cache.penguin;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheIngredient;
 import io.penguin.pengiunlettuce.connection.LettuceConnectionIngredient;
 import io.penguin.pengiunlettuce.connection.RedisConnection;
-import io.penguin.penguincodec.Codec;
 import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
 import io.penguin.penguincore.plugin.Plugin;
@@ -105,26 +104,16 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
         long start = System.currentTimeMillis();
         Mono<CacheContext> mono = reactive.get(this.prefix + key.toString())
+                .publishOn(Schedulers.parallel())
                 .map(i -> ProtoUtil.safeParseFrom(penguin.CacheCodec.parser(), i, penguin.CacheCodec.newBuilder().getDefaultInstanceForType()))
-                .map(i -> {
-                    return new CacheContext() {
-                        @Override
-                        public byte[] getValue() {
-                            return new byte[0];
-                        }
-
-                        @Override
-                        public long getTimeStamp() {
-                            return 0;
-                        }
-                    };
-                })
+                .map(ProtoCacheContext::new)
                 .doOnNext(i -> {
                     if (i.getTimeStamp() + expireMilliseconds < System.currentTimeMillis()) {
                         reupdate.increment();
                         writeOne(key.toString(), i);
                     }
-                });
+                })
+                .map(i -> i);
 
         for (Plugin<CacheContext> plugin : plugins) {
             mono = plugin.decorateSource(mono);
@@ -132,8 +121,7 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
         return mono.onErrorReturn(this.failFindOne(key))
                 .doOnError(e -> log.error("", e))
-                .doOnSuccess(i -> reader.record(Duration.ofMillis(System.currentTimeMillis() - start)))
-                .subscribeOn(Schedulers.parallel());
+                .doOnSuccess(i -> reader.record(Duration.ofMillis(System.currentTimeMillis() - start)));
     }
 
     @Override
