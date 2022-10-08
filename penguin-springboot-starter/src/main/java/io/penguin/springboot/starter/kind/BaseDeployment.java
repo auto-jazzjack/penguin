@@ -92,36 +92,33 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
 
         }
 
+        //if result still empty, we need to use source
         cacheChain = cacheChain
                 .doOnNext(i -> {
                     int i1 = lastIdxCache.get();
                     if (i1 - 1 >= 0) {
-                        caches.get(lastIdxCache.get()).insertQueue(key);
-                    }
-                });
-
-        //if result still empty, we need to use source
-        cacheChain = cacheChain.switchIfEmpty(source.findOne(key)
-                .map(i -> Pair.of(i, System.currentTimeMillis()))
-                .switchIfEmpty(Mono.just(Pair.of(null, 0L)))
-                .map(i -> new CacheContext<V>() {
-                    @Override
-                    public V getValue() {
-                        return i.getKey();
-                    }
-
-                    @Override
-                    public long getTimeStamp() {
-                        return i.getValue();
+                        caches.get(lastIdxCache.get()).writeOneLazy(key, i);
                     }
                 })
-                .doOnNext(i -> {
-                    int i1 = lastIdxCache.get();
-                    if (i1 - 1 >= 0) {
-                        caches.get(lastIdxCache.get()).writeOne(key, i);
-                    }
-                })
-        );
+                .switchIfEmpty(source.findOne(key)
+                        .map(i -> Pair.of(i, System.currentTimeMillis()))
+                        .map(i -> new CacheContext<V>() {
+                            @Override
+                            public V getValue() {
+                                return i.getKey();
+                            }
+
+                            @Override
+                            public long getTimeStamp() {
+                                return i.getValue();
+                            }
+                        })
+                        .doOnNext(i -> {
+                            if (caches.size() > 0) {
+                                caches.get(0).writeOneLazy(key, i);
+                            }
+                        })
+                );
 
 
         if (overWriter != null) {
@@ -136,7 +133,11 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                         return Mono.just(origin.getValue());
                     });
         } else {
-            return cacheChain.map(CacheContext::getValue);
+            return cacheChain
+                    .doOnNext(i -> {
+                        System.out.println();
+                    })
+                    .map(CacheContext::getValue);
         }
     }
 

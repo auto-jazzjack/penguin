@@ -56,7 +56,7 @@ public class TimeoutSubscriber<V> implements Subscription, CoreSubscriber<V> {
 
     @Override
     public void onComplete() {
-        if (next.get() && completed.compareAndSet(false, true)) {
+        if (completed.compareAndSet(false, true)) {
             if (!timeout.isCancelled()) {
                 timeout.cancel();
             }

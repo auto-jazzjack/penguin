@@ -3,7 +3,7 @@ package io.penguin.penguincore.writer;
 public interface Writer<K, V> {
     void writeOne(K key, V value);
 
-    long expireSecond();
+    void writeOneLazy(K key, V value);
 
     String prefix();
 }

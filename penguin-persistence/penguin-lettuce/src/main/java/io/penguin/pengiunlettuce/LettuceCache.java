@@ -20,17 +20,20 @@ import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
 import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
 import io.penguin.penguincore.reader.BaseCacheReader;
 import io.penguin.penguincore.reader.CacheContext;
+import io.penguin.penguincore.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 @Slf4j
-public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
+public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
 
     protected final RedisAdvancedClusterReactiveCommands<String, byte[]> reactive;
     private final long expireMilliseconds;
@@ -41,11 +44,11 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     private final Counter reupdate = MetricCreator.counter("lettuce_reupdate_count", "kind", this.getClass().getSimpleName());
     private final Plugin<CacheContext<V>>[] plugins;
     private final Codec<V> codec;
+    private final Sinks.Many<Pair<K, CacheContext<V>>> watcher;
 
 
     public LettuceCache(LettuceConnectionIngredient connection, LettuceCacheIngredient<K, V> cacheConfig) throws Exception {
 
-        super(cacheConfig.getFromDownStream());
         Objects.requireNonNull(cacheConfig);
         this.codec = cacheConfig.getCodec();
 
@@ -76,12 +79,20 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
 
         plugins = pluginList.toArray(new Plugin[0]);
 
+        watcher = Sinks.many()
+                .unicast()
+                .onBackpressureBuffer();
+
+        watcher.asFlux()
+                .windowTimeout(100, Duration.ofSeconds(5))
+                .flatMap(i -> i.distinct((Function<Pair<K, CacheContext<V>>, Object>) kCacheContextPair -> kCacheContextPair.getKey()))
+                .subscribe(i -> writeOne(i.getKey(), i.getValue()), e -> log.error("", e));
     }
 
     @Override
     public void writeOne(K key, CacheContext<V> value) {
 
-        if (value == null) {
+        if (value == null || value.getTimeStamp() <= 0) {
             return;
         }
 
@@ -92,13 +103,15 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     }
 
     @Override
-    public String prefix() {
-        return this.prefix;
+    public void writeOneLazy(K key, CacheContext<V> value) {
+        if (key != null && value != null && value.getValue() != null) {
+            this.watcher.tryEmitNext(Pair.of(key, value));
+        }
     }
 
     @Override
-    public long expireSecond() {
-        return this.expireMilliseconds;
+    public String prefix() {
+        return this.prefix;
     }
 
     @Override
@@ -147,13 +160,10 @@ public class LettuceCache<K, V> extends BaseCacheReader<K, V> {
     }
 
     public CacheContext<V> deserialize(byte[] bytes) {
-        if (bytes.length == 0) {
-            return null;
-        }
 
         try {
             penguin.CacheCodec cacheCodec = penguin.CacheCodec.parseFrom(bytes);
-            V deserialize = codec.deserialize(cacheCodec.toByteArray());
+            V deserialize = codec.deserialize(cacheCodec.getPayload().toByteArray());
             return new CacheContext<>() {
                 @Override
                 public V getValue() {
