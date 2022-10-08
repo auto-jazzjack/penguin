@@ -115,6 +115,11 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
     }
 
     @Override
+    public String cacheName() {
+        return BaseCacheReader.super.cacheName();
+    }
+
+    @Override
     public Mono<CacheContext<V>> findOne(K key) {
 
         long start = System.currentTimeMillis();

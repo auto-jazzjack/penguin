@@ -7,17 +7,15 @@ import io.penguin.penguincore.reader.Reader;
 import io.penguin.penguincore.util.Pair;
 import io.penguin.springboot.starter.Penguin;
 import io.penguin.springboot.starter.config.PenguinProperties;
-import io.penguin.springboot.starter.flow.From;
 import io.penguin.springboot.starter.model.MultiBaseOverWriteReaders;
 import io.penguin.springboot.starter.model.ReaderBundle;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
@@ -148,19 +146,34 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
     }
 
     @Override
-    public Mono<Map<From, V>> debugOne(K key) {
+    public Mono<Map<String, Object>> debugOne(K key) {
 
-        return Mono.empty();
-/*        return Mono.zip(
-                source.findOne(key),
-                remoteCache.findOne(key),
+        Mono<Map<String, CacheContext<V>>> mapMono = Flux.fromIterable(caches)
+                .flatMap(i -> Mono.defer(() -> i.findOne(key))
+                        .map(j -> Pair.of(i.cacheName(), j))
+                        .subscribeOn(Schedulers.boundedElastic())
+                )
+                .collectMap(Pair::getKey, Pair::getValue)
+                .defaultIfEmpty(Collections.emptyMap());
+
+        Mono<Map<String, Object>> source = this.source.findOne(key)
+                .map(i -> {
+                    Map<String, Object> retv = new HashMap<>();
+                    retv.put("SOURCE", i);
+                    return retv;
+                })
+                .defaultIfEmpty(Collections.emptyMap());
+
+        return Mono.zip(
+                mapMono,
+                source,
                 (s, r) -> {
-                    Map<From, V> retv = new HashMap<>();
-                    retv.put(From.SOURCE, s.getValue());
-                    retv.put(From.REMOTE_CACHE, r.getValue());
+                    Map<String, Object> retv = new HashMap<>();
+                    retv.putAll(s);
+                    retv.putAll(r);
                     return retv;
                 }
-        );*/
+        );
 
     }
 
