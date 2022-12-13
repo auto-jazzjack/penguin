@@ -19,19 +19,19 @@ public class ExecutionPlanGenerator<T> {
         this.resolverMapper = resolverMapper;
     }
 
-    public ExecutionPlan<Void, T> generate(Object request, Query query) {
+    public ExecutionPlan<T> generate(Object request, Query query) {
         ContextQL contextQL = new ContextQL();
         contextQL.setRequest(request);
         return generate(rootResolver, contextQL, query);
     }
 
-    private <P, M> ExecutionPlan<P, M> generate(Resolver<M> current, ContextQL context, Query query) {
+    private <M> ExecutionPlan<M> generate(Resolver<M> current, ContextQL context, Query query) {
 
         if (current == null) {
             return null;
         }
 
-        ExecutionPlan<P, M> executionPlan = ExecutionPlan.<P, M>builder()
+        ExecutionPlan<M> executionPlan = ExecutionPlan.<M>builder()
                 .mySelf(current)
                 .currFields(query.getCurrent())
                 .dataFetchingEnv(new DataFetchingEnv().setContext(context))
@@ -53,7 +53,7 @@ public class ExecutionPlanGenerator<T> {
                 .filter(i -> collect.contains(i.getKey()))
                 .map(i -> Pair.of(i.getKey(), resolverMapper.toInstant(i.getValue())))
                 .forEach(i -> {
-                    ExecutionPlan<P, M> generate = generate(i.getValue(), context, query.getNext().get(i.getKey()));
+                    ExecutionPlan<M> generate = generate(i.getValue(), context, query.getNext().get(i.getKey()));
                     i.getValue().preHandler(context);
 
                     executionPlan.addNext(i.getKey(), generate);
