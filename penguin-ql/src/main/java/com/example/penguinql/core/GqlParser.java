@@ -7,6 +7,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class GqlParser {
 
+    public static final GqlParser DEFAULT = new GqlParser();
+
     /**
      * Since there isn't any state, this method will be thread-safe
      */
@@ -23,8 +25,8 @@ public class GqlParser {
 
     private Query queryGen(String list, AtomicInteger idx) {
         Query query = new Query();
-        query.setFields(new HashSet<>());
-        query.setQueryByResolverName(new HashMap<>());
+        query.setCurrent(new HashSet<>());
+        query.setNext(new HashMap<>());
 
         if (list.charAt(idx.getAndIncrement()) != '{') {
             throw new RuntimeException("Query should start with '{' character");
@@ -43,8 +45,8 @@ public class GqlParser {
                 }
                 //Without getting two world, we cannot determine whether it is leaf node or not.
                 //So in case of +1 depth case, let's remove before world
-                query.getFields().remove(before);
-                query.getQueryByResolverName().put(before, queryGen(list, idx));
+                query.getCurrent().remove(before);
+                query.getNext().put(before, queryGen(list, idx));
             } else if (word1.equals("}")) {
                 if (before.isEmpty()) {
                     throw new RuntimeException("Invalid Query exception near " + idx.get());
@@ -53,7 +55,7 @@ public class GqlParser {
                 break;
             } else {
                 //leaf node
-                query.getFields().add(word1);
+                query.getCurrent().add(word1);
                 before = word1;
             }
 

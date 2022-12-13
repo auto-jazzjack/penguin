@@ -29,13 +29,13 @@ public class ExecutionPlanGenerator {
         }
         ExecutionPlan executionPlan = ExecutionPlan.builder()
                 .mySelf(current)
-                .currFields(query.getFields())
-                .currObjects(query.getQueryByResolverName().keySet())
+                .currFields(query.getCurrent())
+                .currObjects(query.getNext().keySet())
                 .dataFetchingEnv(new DataFetchingEnv().setContext(context))
                 .build();
 
         //Query resolver에서 value가 not null인 케이스를 돈다
-        Set<String> collect = Optional.ofNullable(query.getQueryByResolverName())
+        Set<String> collect = Optional.ofNullable(query.getNext())
                 .orElse(Collections.emptyMap())
                 .entrySet()
                 .stream()
@@ -50,7 +50,7 @@ public class ExecutionPlanGenerator {
                 .filter(i -> collect.contains(i.getKey()))
                 .map(i -> Pair.of(i.getKey(), resolverMapper.toInstant(i.getValue())))
                 .forEach(i -> {
-                    ExecutionPlan generate = generate(i.getValue(), context, query.getQueryByResolverName().get(i.getKey()));
+                    ExecutionPlan generate = generate(i.getValue(), context, query.getNext().get(i.getKey()));
                     i.getValue().preHandler(context);
 
                     executionPlan.addNext(i.getKey(), generate);
