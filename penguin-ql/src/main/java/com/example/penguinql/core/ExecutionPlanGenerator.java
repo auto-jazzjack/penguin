@@ -2,35 +2,38 @@ package com.example.penguinql.core;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
-public class ExecutionPlanGenerator {
+public class ExecutionPlanGenerator<T> {
 
-    private final Resolver rootResolver;
+    private final Resolver<T> rootResolver;
     private final ResolverMapper resolverMapper;
 
-    public ExecutionPlanGenerator(Resolver rootResolver, ResolverMapper resolverMapper) {
+    public ExecutionPlanGenerator(Resolver<T> rootResolver, ResolverMapper resolverMapper) {
         this.rootResolver = rootResolver;
         this.resolverMapper = resolverMapper;
     }
 
-    public ExecutionPlan generate(Object request, Query query) {
+    public ExecutionPlan<Void, T> generate(Object request, Query query) {
         ContextQL contextQL = new ContextQL();
         contextQL.setRequest(request);
         return generate(rootResolver, contextQL, query);
     }
 
-    private ExecutionPlan generate(Resolver current, ContextQL context, Query query) {
+    private <P, M> ExecutionPlan<P, M> generate(Resolver<M> current, ContextQL context, Query query) {
 
         if (current == null) {
             return null;
         }
-        ExecutionPlan executionPlan = ExecutionPlan.builder()
+
+        ExecutionPlan<P, M> executionPlan = ExecutionPlan.<P, M>builder()
                 .mySelf(current)
                 .currFields(query.getCurrent())
-                .currObjects(query.getNext().keySet())
                 .dataFetchingEnv(new DataFetchingEnv().setContext(context))
                 .build();
 
@@ -50,7 +53,7 @@ public class ExecutionPlanGenerator {
                 .filter(i -> collect.contains(i.getKey()))
                 .map(i -> Pair.of(i.getKey(), resolverMapper.toInstant(i.getValue())))
                 .forEach(i -> {
-                    ExecutionPlan generate = generate(i.getValue(), context, query.getNext().get(i.getKey()));
+                    ExecutionPlan<P, M> generate = generate(i.getValue(), context, query.getNext().get(i.getKey()));
                     i.getValue().preHandler(context);
 
                     executionPlan.addNext(i.getKey(), generate);

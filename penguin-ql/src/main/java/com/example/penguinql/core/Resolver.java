@@ -5,8 +5,7 @@ import reactor.core.publisher.Mono;
 import java.util.Collections;
 import java.util.Map;
 
-public interface Resolver<Parent, Myself> {
-
+public interface Resolver<Myself> {
 
     Mono<Myself> generate(DataFetchingEnv condition);
 
@@ -18,6 +17,5 @@ public interface Resolver<Parent, Myself> {
         //do nothing
     }
 
-    void setData(Parent parent, Myself data);
 
 }

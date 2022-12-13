@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import io.penguin.penguincore.http.Book;
 import io.penguin.penguincore.http.BookStore;
 import io.penguin.penguincore.http.SampleRequest;
-import io.penguin.penguincore.http.SampleResponse;
 import io.penguin.penguincore.model.CBookStore;
 import io.penguin.penguincore.reader.BookStoreReader;
 import lombok.RequiredArgsConstructor;
@@ -22,14 +21,9 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class BookStoreResolver implements Resolver<SampleResponse, List<BookStore>> {
+public class BookStoreResolver implements Resolver<List<BookStore>> {
 
     private final BookStoreReader bookStoreReader;
-
-    @Override
-    public void setData(SampleResponse sampleResponse, List<BookStore> myself) {
-        sampleResponse.setBookStores(myself);
-    }
 
     @Override
     public Mono<List<BookStore>> generate(DataFetchingEnv condition) {

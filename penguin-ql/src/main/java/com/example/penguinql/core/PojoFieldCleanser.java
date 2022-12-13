@@ -31,7 +31,7 @@ public class PojoFieldCleanser<T> {
         fieldCleanerMeta.setMethod(new POJOFieldMethod<>((Constructor<Object>) root.getConstructor(), GenericType.NONE));
     }
 
-    public T exec(T result, ExecutionPlan executionPlan) {
+    public T exec(T result, ExecutionPlan<T> executionPlan) {
         try {
             return exec0(result, this.fieldCleanerMeta, executionPlan);
         } catch (Exception e) {
@@ -40,7 +40,7 @@ public class PojoFieldCleanser<T> {
         }
     }
 
-    private <T1> T1 exec0(T1 result, FieldCleanerMeta<T1> fieldMeta, ExecutionPlan executionPlan) {
+    private <T1> T1 exec0(T1 result, FieldCleanerMeta<T1> fieldMeta, ExecutionPlan<T1> executionPlan) {
         T1 retv = (T1) fieldMeta.getMethod().defaultInstance();
 
         Optional.ofNullable(executionPlan.getCurrFields()).orElse(Collections.emptySet())
@@ -51,16 +51,16 @@ public class PojoFieldCleanser<T> {
                     fieldCleanerMeta.getMethod().setData(retv, fieldCleanerMeta.getMethod().getData(result));
                 });
 
-        Optional.ofNullable(executionPlan.getCurrObjects()).orElse(Collections.emptySet())
+        Optional.ofNullable(executionPlan.getNext()).map(Map::keySet).orElse(Collections.emptySet())
                 .stream()
                 .filter(i -> fieldMeta.getExtendableChildren().containsKey(i))
                 .forEach(i -> {
                     FieldCleanerMeta<T1> nextFieldMeta = (FieldCleanerMeta<T1>) fieldMeta.getExtendableChildren().get(i);
-                    ExecutionPlan next = executionPlan.getNext().get(i);
+                    ExecutionPlan<Object> next = executionPlan.getNext().get(i);
                     switch (nextFieldMeta.getGenericType()) {
                         case MAP:
                         case NONE:
-                            T1 res = exec0((T1) nextFieldMeta.getMethod().getData(result), nextFieldMeta, next);
+                            T1 res = exec0((T1) nextFieldMeta.getMethod().getData(result), nextFieldMeta, (ExecutionPlan<T1>) next);
                             nextFieldMeta.getMethod().setData(retv, res);
                             break;
                         case LIST:
@@ -69,7 +69,7 @@ public class PojoFieldCleanser<T> {
                             List<Object> collect = ((List<Object>) nextFieldMeta.getMethod().getData(result))
                                     .stream()
                                     .map(j -> {
-                                        return exec0((T1) j, listValue, next);
+                                        return exec0((T1) j, listValue, (ExecutionPlan<T1>) next);
                                     })
                                     .collect(Collectors.toList());
                             nextFieldMeta.getMethod().setData(retv, collect);

@@ -18,14 +18,9 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class BookResolver implements Resolver<BookStore, List<Book>> {
+public class BookResolver implements Resolver<List<Book>> {
 
     private final BookReader bookReader;
-
-    @Override
-    public void setData(BookStore bookStore, List<Book> books) {
-        bookStore.setBooks(books);
-    }
 
     @Override
     public void preHandler(ContextQL context) {

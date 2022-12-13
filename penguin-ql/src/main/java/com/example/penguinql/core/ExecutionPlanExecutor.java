@@ -17,20 +17,20 @@ import java.util.stream.Collectors;
  */
 public class ExecutionPlanExecutor {
 
-    public <T> Mono<T> exec(ExecutionPlan executionPlan) {
+    public <T> Mono<T> exec(ExecutionPlan<T> executionPlan) {
         return exec0(executionPlan);
     }
 
-    public <T> Mono<T> exec0(ExecutionPlan executionPlan) {
+    public <T> Mono<T> exec0(ExecutionPlan<T> executionPlan) {
         if (executionPlan == null) {
             return Mono.empty();
         }
 
         if (CollectionUtils.isEmpty(executionPlan.getNext())) {
-            return (Mono<T>) executionPlan.generateMySelf();
+            return executionPlan.generateMySelf();
         }
 
-        Mono<Object> generate = executionPlan.generateMySelf().cache();
+        Mono<T> generate = executionPlan.generateMySelf().cache();
 
         Mono<Map<Object, Pair<Resolver, Object>>> collect = generate.flatMapMany(i -> {
             if (i instanceof List) {
@@ -81,10 +81,10 @@ public class ExecutionPlanExecutor {
                         List<Object> t = (List<Object>) i.getT1();
                         i.getT2().forEach((key, value) -> {
                             int idx = (Integer) key;
-                            value.getKey().setData(t.get(idx), value.getValue());
+                            executionPlan.getSetter().accept(t.get(idx), (T) value.getValue());
                         });
                     } else {
-                        i.getT2().forEach((key, value) -> value.getKey().setData(i.getT1(), value.getValue()));
+                        i.getT2().forEach((key, value) -> executionPlan.getSetter().accept(i.getT1(), (T) value.getValue()));
                     }
 
                     return (T) i.getT1();

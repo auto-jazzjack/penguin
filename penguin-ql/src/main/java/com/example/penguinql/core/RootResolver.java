@@ -1,11 +1,6 @@
 package com.example.penguinql.core;
 
-public interface RootResolver<Myself> extends Resolver<Void, Myself> {
-
-    @Override
-    default void setData(Void unused, Myself data) {
-        //do nothing
-    }
+public interface RootResolver<Myself> extends Resolver<Myself> {
 
     Class<Myself> clazz();
 }
