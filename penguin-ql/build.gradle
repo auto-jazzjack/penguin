@@ -4,6 +4,10 @@ dependencies {
     implementation("io.projectreactor:reactor-core:${reactor_version}")
     implementation("org.junit.jupiter:junit-jupiter:5.8.1")
     implementation("org.apache.commons:commons-lang3:3.5")
+
+
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0")
 }
 
 protobuf {

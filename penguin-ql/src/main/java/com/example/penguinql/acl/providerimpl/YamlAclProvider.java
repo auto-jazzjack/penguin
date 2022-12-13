@@ -1,6 +1,10 @@
-package com.example.penguinql.acl;
+package com.example.penguinql.acl.providerimpl;
 
+import com.example.penguinql.acl.AclAuth;
+import com.example.penguinql.acl.AclProvider;
 import com.example.penguinql.acl.exception.NotAuthorizationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +12,7 @@ import java.util.Map;
 public class YamlAclProvider implements AclProvider {
 
     private final Map<String, AclAuth> authMap;
+    private static final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     public YamlAclProvider() {
         this.authMap = new HashMap<>();
@@ -25,6 +30,10 @@ public class YamlAclProvider implements AclProvider {
 
     @Override
     public AclAuth parse(String content) throws NotAuthorizationException {
-        return null;
+        try {
+            return mapper.readValue(content, AclAuth.class);
+        } catch (Exception p) {
+            throw new NotAuthorizationException(p.getMessage());
+        }
     }
 }
