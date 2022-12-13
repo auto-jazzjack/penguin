@@ -11,10 +11,11 @@ import java.util.Map;
 public class GqlAclProvider implements AclProvider {
 
     private final Map<String, Query> authMap;
+    private final GqlParser gqlParser;
 
-
-    public GqlAclProvider() {
-        authMap = new HashMap<>();
+    public GqlAclProvider(GqlParser gqlParser) {
+        this.authMap = new HashMap<>();
+        this.gqlParser = gqlParser;
     }
 
     @Override
@@ -30,7 +31,7 @@ public class GqlAclProvider implements AclProvider {
     @Override
     public Query parse(String content) throws NotAuthorizationException {
         try {
-            return GqlParser.DEFAULT.parseFrom(content);
+            return this.gqlParser.parseFrom(content);
         } catch (Exception p) {
             throw new NotAuthorizationException(p.getMessage());
         }

@@ -1,13 +1,26 @@
 package com.example.penguinql.core;
 
 
+import lombok.Data;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.example.penguinql.util.QueryUtil.extractWholeQuery;
+
+@Data
 public class GqlParser {
 
-    public static final GqlParser DEFAULT = new GqlParser();
+    /**
+     * query contains whole fields.
+     */
+    private Query primaryQuery;
+
+    public GqlParser(Class<?> clazz) {
+        primaryQuery = extractWholeQuery(clazz);
+    }
+
 
     /**
      * Since there isn't any state, this method will be thread-safe

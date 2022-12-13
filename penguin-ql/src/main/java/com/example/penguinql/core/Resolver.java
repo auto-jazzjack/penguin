@@ -19,4 +19,5 @@ public interface Resolver<Parent, Myself> {
     }
 
     void setData(Parent parent, Myself data);
+
 }

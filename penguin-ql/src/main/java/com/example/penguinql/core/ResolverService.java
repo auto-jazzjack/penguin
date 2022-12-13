@@ -18,8 +18,8 @@ public class ResolverService<I, O> {
     public ResolverService(RootResolver<O> rootResolver, ResolverMapper resolverMapper) throws Exception {
         this.executionPlanGenerator = new ExecutionPlanGenerator(rootResolver, resolverMapper);
         this.executionPlanExecutor = new ExecutionPlanExecutor();
-        this.gqlParser = new GqlParser();
-        this.pojoFieldCleanser = new PojoFieldCleanser<O>(extractResolverType(rootResolver));
+        this.gqlParser = new GqlParser(rootResolver.clazz());
+        this.pojoFieldCleanser = new PojoFieldCleanser<>(extractResolverType(rootResolver));
     }
 
     public Mono<O> exec(I request, String query) {

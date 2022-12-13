@@ -24,4 +24,9 @@ public class RootResolver implements com.example.penguinql.core.RootResolver<Sam
                 .put("bookStores", BookStoreResolver.class)
                 .build();
     }
+
+    @Override
+    public Class<SampleResponse> clazz() {
+        return SampleResponse.class;
+    }
 }
