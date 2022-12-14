@@ -11,12 +11,13 @@ import java.util.stream.Collectors;
 
 public class ExecutionPlanGenerator<T> {
 
-    private final Resolver<T> rootResolver;
+    private final ResolverMeta<T> rootResolver;
     private final ResolverMapper resolverMapper;
 
-    public ExecutionPlanGenerator(Resolver<T> rootResolver, ResolverMapper resolverMapper) {
-        this.rootResolver = rootResolver;
+    public ExecutionPlanGenerator(ResolverMeta<T> rootResolver, ResolverMapper resolverMapper) {
         this.resolverMapper = resolverMapper;
+        this.rootResolver = rootResolver;
+        this.rootResolver.decorateResolver(resolverMapper);
     }
 
     public ExecutionPlan<T> generate(Object request, Query query) {
@@ -25,7 +26,7 @@ public class ExecutionPlanGenerator<T> {
         return generate(rootResolver, contextQL, query);
     }
 
-    private <M> ExecutionPlan<M> generate(Resolver<M> current, ContextQL context, Query query) {
+    private <M> ExecutionPlan<M> generate(ResolverMeta<M> current, ContextQL context, Query query) {
 
         if (current == null) {
             return null;
@@ -47,14 +48,21 @@ public class ExecutionPlanGenerator<T> {
                 .collect(Collectors.toSet());
 
 
-        Map<String, Class<? extends Resolver>> next = current.next();
+        Map<String, ResolverMeta<?>> next = current.getCurrent().next();
         next.entrySet()
                 .stream()
                 .filter(i -> collect.contains(i.getKey()))
-                .map(i -> Pair.of(i.getKey(), resolverMapper.toInstant(i.getValue())))
+                .map(i -> Pair.of(i.getKey(), i.getValue()))
                 .forEach(i -> {
-                    ExecutionPlan<M> generate = generate(i.getValue(), context, query.getNext().get(i.getKey()));
-                    i.getValue().preHandler(context);
+                    ExecutionPlan generate = generate(
+                            new ResolverMeta<>(i.getValue().getCurrentClazz(), i.getValue().getClazz()).decorateResolver(resolverMapper),
+                            context, query.getNext().get(i.getKey())
+                    );
+
+                    i.getValue()
+                            .decorateResolver(resolverMapper)
+                            .getCurrent()
+                            .preHandler(context);
 
                     executionPlan.addNext(i.getKey(), generate);
                 });
@@ -62,4 +70,6 @@ public class ExecutionPlanGenerator<T> {
 
         return executionPlan;
     }
+
+
 }

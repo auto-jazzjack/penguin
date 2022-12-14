@@ -78,13 +78,13 @@ public class ExecutionPlanExecutor {
                         List<Object> t = (List<Object>) i.getT1();
                         i.getT2().forEach((key, value) -> {
                             int idx = (Integer) key;
-                            executionPlan.getSetter().accept(t.get(idx), (T) value.getValue());
+                            i.getT2().get(idx).getKey().getMySelf().getSetter().accept(t.get(idx), (T) value.getValue());
                         });
                     } else {
-                        i.getT2().forEach((key, value) -> executionPlan.getSetter().accept(i.getT1(), (T) value.getValue()));
+                        i.getT2().forEach((key, value) -> i.getT2().get(key).getKey().getMySelf().getSetter().accept(i.getT1(), (T) value.getValue()));
                     }
 
-                    return (T) i.getT1();
+                    return i.getT1();
                 });
 
     }

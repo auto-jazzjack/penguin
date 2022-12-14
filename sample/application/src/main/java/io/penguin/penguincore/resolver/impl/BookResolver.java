@@ -41,6 +41,4 @@ public class BookResolver implements Resolver<List<Book>> {
                         .build())
                 .collectList();
     }
-
-
 }

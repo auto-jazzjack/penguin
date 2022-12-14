@@ -2,6 +2,7 @@ package io.penguin.penguincore.resolver.impl;
 
 import com.example.penguinql.core.DataFetchingEnv;
 import com.example.penguinql.core.Resolver;
+import com.example.penguinql.core.ResolverMeta;
 import com.google.common.collect.ImmutableMap;
 import io.penguin.penguincore.http.Book;
 import io.penguin.penguincore.http.BookStore;
@@ -47,9 +48,9 @@ public class BookStoreResolver implements Resolver<List<BookStore>> {
     }
 
     @Override
-    public Map<String, Class<? extends Resolver>> next() {
-        return ImmutableMap.<String, Class<? extends Resolver>>builder()
-                .put("books", BookResolver.class)
+    public Map<String, ResolverMeta<?>> next() {
+        return ImmutableMap.<String, ResolverMeta<?>>builder()
+                .put("books", new ResolverMeta<>(BookResolver.class, Book.class))
                 .build();
     }
 }

@@ -17,23 +17,20 @@ import java.util.function.BiConsumer;
 @NoArgsConstructor
 @Builder
 public class ExecutionPlan<Myself> {
-    private Resolver<Myself> mySelf;
+    private ResolverMeta<Myself> mySelf;
     private Map<String, ExecutionPlan<Object>> next;
     private Set<String> currFields;
-    //private Set<String> currObjects;
     private DataFetchingEnv dataFetchingEnv;
 
-    //Attach myself to parent
-    private BiConsumer<Object, Myself> setter;
 
     /**
      * This is only helper function generate mySelf
      */
     public Mono<Myself> generateMySelf() {
-        return this.mySelf.generate(this.dataFetchingEnv);
+        return this.mySelf.getCurrent().generate(this.dataFetchingEnv);
     }
 
-    public void addNext(String key, ExecutionPlan value) {
+    public void addNext(String key, ExecutionPlan<Object> value) {
         if (next == null) {
             next = new HashMap<>();
         }

@@ -9,7 +9,7 @@ public interface Resolver<Myself> {
 
     Mono<Myself> generate(DataFetchingEnv condition);
 
-    default Map<String, Class<? extends Resolver>> next() {
+    default Map<String, ResolverMeta<?>> next() {
         return Collections.emptyMap();
     }
 

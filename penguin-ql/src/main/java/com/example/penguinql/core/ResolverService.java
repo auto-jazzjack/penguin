@@ -10,22 +10,22 @@ import java.util.Objects;
 
 public class ResolverService<I, O> {
 
-    private final ExecutionPlanGenerator executionPlanGenerator;
+    private final ExecutionPlanGenerator<O> executionPlanGenerator;
     private final ExecutionPlanExecutor executionPlanExecutor;
     private final PojoFieldCleanser<O> pojoFieldCleanser;
     private final GqlParser gqlParser;
 
     public ResolverService(RootResolver<O> rootResolver, ResolverMapper resolverMapper) throws Exception {
-        this.executionPlanGenerator = new ExecutionPlanGenerator(rootResolver, resolverMapper);
+        this.executionPlanGenerator = new ExecutionPlanGenerator<>(new ResolverMeta<O>((Class<? extends Resolver<O>>) rootResolver.getClass(), rootResolver.clazz()), resolverMapper);
         this.executionPlanExecutor = new ExecutionPlanExecutor();
         this.gqlParser = new GqlParser(rootResolver.clazz());
         this.pojoFieldCleanser = new PojoFieldCleanser<>(extractResolverType(rootResolver));
     }
 
     public Mono<O> exec(I request, String query) {
-        ExecutionPlan generate = executionPlanGenerator.generate(request, gqlParser.parseFrom(query));
+        ExecutionPlan<O> generate = executionPlanGenerator.generate(request, gqlParser.parseFrom(query));
         return executionPlanExecutor.exec(generate)
-                .map(i -> pojoFieldCleanser.exec((O)i, generate));
+                .map(i -> pojoFieldCleanser.exec(i, generate));
     }
 
     private Class<O> extractResolverType(RootResolver<O> rootResolver) {
