@@ -21,12 +21,12 @@ public class Query {
     public Query merge(Query query) {
         if (this.getNext() == null) {
             this.setNext(new HashMap<>());
-            next.forEach((k, v) -> this.getNext().put(k, merge(v)));
+            query.getNext().forEach((k, v) -> this.getNext().put(k, merge(v)));
         }
 
         if (this.getCurrent() == null) {
             this.setCurrent(new HashSet<>());
-            this.getCurrent().addAll(current);
+            query.getCurrent().addAll(current);
         }
 
         return this;
