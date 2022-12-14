@@ -1,0 +1,13 @@
+v1:
+  consumer2: >
+    {
+      bookStores {
+        id
+        contact
+        books  {
+                    id
+                }
+            }
+    }
+      
+  

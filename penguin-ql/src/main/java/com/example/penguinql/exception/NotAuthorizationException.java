@@ -1,4 +1,4 @@
-package com.example.penguinql.acl.exception;
+package com.example.penguinql.exception;
 
 public class NotAuthorizationException extends Throwable {
     public NotAuthorizationException(String message) {

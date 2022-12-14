@@ -12,4 +12,5 @@ import java.util.List;
 public class SampleRequest {
     private List<Long> ids;
     private String query;
+    private String consumer;
 }

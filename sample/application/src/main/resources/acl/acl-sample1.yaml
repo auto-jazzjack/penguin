@@ -1,6 +1,14 @@
-next:
-  books:
-
-
-current:
-  - id
+v1:
+  consumer1: >
+    {
+      bookStores {
+        id
+        contact
+        books  {
+                    id
+                    title
+                }
+            }
+    }
+      
+  

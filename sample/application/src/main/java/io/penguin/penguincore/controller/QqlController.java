@@ -1,8 +1,10 @@
 package io.penguin.penguincore.controller;
 
 import com.example.penguinql.core.ResolverService;
+import com.example.penguinql.exception.NotAuthorizationException;
 import io.penguin.penguincore.http.SampleRequest;
 import io.penguin.penguincore.http.SampleResponse;
+import io.penguin.springboot.starter.exception.BadRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,13 @@ public class QqlController {
 
     @PostMapping(path = "/hello", consumes = "application/json", produces = "application/json")
     public Mono<SampleResponse> request(@RequestBody SampleRequest request) throws Exception {
-        return resolverService.exec(request, request.getQuery());
+        return resolverService.exec(request, request.getConsumer(), request.getQuery())
+                .onErrorResume(e -> {
+                    if (e instanceof NotAuthorizationException) {
+                        return Mono.error(new BadRequest(e.getMessage()));
+                    }
+                    return Mono.error(e);
+                });
     }
 
 

@@ -1,6 +1,5 @@
 package com.example.penguinql.core;
 
-import com.example.penguinql.acl.exception.NotAuthorizationException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,10 +18,6 @@ public class Query {
     private Map<String, Query> next;
     private Set<String> current;
 
-    public void checkAuth(Query query) throws NotAuthorizationException {
-        throw new UnsupportedOperationException();
-    }
-
     public Query merge(Query query) {
         if (this.getNext() == null) {
             this.setNext(new HashMap<>());
@@ -36,7 +31,6 @@ public class Query {
 
         return this;
     }
-
 
 
 }

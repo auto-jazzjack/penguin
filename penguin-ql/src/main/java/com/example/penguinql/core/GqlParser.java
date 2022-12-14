@@ -1,6 +1,7 @@
 package com.example.penguinql.core;
 
 
+import com.example.penguinql.exception.InvalidQueryException;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -25,13 +26,13 @@ public class GqlParser {
     /**
      * Since there isn't any state, this method will be thread-safe
      */
-    public Query parseFrom(String gql) {
+    public Query parseFrom(String gql) throws InvalidQueryException{
         AtomicInteger atomicInteger = new AtomicInteger(0);
         Query query = queryGen(gql, atomicInteger);
 
         skipBlank(gql, atomicInteger);
         if (atomicInteger.get() != gql.length()) {
-            throw new RuntimeException("Invalid Query exception. Some token is not read");
+            throw new InvalidQueryException("Invalid Query exception. Some token is not read");
         }
         return query;
     }
