@@ -48,12 +48,12 @@ penguin:
             kind: CASSANDRA
             spec:
               valueType: io.penguin.penguincore.model.CBook
-          - name: Book_cache
-            kind: LETTUCE_CACHE
-            spec:
-              prefix: p
-              downStreamName: Book_sourceV2
-              codecConfig:
-                codec: io.penguin.penguincodec.JsonCodec
-                target: io.penguin.penguincore.model.CBook
-                compress: GZIP
+#          - name: Book_cache
+#            kind: LETTUCE_CACHE
+#            spec:
+#              prefix: p
+#              downStreamName: Book_sourceV2
+#              codecConfig:
+#                codec: io.penguin.penguincodec.JsonCodec
+#                target: io.penguin.penguincore.model.CBook
+#                compress: GZIP
