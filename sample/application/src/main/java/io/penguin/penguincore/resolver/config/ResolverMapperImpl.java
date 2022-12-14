@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 
 public class ResolverMapperImpl implements com.example.penguinql.core.ResolverMapper {
 
-    private final List<Resolver> resolvers;
-    private Map<Class<? extends Resolver>, Resolver> mapper;
+    private final List<Resolver<?>> resolvers;
+    private Map<Class<? extends Resolver>, Resolver<?>> mapper;
 
     @PostConstruct
     public void hello() {

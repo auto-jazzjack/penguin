@@ -2,11 +2,11 @@ package io.penguin.penguincore.resolver.impl;
 
 import com.example.penguinql.core.DataFetchingEnv;
 import com.example.penguinql.core.Resolver;
+import com.example.penguinql.core.ResolverMeta;
 import com.google.common.collect.ImmutableMap;
 import io.penguin.penguincore.http.Book;
 import io.penguin.penguincore.http.BookStore;
 import io.penguin.penguincore.http.SampleRequest;
-import io.penguin.penguincore.http.SampleResponse;
 import io.penguin.penguincore.model.CBookStore;
 import io.penguin.penguincore.reader.BookStoreReader;
 import lombok.RequiredArgsConstructor;
@@ -22,14 +22,9 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class BookStoreResolver implements Resolver<SampleResponse, List<BookStore>> {
+public class BookStoreResolver implements Resolver<List<BookStore>> {
 
     private final BookStoreReader bookStoreReader;
-
-    @Override
-    public void setData(SampleResponse sampleResponse, List<BookStore> myself) {
-        sampleResponse.setBookStores(myself);
-    }
 
     @Override
     public Mono<List<BookStore>> generate(DataFetchingEnv condition) {
@@ -53,9 +48,9 @@ public class BookStoreResolver implements Resolver<SampleResponse, List<BookStor
     }
 
     @Override
-    public Map<String, Class<? extends Resolver>> next() {
-        return ImmutableMap.<String, Class<? extends Resolver>>builder()
-                .put("books", BookResolver.class)
+    public Map<String, ResolverMeta<?>> next() {
+        return ImmutableMap.<String, ResolverMeta<?>>builder()
+                .put("books", new ResolverMeta<>(BookResolver.class, Book.class))
                 .build();
     }
 }

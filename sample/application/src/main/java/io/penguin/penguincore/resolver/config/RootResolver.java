@@ -1,8 +1,9 @@
 package io.penguin.penguincore.resolver.config;
 
 import com.example.penguinql.core.DataFetchingEnv;
-import com.example.penguinql.core.Resolver;
+import com.example.penguinql.core.ResolverMeta;
 import com.google.common.collect.ImmutableMap;
+import io.penguin.penguincore.http.BookStore;
 import io.penguin.penguincore.http.SampleResponse;
 import io.penguin.penguincore.resolver.impl.BookStoreResolver;
 import org.springframework.stereotype.Component;
@@ -19,9 +20,14 @@ public class RootResolver implements com.example.penguinql.core.RootResolver<Sam
     }
 
     @Override
-    public Map<String, Class<? extends Resolver>> next() {
-        return ImmutableMap.<String, Class<? extends Resolver>>builder()
-                .put("bookStores", BookStoreResolver.class)
+    public Map<String, ResolverMeta<?>> next() {
+        return ImmutableMap.<String, ResolverMeta<?>>builder()
+                .put("bookStores", new ResolverMeta<>(BookStoreResolver.class, BookStore.class))
                 .build();
+    }
+
+    @Override
+    public Class<SampleResponse> clazz() {
+        return SampleResponse.class;
     }
 }

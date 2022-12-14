@@ -44,18 +44,16 @@ penguin:
         kind: BASE
         aggregatedTarget: io.penguin.penguincore.reader.BookReader
         containers:
-          - name: Book_sourceV2
-            kind: Bean
+          - name: Book_source
+            kind: CASSANDRA
             spec:
-              name: bookStoreBeanReader
-              domainClass: io.penguin.penguincore.model.CBookStore
-              idClass: java.lang.Long
-          - name: Book_cache
-            kind: LETTUCE_CACHE
-            spec:
-              prefix: p
-              downStreamName: Book_sourceV2
-              codecConfig:
-                codec: io.penguin.penguincodec.JsonCodec
-                target: io.penguin.penguincore.model.CBook
-                compress: GZIP
+              valueType: io.penguin.penguincore.model.CBook
+#          - name: Book_cache
+#            kind: LETTUCE_CACHE
+#            spec:
+#              prefix: p
+#              downStreamName: Book_sourceV2
+#              codecConfig:
+#                codec: io.penguin.penguincodec.JsonCodec
+#                target: io.penguin.penguincore.model.CBook
+#                compress: GZIP

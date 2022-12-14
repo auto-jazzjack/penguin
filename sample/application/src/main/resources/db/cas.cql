@@ -1,3 +1,9 @@
+CREATE KEYSPACE local
+  WITH REPLICATION = {
+   'class' : 'NetworkTopologyStrategy',
+   'datacenter1' : 1
+  } ;
+
 CREATE TABLE local.book (
 	id bigint PRIMARY KEY,
 	title text,

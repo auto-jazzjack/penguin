@@ -2,40 +2,44 @@ package com.example.penguinql.core;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
-public class ExecutionPlanGenerator {
+public class ExecutionPlanGenerator<T> {
 
-    private final Resolver rootResolver;
+    private final ResolverMeta<T> rootResolver;
     private final ResolverMapper resolverMapper;
 
-    public ExecutionPlanGenerator(Resolver rootResolver, ResolverMapper resolverMapper) {
-        this.rootResolver = rootResolver;
+    public ExecutionPlanGenerator(ResolverMeta<T> rootResolver, ResolverMapper resolverMapper) {
         this.resolverMapper = resolverMapper;
+        this.rootResolver = rootResolver;
+        this.rootResolver.decorateResolver(resolverMapper);
     }
 
-    public ExecutionPlan generate(Object request, Query query) {
+    public ExecutionPlan<T> generate(Object request, Query query) {
         ContextQL contextQL = new ContextQL();
         contextQL.setRequest(request);
         return generate(rootResolver, contextQL, query);
     }
 
-    private ExecutionPlan generate(Resolver current, ContextQL context, Query query) {
+    private <M> ExecutionPlan<M> generate(ResolverMeta<M> current, ContextQL context, Query query) {
 
         if (current == null) {
             return null;
         }
-        ExecutionPlan executionPlan = ExecutionPlan.builder()
+
+        ExecutionPlan<M> executionPlan = ExecutionPlan.<M>builder()
                 .mySelf(current)
-                .currFields(query.getFields())
-                .currObjects(query.getQueryByResolverName().keySet())
+                .currFields(query.getCurrent())
                 .dataFetchingEnv(new DataFetchingEnv().setContext(context))
                 .build();
 
         //Query resolver에서 value가 not null인 케이스를 돈다
-        Set<String> collect = Optional.ofNullable(query.getQueryByResolverName())
+        Set<String> collect = Optional.ofNullable(query.getNext())
                 .orElse(Collections.emptyMap())
                 .entrySet()
                 .stream()
@@ -44,14 +48,24 @@ public class ExecutionPlanGenerator {
                 .collect(Collectors.toSet());
 
 
-        Map<String, Class<? extends Resolver>> next = current.next();
+        Map<String, ResolverMeta<?>> next = current.getCurrent().next();
         next.entrySet()
                 .stream()
                 .filter(i -> collect.contains(i.getKey()))
-                .map(i -> Pair.of(i.getKey(), resolverMapper.toInstant(i.getValue())))
+                .map(i -> Pair.of(i.getKey(), i.getValue()))
                 .forEach(i -> {
-                    ExecutionPlan generate = generate(i.getValue(), context, query.getQueryByResolverName().get(i.getKey()));
-                    i.getValue().preHandler(context);
+                    ExecutionPlan generate = generate(
+                            new ResolverMeta<>(i.getValue().getCurrentClazz(), i.getValue().getClazz())
+                                    .decorateSetter(current.getClazz(), i.getKey())
+                                    .decorateResolver(resolverMapper),
+                            context, query.getNext().get(i.getKey())
+                    );
+
+                    i.getValue()
+                            .decorateResolver(resolverMapper)
+                            .decorateSetter(current.getClazz(), i.getKey())
+                            .getCurrent()
+                            .preHandler(context);
 
                     executionPlan.addNext(i.getKey(), generate);
                 });
@@ -59,4 +73,6 @@ public class ExecutionPlanGenerator {
 
         return executionPlan;
     }
+
+
 }
