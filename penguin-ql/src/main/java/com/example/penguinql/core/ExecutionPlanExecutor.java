@@ -28,7 +28,7 @@ public class ExecutionPlanExecutor {
 
         Mono<T> generate = executionPlan.generateMySelf().cache();
 
-        Mono<Map<Object, Pair<ExecutionPlan<Object>, Object>>> collect = generate.flatMapMany(i -> {
+        Mono<Map<Object/*Position*/, Pair<ExecutionPlan<Object>, Object>>> collect = generate.flatMapMany(i -> {
                     if (i instanceof List) {
                         List<Object> result = (List<Object>) i;
                         Flux<Triple<ExecutionPlan<Object>, Object, Object>> tripleFlux = Flux.empty();

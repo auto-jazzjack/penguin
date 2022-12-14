@@ -16,7 +16,7 @@ public class ResolverService<I, O> {
     private final GqlParser gqlParser;
 
     public ResolverService(RootResolver<O> rootResolver, ResolverMapper resolverMapper) throws Exception {
-        this.executionPlanGenerator = new ExecutionPlanGenerator<>(new ResolverMeta<O>((Class<? extends Resolver<O>>) rootResolver.getClass(), rootResolver.clazz()), resolverMapper);
+        this.executionPlanGenerator = new ExecutionPlanGenerator<>(new ResolverMeta<>((Class<? extends Resolver<O>>) rootResolver.getClass(), rootResolver.clazz()), resolverMapper);
         this.executionPlanExecutor = new ExecutionPlanExecutor();
         this.gqlParser = new GqlParser(rootResolver.clazz());
         this.pojoFieldCleanser = new PojoFieldCleanser<>(extractResolverType(rootResolver));

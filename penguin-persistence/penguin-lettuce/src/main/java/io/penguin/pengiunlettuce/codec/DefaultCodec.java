@@ -64,7 +64,7 @@ public class DefaultCodec implements RedisCodec<String, byte[]>, ToByteBufEncode
         if (o instanceof String) {
             String v = (String) o;
             return v.length();
-        } else if (o instanceof byte[]){
+        } else if (o instanceof byte[]) {
             byte[] v = (byte[]) o;
             return v.length;
         }

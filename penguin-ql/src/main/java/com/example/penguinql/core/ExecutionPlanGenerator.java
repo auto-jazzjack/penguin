@@ -13,6 +13,7 @@ public class ExecutionPlanGenerator<T> {
 
     private final ResolverMeta<T> rootResolver;
     private final ResolverMapper resolverMapper;
+    private static final String ROOT = "root";
 
     public ExecutionPlanGenerator(ResolverMeta<T> rootResolver, ResolverMapper resolverMapper) {
         this.resolverMapper = resolverMapper;
@@ -23,10 +24,10 @@ public class ExecutionPlanGenerator<T> {
     public ExecutionPlan<T> generate(Object request, Query query) {
         ContextQL contextQL = new ContextQL();
         contextQL.setRequest(request);
-        return generate(rootResolver, contextQL, query);
+        return generate(rootResolver, ROOT, contextQL, query);
     }
 
-    private <M> ExecutionPlan<M> generate(ResolverMeta<M> current, ContextQL context, Query query) {
+    private <M> ExecutionPlan<M> generate(ResolverMeta<M> current, String curField, ContextQL context, Query query) {
 
         if (current == null) {
             return null;
@@ -55,12 +56,16 @@ public class ExecutionPlanGenerator<T> {
                 .map(i -> Pair.of(i.getKey(), i.getValue()))
                 .forEach(i -> {
                     ExecutionPlan generate = generate(
-                            new ResolverMeta<>(i.getValue().getCurrentClazz(), i.getValue().getClazz()).decorateResolver(resolverMapper),
+                            new ResolverMeta<>(i.getValue().getCurrentClazz(), i.getValue().getClazz())
+                                    .decorateSetter(current.getClazz(), i.getKey())
+                                    .decorateResolver(resolverMapper),
+                            i.getKey(),
                             context, query.getNext().get(i.getKey())
                     );
 
                     i.getValue()
                             .decorateResolver(resolverMapper)
+                            .decorateSetter(current.getClazz(), i.getKey())
                             .getCurrent()
                             .preHandler(context);
 
