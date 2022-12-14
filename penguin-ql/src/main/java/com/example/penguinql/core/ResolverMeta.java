@@ -33,7 +33,7 @@ public class ResolverMeta<Myself> {
         this.clazz = clazz;
     }
 
-    public ResolverMeta<Myself> decorateSetter(Class<?> parent, String name) {
+    protected ResolverMeta<Myself> decorateSetter(Class<?> parent, String name) {
         try {
             Map<String, Method> methods = cachedSetter.get(parent);
             if (methods == null) {
@@ -72,7 +72,7 @@ public class ResolverMeta<Myself> {
         return this;
     }
 
-    public ResolverMeta<Myself> decorateResolver(ResolverMapper resolverMapper) {
+    protected ResolverMeta<Myself> decorateResolver(ResolverMapper resolverMapper) {
         current = (Resolver<Myself>) resolverMapper.toInstant(this.currentClazz);
         return this;
     }

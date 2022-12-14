@@ -78,10 +78,10 @@ public class ExecutionPlanExecutor {
                         List<Object> t = (List<Object>) i.getT1();
                         i.getT2().forEach((key, value) -> {
                             int idx = (Integer) key;
-                            i.getT2().get(idx).getKey().getMySelf().getSetter().accept(t.get(idx), (T) value.getValue());
+                            i.getT2().get(idx).getKey().getMySelf().getSetter().accept(t.get(idx), value.getValue());
                         });
                     } else {
-                        i.getT2().forEach((key, value) -> i.getT2().get(key).getKey().getMySelf().getSetter().accept(i.getT1(), (T) value.getValue()));
+                        i.getT2().forEach((key, value) -> i.getT2().get(key).getKey().getMySelf().getSetter().accept(i.getT1(), value.getValue()));
                     }
 
                     return i.getT1();
