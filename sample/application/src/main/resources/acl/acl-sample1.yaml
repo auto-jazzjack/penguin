@@ -2,7 +2,7 @@ v1:
   consumer1: >
     {
       bookStores {
-        id
+        bsId
         contact
         books  {
                     id

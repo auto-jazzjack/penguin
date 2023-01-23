@@ -21,9 +21,9 @@ public abstract class FieldMeta<M> {
     protected GenericType genericType;
 
     @Getter
-    protected Map<String, FieldMeta<?>> leafChildren;
+    protected Map<String, FieldMeta<Object>> leafChildren;
     @Getter
-    protected Map<String, FieldMeta<?>> extendableChildren;
+    protected Map<String, FieldMeta<Object>> extendableChildren;
     public static final String VALUE = "value";
 
 

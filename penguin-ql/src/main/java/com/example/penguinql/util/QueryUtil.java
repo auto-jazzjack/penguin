@@ -5,6 +5,10 @@ import com.example.penguinql.core.Query;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+
+import static com.example.penguinql.core.prune.FieldUtils.PRIMITIVES;
+import static com.example.penguinql.core.prune.FieldUtils.unWrapCollection;
 
 public class QueryUtil {
 
@@ -12,7 +16,7 @@ public class QueryUtil {
         Query query = new Query();
         Arrays.stream(clazz.getDeclaredFields())
                 .forEach(i -> {
-                    if (i.getType().isPrimitive()) {
+                    if (PRIMITIVES.contains(clazz)) {
                         if (query.getCurrent() == null) {
                             query.setCurrent(new HashSet<>());
                         }
@@ -21,7 +25,9 @@ public class QueryUtil {
                         if (query.getNext() == null) {
                             query.setNext(new HashMap<>());
                         }
-                        query.getNext().put(i.getName(), extractWholeQuery(i.getType()));
+
+                        Class<?> unWrapped = unWrapCollection(i);
+                        query.getNext().put(i.getName(), extractWholeQuery(unWrapped));
                     }
                 });
         return query;

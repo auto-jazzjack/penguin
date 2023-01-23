@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.example.penguinql.util.QueryUtil.extractWholeQuery;
@@ -26,9 +27,11 @@ public class GqlParser {
     /**
      * Since there isn't any state, this method will be thread-safe
      */
-    public Query parseFrom(String gql) throws InvalidQueryException{
+
+
+    public Query parseFrom(String gql) throws InvalidQueryException {
         AtomicInteger atomicInteger = new AtomicInteger(0);
-        Query query = queryGen(gql, atomicInteger);
+        Query query = queryGen(gql, primaryQuery, atomicInteger);
 
         skipBlank(gql, atomicInteger);
         if (atomicInteger.get() != gql.length()) {
@@ -37,7 +40,7 @@ public class GqlParser {
         return query;
     }
 
-    private Query queryGen(String list, AtomicInteger idx) {
+    private Query queryGen(String list, Query queryContext, AtomicInteger idx) throws InvalidQueryException {
         Query query = new Query();
         query.setCurrent(new HashSet<>());
         query.setNext(new HashMap<>());
@@ -60,7 +63,10 @@ public class GqlParser {
                 //Without getting two world, we cannot determine whether it is leaf node or not.
                 //So in case of +1 depth case, let's remove before world
                 query.getCurrent().remove(before);
-                query.getNext().put(before, queryGen(list, idx));
+                if (!queryContext.getNext().containsKey(before)) {
+                    throw new InvalidQueryException("No such field " + before + " this is possible list " + query.getNext().keySet());
+                }
+                query.getNext().put(before, queryGen(list, queryContext.getNext().get(before), idx));
             } else if (word1.equals("}")) {
                 if (before.isEmpty()) {
                     throw new RuntimeException("Invalid Query exception near " + idx.get());
@@ -69,6 +75,11 @@ public class GqlParser {
                 break;
             } else {
                 //leaf node
+                if (Optional.ofNullable(query.getCurrent()).filter(i -> i.contains(word1)).isPresent()
+                        && Optional.ofNullable(queryContext.getNext()).filter(i -> i.containsKey(word1)).isEmpty()) {
+                    throw new InvalidQueryException("No such field " + before + " this is possible list " + query.getNext().keySet());
+                }
+
                 query.getCurrent().add(word1);
                 before = word1;
             }

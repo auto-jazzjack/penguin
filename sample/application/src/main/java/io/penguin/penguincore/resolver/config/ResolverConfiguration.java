@@ -41,6 +41,6 @@ public class ResolverConfiguration {
 
     @Bean
     public GqlParser gqlParser(RootResolver rootResolver) {
-        return new GqlParser(rootResolver.getClass());
+        return new GqlParser(rootResolver.clazz());
     }
 }

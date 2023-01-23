@@ -6,10 +6,17 @@ import lombok.Getter;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static com.example.penguinql.core.prune.FieldUtils.PRIMITIVES;
+import static com.example.penguinql.core.prune.FieldUtils.unWrapCollection;
 
 @Getter
 public class PojoField<M> extends FieldMeta<M> {
@@ -76,23 +83,12 @@ public class PojoField<M> extends FieldMeta<M> {
             if (PRIMITIVES.contains(i.getType())) {
                 this.leafChildren.put(i.getName(), new PojoField<>(i, GenericType.NONE));
             } else {
-                this.extendableChildren.put(genericType.isCollection() ? VALUE : i.getName(), new PojoField<>(i, genericType(i)));
+                this.extendableChildren.put(/*genericType.isCollection() ? VALUE : */i.getName(), new PojoField<>(i, genericType(i)));
             }
         }
 
     }
 
-    private Class<?> unWrapCollection(Field field) {
-        Class<?> clazz = field.getType();
-
-        if (clazz.isAssignableFrom(Map.class)) {
-            return (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1];
-        } else if (clazz.isAssignableFrom(List.class) || clazz.isAssignableFrom(Set.class)) {
-            return (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-        } else {
-            return clazz;
-        }
-    }
 
     private GenericType genericType(Field targetField) {
         if (targetField.getType().isAssignableFrom(Set.class)) {
