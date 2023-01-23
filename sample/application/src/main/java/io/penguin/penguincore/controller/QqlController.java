@@ -1,7 +1,7 @@
 package io.penguin.penguincore.controller;
 
-import com.example.penguinql.core.ResolverService;
-import com.example.penguinql.exception.NotAuthorizationException;
+import io.penguin.penguinql.core.ResolverService;
+import io.penguin.penguinql.exception.NotAuthorizationException;
 import io.penguin.penguincore.http.SampleRequest;
 import io.penguin.penguincore.http.SampleResponse;
 import io.penguin.springboot.starter.exception.BadRequest;

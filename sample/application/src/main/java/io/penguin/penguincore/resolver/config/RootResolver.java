@@ -1,7 +1,7 @@
 package io.penguin.penguincore.resolver.config;
 
-import com.example.penguinql.core.DataFetchingEnv;
-import com.example.penguinql.core.ResolverMeta;
+import io.penguin.penguinql.core.DataFetchingEnv;
+import io.penguin.penguinql.core.ResolverMeta;
 import com.google.common.collect.ImmutableMap;
 import io.penguin.penguincore.http.BookStore;
 import io.penguin.penguincore.http.SampleResponse;
@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 @Component
-public class RootResolver implements com.example.penguinql.core.RootResolver<SampleResponse> {
+public class RootResolver implements io.penguin.penguinql.core.RootResolver<SampleResponse> {
 
     @Override
     public Mono<SampleResponse> generate(DataFetchingEnv condition) {
