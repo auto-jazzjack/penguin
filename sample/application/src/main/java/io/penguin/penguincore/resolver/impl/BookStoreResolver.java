@@ -1,8 +1,8 @@
 package io.penguin.penguincore.resolver.impl;
 
-import com.example.penguinql.core.DataFetchingEnv;
-import com.example.penguinql.core.Resolver;
-import com.example.penguinql.core.ResolverMeta;
+import io.penguin.penguinql.core.DataFetchingEnv;
+import io.penguin.penguinql.core.Resolver;
+import io.penguin.penguinql.core.ResolverMeta;
 import com.google.common.collect.ImmutableMap;
 import io.penguin.penguincore.http.Book;
 import io.penguin.penguincore.http.BookStore;
@@ -39,7 +39,7 @@ public class BookStoreResolver implements Resolver<List<BookStore>> {
                             .collect(Collectors.toList());
 
                     return BookStore.builder()
-                            .id(i.getKey())
+                            .bsId(i.getKey())
                             .books(collect)
                             .contact(Optional.ofNullable(i.getValue()).map(CBookStore::getContact).orElse(null))
                             .build();

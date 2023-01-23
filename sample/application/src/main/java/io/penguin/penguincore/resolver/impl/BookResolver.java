@@ -1,8 +1,8 @@
 package io.penguin.penguincore.resolver.impl;
 
-import com.example.penguinql.core.ContextQL;
-import com.example.penguinql.core.DataFetchingEnv;
-import com.example.penguinql.core.Resolver;
+import io.penguin.penguinql.core.ContextQL;
+import io.penguin.penguinql.core.DataFetchingEnv;
+import io.penguin.penguinql.core.Resolver;
 import io.penguin.penguincore.http.Book;
 import io.penguin.penguincore.http.BookStore;
 import io.penguin.penguincore.reader.BookReader;

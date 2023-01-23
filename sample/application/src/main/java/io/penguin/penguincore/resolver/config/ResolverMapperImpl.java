@@ -1,6 +1,7 @@
 package io.penguin.penguincore.resolver.config;
 
-import com.example.penguinql.core.Resolver;
+import io.penguin.penguinql.core.Resolver;
+import io.penguin.penguinql.core.ResolverMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 
-public class ResolverMapperImpl implements com.example.penguinql.core.ResolverMapper {
+public class ResolverMapperImpl implements ResolverMapper {
 
     private final List<Resolver<?>> resolvers;
     private Map<Class<? extends Resolver>, Resolver<?>> mapper;

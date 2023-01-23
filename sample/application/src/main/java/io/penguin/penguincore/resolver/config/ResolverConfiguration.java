@@ -1,9 +1,9 @@
 package io.penguin.penguincore.resolver.config;
 
-import com.example.penguinql.acl.AclProvider;
-import com.example.penguinql.acl.providerimpl.GqlAclProvider;
-import com.example.penguinql.core.GqlParser;
-import com.example.penguinql.core.ResolverService;
+import io.penguin.penguinql.acl.AclProvider;
+import io.penguin.penguinql.acl.providerimpl.GqlAclProvider;
+import io.penguin.penguinql.core.GqlParser;
+import io.penguin.penguinql.core.ResolverService;
 import io.penguin.penguincore.http.SampleRequest;
 import io.penguin.penguincore.http.SampleResponse;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +41,6 @@ public class ResolverConfiguration {
 
     @Bean
     public GqlParser gqlParser(RootResolver rootResolver) {
-        return new GqlParser(rootResolver.getClass());
+        return new GqlParser(rootResolver.clazz());
     }
 }
