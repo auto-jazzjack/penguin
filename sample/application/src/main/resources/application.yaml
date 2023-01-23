@@ -1,7 +1,7 @@
-spring:
-  mvc:
-    async:
-      request-timeout: 5s
+server:
+  error:
+    include-message: ALWAYS
+
 penguin:
   version: v1
   metadata:

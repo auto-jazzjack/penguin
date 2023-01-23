@@ -1,4 +1,4 @@
-package com.example.penguinql.core.setter;
+package com.example.penguinql.core.prune;
 
 import java.util.Set;
 import java.util.stream.Collectors;

@@ -2,6 +2,7 @@ package com.example.penguinql.core;
 
 import com.example.penguinql.acl.AclAuth;
 import com.example.penguinql.acl.AclProvider;
+import com.example.penguinql.core.prune.pojo.PojoFieldCleanser;
 import com.example.penguinql.exception.InvalidQueryException;
 import com.example.penguinql.exception.NotAuthorizationException;
 import reactor.core.publisher.Mono;

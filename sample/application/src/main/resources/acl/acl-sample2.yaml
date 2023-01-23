@@ -6,6 +6,7 @@ v1:
         contact
         books  {
                     id
+                    title
                 }
             }
     }
