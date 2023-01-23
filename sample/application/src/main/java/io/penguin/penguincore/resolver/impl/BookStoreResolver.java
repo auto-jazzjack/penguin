@@ -39,7 +39,7 @@ public class BookStoreResolver implements Resolver<List<BookStore>> {
                             .collect(Collectors.toList());
 
                     return BookStore.builder()
-                            .id(i.getKey())
+                            .bsId(i.getKey())
                             .books(collect)
                             .contact(Optional.ofNullable(i.getValue()).map(CBookStore::getContact).orElse(null))
                             .build();

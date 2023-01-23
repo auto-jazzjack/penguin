@@ -7,10 +7,7 @@ import lombok.Getter;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.example.penguinql.core.prune.FieldUtils.PRIMITIVES;
 
@@ -20,7 +17,7 @@ public class PojoField<M> extends FieldMeta<M> {
     private Method setter;
     private Method getter;
     private Constructor<M> newInstance;
-    private Field field;
+    private final Field field;
     /**
      * This filed only meaningful when generic field is Collection(Map, List, Set)
      */

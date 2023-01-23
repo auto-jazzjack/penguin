@@ -23,6 +23,7 @@ public class PojoFieldCleanser<T> {
 
     public PojoFieldCleanser(Class<T> root) throws Exception {
         fieldCleanerMeta = new PojoField<>(root, NONE);
+        System.out.println();
     }
 
     public T exec(T result, ExecutionPlan<T> executionPlan) {
@@ -58,7 +59,7 @@ public class PojoFieldCleanser<T> {
                             nextFieldMeta.setData(retv, res);
                             break;
                         case LIST:
-                            FieldMeta<T1> listValue = (FieldMeta<T1>) nextFieldMeta.getExtendableChildren().get(VALUE);
+                            FieldMeta<T1> listValue = (FieldMeta<T1>) nextFieldMeta;
 
                             List<T1> collect = ((List<Object>) nextFieldMeta.getData(result))
                                     .stream()
