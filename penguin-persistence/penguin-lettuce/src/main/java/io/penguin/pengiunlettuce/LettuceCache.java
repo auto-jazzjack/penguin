@@ -99,7 +99,8 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
         long start = System.currentTimeMillis();
         reactive.setex(this.prefix() + key, this.expireMilliseconds, serialize(value))
                 .doOnSuccess(i -> writer.record(Duration.ofMillis(System.currentTimeMillis() - start)))
-                .subscribeOn(Schedulers.parallel()).subscribe();
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe();
     }
 
     @Override

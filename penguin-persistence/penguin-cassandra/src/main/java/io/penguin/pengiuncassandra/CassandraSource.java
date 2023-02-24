@@ -114,6 +114,6 @@ public class CassandraSource<K, V> implements Reader<K, V> {
                     success.increment();
                     latency.record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
                 })
-                .subscribeOn(Schedulers.parallel());
+                .subscribeOn(Schedulers.boundedElastic());
     }
 }
