@@ -32,7 +32,17 @@ public class RedisProcessor extends KafkaProcessor<String, byte[]> {
     @Override
     public void action(String key, byte[] value) {
         connection.reactive()
-                .setex(key, expire, value)
+                .setex(key, expire, new CacheContext<byte[]>() {
+                    @Override
+                    public long getTimeStamp() {
+                        return 0;
+                    }
+
+                    @Override
+                    public byte[] getValue() {
+                        return value;
+                    }
+                })
                 .subscribe();
     }
 
