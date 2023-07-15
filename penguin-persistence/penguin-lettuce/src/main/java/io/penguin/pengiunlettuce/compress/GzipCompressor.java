@@ -1,5 +1,7 @@
 package io.penguin.pengiunlettuce.compress;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.penguin.penguincodec.Codec;
 
 import java.io.BufferedInputStream;
@@ -16,21 +18,22 @@ public class GzipCompressor<V> extends Compressor<V> {
     }
 
     @Override
-    public byte[] serialize(V source) throws Exception {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    public void serialize(V source, ByteBuf buf) throws Exception {
+        /*ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try (GZIPOutputStream gzipOutStream = new GZIPOutputStream(new BufferedOutputStream(byteArrayOutputStream))) {
-            gzipOutStream.write(this.delegated.serialize(source));
+            this.delegated.serialize(source, buf);
         }
-        return byteArrayOutputStream.toByteArray();
+        byteArrayOutputStream.toByteArray();*/
     }
 
     @Override
-    public V deserialize(byte[] source) throws Exception {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+    public V deserialize(ByteBuf source) throws Exception {
+        /*ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
         try (GZIPInputStream gzipInStream = new GZIPInputStream(new BufferedInputStream(new ByteArrayInputStream(source)))) {
-            copy(gzipInStream, outStream, source.length * 2);
+            copy(gzipInStream, outStream, source.readableBytes() * 2);
         }
-        return this.delegated.deserialize(outStream.toByteArray());
+        return this.delegated.deserialize(ByteBufAllocator.DEFAULT.buffer());*/
+        return null;
     }
 }

@@ -36,7 +36,7 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
 
     private final Timer reader = MetricCreator.timer("lettuce_reader", "kind", this.getClass().getSimpleName());
     private final Timer writer = MetricCreator.timer("lettuce_writer", "kind", this.getClass().getSimpleName());
-    private final Counter reupdate = MetricCreator.counter("lettuce_reupdate_count", "kind", this.getClass().getSimpleName());
+    private final Counter reUpdate = MetricCreator.counter("lettuce_reUpdate_count", "kind", this.getClass().getSimpleName());
     private final Plugin<CacheContext<V>>[] plugins;
     private final Sinks.Many<Pair<K, CacheContext<V>>> watcher;
 
@@ -113,10 +113,9 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
         long start = System.currentTimeMillis();
         Mono<CacheContext<V>> mono = reactive.get(this.prefix + key.toString())
                 .publishOn(Schedulers.parallel())
-                //.map(this::deserialize)
                 .doOnNext(i -> {
                     if (i.getTimeStamp() + expireMilliseconds < System.currentTimeMillis()) {
-                        reupdate.increment();
+                        reUpdate.increment();
                         writeOne(key, i);
                     }
                 });

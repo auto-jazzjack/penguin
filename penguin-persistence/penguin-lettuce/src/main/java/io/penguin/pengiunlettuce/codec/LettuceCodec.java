@@ -2,7 +2,7 @@ package io.penguin.pengiunlettuce.codec;
 
 import io.lettuce.core.codec.RedisCodec;
 import io.lettuce.core.codec.ToByteBufEncoder;
-import io.netty.buffer.ByteBuf;
+import io.netty.buffer.*;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheConfig;
 import io.penguin.penguincodec.Codec;
 import io.penguin.penguincore.reader.CacheContext;
@@ -36,11 +36,11 @@ public class LettuceCodec<V> implements RedisCodec<String, CacheContext<V>>, ToB
     }
 
     @Override
-    public CacheContext<V> decodeValue(ByteBuffer bytes) {
+    public CacheContext<V> decodeValue(ByteBuffer byteBuffer) {
         try {
-
-            long timeStamp = bytes.getLong();
-            V deserialize = this.codec.deserialize(bytes.array());
+            ByteBuf byteBuf = Unpooled.wrappedBuffer(byteBuffer);
+            long timeStamp = byteBuf.readLong();
+            V deserialize = this.codec.deserialize(byteBuf);
             return new CacheContext<>() {
                 @Override
                 public V getValue() {
@@ -66,11 +66,10 @@ public class LettuceCodec<V> implements RedisCodec<String, CacheContext<V>>, ToB
     @Override
     public ByteBuffer encodeValue(CacheContext<V> value) {
         try {
-            byte[] serialize = codec.serialize((V) value);
-            ByteBuffer allocate = ByteBuffer.allocate(serialize.length + Long.BYTES);
-            allocate.putLong(value.getTimeStamp());
-            allocate.put(serialize);
-            return allocate;
+            ByteBuf byteBuf = ByteBufAllocator.DEFAULT.directBuffer(estimateSize(value.getValue()));
+            byteBuf.writeLong(value.getTimeStamp());
+            codec.serialize(value.getValue(), byteBuf);
+            return byteBuf.nioBuffer();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -86,7 +85,7 @@ public class LettuceCodec<V> implements RedisCodec<String, CacheContext<V>>, ToB
     public void encodeValue(CacheContext<V> value, ByteBuf byteBuf) {
         try {
             byteBuf.writeLong(value.getTimeStamp());
-            byteBuf.writeBytes(this.codec.serialize(value.getValue()));
+            this.codec.serialize(value.getValue(), byteBuf);
         } catch (Exception e) {
 
         }
@@ -102,6 +101,6 @@ public class LettuceCodec<V> implements RedisCodec<String, CacheContext<V>>, ToB
             byte[] v = (byte[]) o;
             return v.length;
         }
-        return 0;
+        return 1;
     }
 }
