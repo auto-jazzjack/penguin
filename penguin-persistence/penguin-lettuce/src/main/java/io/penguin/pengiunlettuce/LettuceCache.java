@@ -138,14 +138,10 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
             mono = plugin.decorateSource(mono);
         }
 
-        return mono.onErrorReturn(this.failFindOne(key))
+        return mono
+                .onErrorResume(throwable -> failFindOne(key, throwable))
                 .doOnError(e -> log.error("", e))
                 .doOnSuccess(i -> reader.record(Duration.ofMillis(System.currentTimeMillis() - start)));
-    }
-
-    @Override
-    public CacheContext<V> failFindOne(K key) {
-        return null;
     }
 
 

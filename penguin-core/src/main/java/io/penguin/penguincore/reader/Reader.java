@@ -5,7 +5,7 @@ import reactor.core.publisher.Mono;
 public interface Reader<K, V> {
     Mono<V> findOne(K key);
 
-    default V failFindOne(K key){
-        return null;
+    default Mono<V> failFindOne(K key, Throwable error){
+        return Mono.empty();
     }
 }
