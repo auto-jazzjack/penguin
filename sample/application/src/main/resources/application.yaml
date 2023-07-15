@@ -2,6 +2,15 @@ server:
   error:
     include-message: ALWAYS
 
+management:
+  endpoint:
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
 penguin:
   version: v1
   metadata:
@@ -14,7 +23,7 @@ penguin:
           hosts: 127.0.0.1
       - name: LETTUCE_CACHE
         spec:
-          expireMilliseconds: 10000
+          port: 6379
           redisUris: 127.0.0.1
       - name: OVER_WRITER
     workers:
@@ -31,10 +40,10 @@ penguin:
             spec:
               prefix: bs
               downStreamName: BookStore_source
+              expireMilliseconds: 10000
               codecConfig:
                 codec: io.penguin.penguincodec.JsonCodec
-                target: io.penguin.penguincore.model.CBookStore
-                compress: GZIP
+                targetClass: io.penguin.penguincore.model.CBookStore
           - name: BookOverWriter
             kind: OVER_WRITER
             spec:

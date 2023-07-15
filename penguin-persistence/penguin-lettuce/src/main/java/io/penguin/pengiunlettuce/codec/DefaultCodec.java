@@ -43,7 +43,7 @@ public class DefaultCodec implements RedisCodec<String, byte[]>, ToByteBufEncode
         return ByteBuffer.wrap(value);
     }
 
-    static byte[] toBytes(ByteBuffer byteBuffer) {
+    public static byte[] toBytes(ByteBuffer byteBuffer) {
         byte[] retv = new byte[byteBuffer.remaining()];
         byteBuffer.get(retv);
         return retv;

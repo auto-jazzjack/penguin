@@ -2,6 +2,8 @@ package io.penguin.penguincodec;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.Parser;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
 
 import java.lang.reflect.Method;
 
@@ -19,12 +21,12 @@ public class ProtoCodec<V extends Message> implements Codec<V> {
     }
 
     @Override
-    public byte[] serialize(V v) throws Exception {
-        return v.toByteArray();
+    public void serialize(V v, ByteBuf buf) throws Exception {
+        buf.writeBytes(v.toByteArray());
     }
 
     @Override
-    public V deserialize(byte[] v) throws Exception {
-        return parserForType.parseFrom(v);
+    public V deserialize(ByteBuf v) throws Exception {
+        return parserForType.parseFrom(new ByteBufInputStream(v));
     }
 }

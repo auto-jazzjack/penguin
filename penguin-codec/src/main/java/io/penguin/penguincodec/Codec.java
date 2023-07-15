@@ -1,8 +1,10 @@
 package io.penguin.penguincodec;
 
 
-public interface Codec<V> {
-    byte[] serialize(V v) throws Exception;
+import io.netty.buffer.ByteBuf;
 
-    V deserialize(byte[] v) throws Exception;
+public interface Codec<V> {
+    void serialize(V v, ByteBuf buf) throws Exception;
+
+    V deserialize(ByteBuf v) throws Exception;
 }

@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class BookStore {
 
-    private Long bsId;
+    private Long id;
     private List<Book> books;
     private String contact;
 }

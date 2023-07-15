@@ -18,7 +18,7 @@ import static io.penguin.springboot.starter.mapper.ContainerKind.CASSANDRA;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class CassandraFactory implements ReaderFactory {
+public class CassandraFactory<K, V> implements ReaderFactory<K, V> {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, Map<String, Object>> collectedResources;
 
@@ -29,7 +29,7 @@ public class CassandraFactory implements ReaderFactory {
     }
 
     @Override
-    public Reader<Object, Object> generate(Map<String, Object> spec) {
+    public Reader<K, V> generate(Map<String, Object> spec) {
         CassandraConnectionConfig config = objectMapper.convertValue(collectedResources.get(CASSANDRA.name()), CassandraConnectionConfig.class);
         CassandraSourceConfig cassandraSourceConfig = objectMapper.convertValue(spec, CassandraSourceConfig.class);
         return new CassandraSource<>(CassandraConnectionIngredient.toInternal(config), toInternal(cassandraSourceConfig));

@@ -2,7 +2,7 @@ package io.penguin.penguincore.plugin.circuit;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.penguin.penguincore.plugin.Ingredient.CircuitIngredient;
+import io.penguin.penguincore.plugin.Ingredient.CircuitDecorator;
 import io.penguin.penguincore.plugin.PluginInput;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -36,7 +36,7 @@ public class CircuitPluginTest {
                 .circuit(CircuitModel.base().build())
                 .build());
 
-        CircuitIngredient generate = circuitConfiguration.generate(this.getClass());
+        CircuitDecorator generate = circuitConfiguration.generate(this.getClass());
         CircuitPlugin<String> circuitPlugin = new CircuitPlugin<>(generate);
 
         for (int i = 0; i < 5; i++) {
@@ -57,7 +57,7 @@ public class CircuitPluginTest {
                         .waitDurationInOpenStateMillisecond(Integer.MAX_VALUE)
                         .build())
                 .build());
-        CircuitIngredient generate = circuitConfiguration.generate(this.getClass());
+        CircuitDecorator generate = circuitConfiguration.generate(this.getClass());
         CircuitPlugin<String> circuitPlugin = new CircuitPlugin<>(generate);
 
         for (int i = 0; i < 100/*Minimum number of call */ + 10; i++) {

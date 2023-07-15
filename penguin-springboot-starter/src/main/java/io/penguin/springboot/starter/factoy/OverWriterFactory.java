@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-public class OverWriterFactory implements ReaderFactory {
+public class OverWriterFactory<K, V> implements ReaderFactory<K, V> {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -23,7 +23,7 @@ public class OverWriterFactory implements ReaderFactory {
     }
 
     @Override
-    public Reader<Object, Object> generate(Map<String, Object> spec) throws Exception {
+    public Reader<K, V> generate(Map<String, Object> spec) throws Exception {
         Map<String, Class<? extends BaseOverWriteReader<?, ?, ?>>> overWriters = objectMapper.convertValue(spec, new TypeReference<>() {
         });
 

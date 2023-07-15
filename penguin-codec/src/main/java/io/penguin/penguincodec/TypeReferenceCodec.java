@@ -2,6 +2,8 @@ package io.penguin.penguincodec;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
 
 public class TypeReferenceCodec<V> implements Codec<V> {
 
@@ -15,12 +17,12 @@ public class TypeReferenceCodec<V> implements Codec<V> {
     }
 
     @Override
-    public byte[] serialize(V v) throws Exception {
-        return objectMapper.writeValueAsBytes(v);
+    public void serialize(V v, ByteBuf buf) throws Exception {
+        buf.writeBytes(objectMapper.writeValueAsBytes(v));
     }
 
     @Override
-    public V deserialize(byte[] v) throws Exception {
-        return objectMapper.readValue(v, target);
+    public V deserialize(ByteBuf buf) throws Exception {
+        return objectMapper.readValue(new ByteBufInputStream(buf), target);
     }
 }

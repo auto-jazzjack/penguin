@@ -10,10 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LettuceConnectionConfig {
-    private Long expireMilliseconds;
-    private Integer queueSize;
+public class LettuceResource {
     private Integer port;
     private String redisUris;
-    private String compression;
 }

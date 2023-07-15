@@ -5,34 +5,39 @@ import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
+import io.lettuce.core.codec.RedisCodec;
 import io.lettuce.core.event.DefaultEventPublisherOptions;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
 import io.penguin.pengiunlettuce.codec.DefaultCodec;
+import io.penguin.pengiunlettuce.codec.LettuceCodec;
+import io.penguin.pengiunlettuce.cofig.LettuceCacheConfig;
 import io.penguin.pengiunlettuce.connection.channel.CustomNetty;
+import io.penguin.penguincore.reader.CacheContext;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class RedisConnection {
-
-    private final static Map<LettuceConnectionIngredient, StatefulRedisClusterConnection<String, byte[]>> cached = new ConcurrentHashMap<>();
+public class RedisConnectionFactory {
 
 
-    synchronized public static StatefulRedisClusterConnection<String, byte[]> connection(LettuceConnectionIngredient ingredient) {
+    static Map<LettuceResource, StatefulRedisClusterConnection> cached = new ConcurrentHashMap<>();
 
-        if (cached.get(ingredient) != null) {
-            return cached.get(ingredient);
+    synchronized public static <V> StatefulRedisClusterConnection<String, CacheContext<V>> connection(LettuceResource resource, LettuceCacheConfig<V> cacheIngredient) {
+
+        if (cached.get(resource) != null) {
+            return cached.get(resource);
         }
 
-        List<RedisURI> collect = ingredient.getRedisUris().stream()
-                .map(i -> RedisURI.create(i, ingredient.getPort()))
+        List<RedisURI> collect = Arrays.stream(resource.getRedisUris().split(","))
+                .map(i -> RedisURI.create(i, resource.getPort()))
                 .collect(Collectors.toList());
-        cached.put(ingredient, connection(collect));
-        return cached.get(ingredient);
+        cached.put(resource, connection(collect, new LettuceCodec<>(cacheIngredient.getCodecConfig())));
+        return cached.get(resource);
     }
 
     public static ClientResources clientResources() {
@@ -45,7 +50,7 @@ public class RedisConnection {
                 .build();
     }
 
-    public static StatefulRedisClusterConnection<String, byte[]> connection(List<RedisURI> redisURI) {
+    public static <V> StatefulRedisClusterConnection<String, V> connection(List<RedisURI> redisURI, RedisCodec<String, V> codec) {
         RedisClusterClient redisClusterClient = RedisClusterClient.create(clientResources(), redisURI);
 
         redisClusterClient.setOptions(ClusterClientOptions.builder()
@@ -57,6 +62,6 @@ public class RedisConnection {
                 .build());
 
 
-        return redisClusterClient.connect(DefaultCodec.getInstance());
+        return redisClusterClient.connect(codec);
     }
 }

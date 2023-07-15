@@ -3,7 +3,7 @@ package io.penguin.penguincore.plugin.timeout;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.penguin.penguincore.exception.TimeoutException;
-import io.penguin.penguincore.plugin.Ingredient.TimeoutIngredient;
+import io.penguin.penguincore.plugin.Ingredient.TimeoutDecorator;
 import io.penguin.penguincore.plugin.PluginInput;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -35,7 +35,7 @@ public class TimeoutPluginTest {
                 .timeout(TimeoutModel.base().build())
                 .build());
 
-        TimeoutIngredient generate = timeoutConfiguration.generate(this.getClass());
+        TimeoutDecorator generate = timeoutConfiguration.generate(this.getClass());
         TimeoutPlugin<String> circuitPlugin = new TimeoutPlugin<>(generate);
 
 
@@ -51,7 +51,7 @@ public class TimeoutPluginTest {
                         .timeoutMilliseconds(1)
                         .build())
                 .build());
-        TimeoutIngredient generate = timeoutConfiguration.generate(this.getClass());
+        TimeoutDecorator generate = timeoutConfiguration.generate(this.getClass());
         TimeoutPlugin<String> timeoutPlugin = new TimeoutPlugin<>(generate);
 
         for (int i = 0; i < 10; i++) {
