@@ -17,9 +17,17 @@ public class LettuceCacheConfig<T> {
     private String prefix;
     private Integer expireMilliseconds;
     private String downStreamName;
-    private Class<Codec<T>> codec;
+    private CodecConfig<T> codecConfig;
 
-    private CircuitModel circuitModel;
-    private TimeoutModel timeoutModel;
+    private CircuitModel circuit;
+    private TimeoutModel timeout;
+
+    @Data
+    @NoArgsConstructor
+    public static class CodecConfig<T> {
+        private Class<Codec<T>> codec;
+        private Class<T> targetClass;
+    }
+
 
 }

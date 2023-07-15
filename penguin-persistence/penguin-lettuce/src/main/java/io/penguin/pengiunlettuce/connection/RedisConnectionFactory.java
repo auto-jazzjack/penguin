@@ -36,7 +36,7 @@ public class RedisConnectionFactory {
         List<RedisURI> collect = Arrays.stream(resource.getRedisUris().split(","))
                 .map(i -> RedisURI.create(i, resource.getPort()))
                 .collect(Collectors.toList());
-        cached.put(resource, connection(collect, new LettuceCodec<>(cacheIngredient.getCodec())));
+        cached.put(resource, connection(collect, new LettuceCodec<>(cacheIngredient.getCodecConfig())));
         return cached.get(resource);
     }
 

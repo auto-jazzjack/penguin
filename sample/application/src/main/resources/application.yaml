@@ -32,8 +32,9 @@ penguin:
               prefix: bs
               downStreamName: BookStore_source
               expireMilliseconds: 10000
-              codec: io.penguin.penguincodec.JsonCodec
-              #target: io.penguin.penguincore.model.CBookStore
+              codecConfig:
+                codec: io.penguin.penguincodec.JsonCodec
+                targetClass: io.penguin.penguincore.model.CBookStore
           - name: BookOverWriter
             kind: OVER_WRITER
             spec:

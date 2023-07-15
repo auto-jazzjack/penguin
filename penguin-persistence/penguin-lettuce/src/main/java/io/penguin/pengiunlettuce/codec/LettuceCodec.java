@@ -3,21 +3,31 @@ package io.penguin.pengiunlettuce.codec;
 import io.lettuce.core.codec.RedisCodec;
 import io.lettuce.core.codec.ToByteBufEncoder;
 import io.netty.buffer.ByteBuf;
+import io.penguin.pengiunlettuce.cofig.LettuceCacheConfig;
 import io.penguin.penguincodec.Codec;
+import io.penguin.penguincore.reader.CacheContext;
 
+import java.lang.reflect.Constructor;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
 
 import static io.penguin.pengiunlettuce.codec.DefaultCodec.toBytes;
 
-public class LettuceCodec<V> implements RedisCodec<String, V>, ToByteBufEncoder<String, V> {
+public class LettuceCodec<V> implements RedisCodec<String, CacheContext<V>>, ToByteBufEncoder<String, CacheContext<V>> {
 
+    private final Codec<V> codec;
 
-    //private final Codec<V> codec;
+    public LettuceCodec(LettuceCacheConfig.CodecConfig<V> codecConfig) {
+        this.codec = createInstance(codecConfig.getCodec(), codecConfig.getTargetClass());
+    }
 
-    public LettuceCodec(Class<Codec<V>> codec) {
-        //this.codec = codec;
+    Codec<V> createInstance(Class<Codec<V>> codec, Class<V> target) {
+        try {
+            Constructor<Codec<V>> constructor = codec.getConstructor(Class.class);
+            return constructor.newInstance(target);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -26,10 +36,26 @@ public class LettuceCodec<V> implements RedisCodec<String, V>, ToByteBufEncoder<
     }
 
     @Override
-    public V decodeValue(ByteBuffer bytes) {
-        //this.codec.deserialize()
-        //return toBytes(bytes);
-        return null;
+    public CacheContext<V> decodeValue(ByteBuffer bytes) {
+        try {
+
+            long timeStamp = bytes.getLong();
+            V deserialize = this.codec.deserialize(bytes.array());
+            return new CacheContext<>() {
+                @Override
+                public V getValue() {
+                    return deserialize;
+                }
+
+                @Override
+                public long getTimeStamp() {
+                    return timeStamp;
+                }
+            };
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -38,8 +64,16 @@ public class LettuceCodec<V> implements RedisCodec<String, V>, ToByteBufEncoder<
     }
 
     @Override
-    public ByteBuffer encodeValue(V value) {
-        return null;
+    public ByteBuffer encodeValue(CacheContext<V> value) {
+        try {
+            byte[] serialize = codec.serialize((V) value);
+            ByteBuffer allocate = ByteBuffer.allocate(serialize.length + Long.BYTES);
+            allocate.putLong(value.getTimeStamp());
+            allocate.put(serialize);
+            return allocate;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -49,7 +83,13 @@ public class LettuceCodec<V> implements RedisCodec<String, V>, ToByteBufEncoder<
     }
 
     @Override
-    public void encodeValue(V bytes, ByteBuf byteBuf) {
+    public void encodeValue(CacheContext<V> value, ByteBuf byteBuf) {
+        try {
+            byteBuf.writeLong(value.getTimeStamp());
+            byteBuf.writeBytes(this.codec.serialize(value.getValue()));
+        } catch (Exception e) {
+
+        }
 
     }
 

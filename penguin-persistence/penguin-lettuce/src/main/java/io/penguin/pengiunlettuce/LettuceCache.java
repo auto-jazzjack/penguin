@@ -51,14 +51,14 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
         Decorators ingredient = Decorators.builder().build();
 
         List<Plugin<Object>> pluginList = new ArrayList<>();
-        TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(cacheConfig.getTimeoutModel());
+        TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(cacheConfig.getTimeout());
         if (timeoutConfiguration.support()) {
             ingredient.setTimeoutDecorator(timeoutConfiguration.generate(this.getClass()));
             pluginList.add(new TimeoutPlugin<>(ingredient.getTimeoutDecorator()));
         }
 
 
-        CircuitConfiguration circuitConfiguration = new CircuitConfiguration(cacheConfig.getCircuitModel());
+        CircuitConfiguration circuitConfiguration = new CircuitConfiguration(cacheConfig.getCircuit());
         if (circuitConfiguration.support()) {
             ingredient.setCircuitDecorator(circuitConfiguration.generate(this.getClass()));
             pluginList.add(new CircuitPlugin<>(ingredient.getCircuitDecorator()));
