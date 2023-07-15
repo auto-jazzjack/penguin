@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class BulkheadIngredient {
+public class BulkheadDecorator {
     private BulkheadOperator<?> bulkheadOperator;
     private Counter success;
     private Counter fail;

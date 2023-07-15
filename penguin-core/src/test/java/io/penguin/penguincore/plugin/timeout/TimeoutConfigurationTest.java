@@ -1,8 +1,7 @@
 package io.penguin.penguincore.plugin.timeout;
 
-import io.penguin.penguincore.plugin.Ingredient.TimeoutIngredient;
+import io.penguin.penguincore.plugin.Ingredient.TimeoutDecorator;
 import io.penguin.penguincore.plugin.PluginInput;
-import io.penguin.penguincore.plugin.circuit.CircuitModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +35,7 @@ public class TimeoutConfigurationTest {
                 .build();
         TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(pluginInput);
 
-        TimeoutIngredient generate = timeoutConfiguration.generate(this.getClass());
+        TimeoutDecorator generate = timeoutConfiguration.generate(this.getClass());
 
         Assertions.assertEquals(TimeoutConfiguration.fail, generate.getFail().getId().getName());
         Assertions.assertEquals(1, generate.getMilliseconds());

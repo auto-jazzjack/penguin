@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class TimeoutIngredient {
+public class TimeoutDecorator {
     private HashedWheelTimer timer;
     private Counter fail;
     private long milliseconds;

@@ -13,11 +13,10 @@ import io.penguin.pengiuncassandra.connection.CassandraConnectionIngredient;
 import io.penguin.pengiuncassandra.config.CassandraIngredient;
 import io.penguin.pengiuncassandra.util.CasandraUtil;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
+import io.penguin.penguincore.plugin.Ingredient.Decorators;
 import io.penguin.penguincore.plugin.Plugin;
 import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
 import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
-import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -52,14 +51,14 @@ public class CassandraSource<K, V> implements Reader<K, V> {
     public CassandraSource(CassandraConnectionIngredient connection, CassandraIngredient cassandraConfig) {
         valueType = (Class<V>) cassandraConfig.getValueType();
         this.session = connection.getSession();
-        AllIngredient ingredient = AllIngredient.builder().build();
+        Decorators ingredient = Decorators.builder().build();
 
         List<Plugin<Object>> pluginList = new ArrayList<>();
 
         TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(cassandraConfig.getPluginInput());
         if (timeoutConfiguration.support()) {
-            ingredient.setTimeoutIngredient(timeoutConfiguration.generate(this.getClass()));
-            pluginList.add(new TimeoutPlugin<>(ingredient.getTimeoutIngredient()));
+            ingredient.setTimeoutDecorator(timeoutConfiguration.generate(this.getClass()));
+            pluginList.add(new TimeoutPlugin<>(ingredient.getTimeoutDecorator()));
         }
 
         this.mappingManager = CasandraUtil.mappingManager(

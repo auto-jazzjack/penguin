@@ -2,7 +2,8 @@ package io.penguin.penguinkafka.reader.redis;
 
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
-import io.penguin.pengiunlettuce.connection.RedisConnection;
+import io.penguin.pengiunlettuce.connection.RedisConnectionFactory;
+import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguinkafka.model.KafkaProps;
 import io.penguin.penguinkafka.reader.KafkaProcessor;
 
@@ -11,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class RedisProcessor extends KafkaProcessor<String, byte[]> {
 
-    private final StatefulRedisClusterConnection<String, byte[]> connection;
+    private final StatefulRedisClusterConnection<String, CacheContext<byte[]>> connection;
     private final long expire;
 
     public RedisProcessor(KafkaProps kafkaProps) {
@@ -23,7 +24,8 @@ public class RedisProcessor extends KafkaProcessor<String, byte[]> {
                 .map(RedisURI::create)
                 .collect(Collectors.toList());
 
-        connection = RedisConnection.connection(redisURIS);
+        //TODO: fix it
+        connection = RedisConnectionFactory.connection(redisURIS, null);
         expire = kafkaProps.getRedisProps().getExpireTime();
     }
 

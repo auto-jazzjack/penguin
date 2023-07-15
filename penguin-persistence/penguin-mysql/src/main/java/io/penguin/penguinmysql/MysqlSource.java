@@ -3,7 +3,7 @@ package io.penguin.penguinmysql;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
+import io.penguin.penguincore.plugin.Ingredient.Decorators;
 import io.penguin.penguincore.plugin.Plugin;
 import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
 import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
@@ -33,14 +33,14 @@ public class MysqlSource<K, V> implements Reader<K, CacheContext<V>> {
 
     public MysqlSource(MysqlConnection connection, MysqlIngredient mysqlIngredient) throws Exception {
         this.connection = MysqlConnection.connection(mysqlIngredient);
-        AllIngredient ingredient = AllIngredient.builder().build();
+        Decorators ingredient = Decorators.builder().build();
 
         List<Plugin<Object>> pluginList = new ArrayList<>();
 
         TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(mysqlIngredient.getPluginInput());
         if (timeoutConfiguration.support()) {
-            ingredient.setTimeoutIngredient(timeoutConfiguration.generate(this.getClass()));
-            pluginList.add(new TimeoutPlugin<>(ingredient.getTimeoutIngredient()));
+            ingredient.setTimeoutDecorator(timeoutConfiguration.generate(this.getClass()));
+            pluginList.add(new TimeoutPlugin<>(ingredient.getTimeoutDecorator()));
         }
         plugins = pluginList.toArray(new Plugin[0]);
 

@@ -3,24 +3,21 @@ package io.penguin.pengiunlettuce.codec;
 import io.lettuce.core.codec.RedisCodec;
 import io.lettuce.core.codec.ToByteBufEncoder;
 import io.netty.buffer.ByteBuf;
+import io.penguin.penguincodec.Codec;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
-public class DefaultCodec implements RedisCodec<String, byte[]>, ToByteBufEncoder<String, byte[]> {
+import static io.penguin.pengiunlettuce.codec.DefaultCodec.toBytes;
 
-    public static DefaultCodec instance;
+public class LettuceCodec<V> implements RedisCodec<String, V>, ToByteBufEncoder<String, V> {
 
-    synchronized public static DefaultCodec getInstance() {
-        if (instance == null) {
-            instance = new DefaultCodec();
-        }
 
-        return instance;
-    }
+    //private final Codec<V> codec;
 
-    private DefaultCodec() {
-
+    public LettuceCodec(Class<Codec<V>> codec) {
+        //this.codec = codec;
     }
 
     @Override
@@ -29,8 +26,10 @@ public class DefaultCodec implements RedisCodec<String, byte[]>, ToByteBufEncode
     }
 
     @Override
-    public byte[] decodeValue(ByteBuffer bytes) {
-        return toBytes(bytes);
+    public V decodeValue(ByteBuffer bytes) {
+        //this.codec.deserialize()
+        //return toBytes(bytes);
+        return null;
     }
 
     @Override
@@ -39,15 +38,10 @@ public class DefaultCodec implements RedisCodec<String, byte[]>, ToByteBufEncode
     }
 
     @Override
-    public ByteBuffer encodeValue(byte[] value) {
-        return ByteBuffer.wrap(value);
+    public ByteBuffer encodeValue(V value) {
+        return null;
     }
 
-    public static byte[] toBytes(ByteBuffer byteBuffer) {
-        byte[] retv = new byte[byteBuffer.remaining()];
-        byteBuffer.get(retv);
-        return retv;
-    }
 
     @Override
     public void encodeKey(String s, ByteBuf byteBuf) {
@@ -55,8 +49,8 @@ public class DefaultCodec implements RedisCodec<String, byte[]>, ToByteBufEncode
     }
 
     @Override
-    public void encodeValue(byte[] bytes, ByteBuf byteBuf) {
-        byteBuf.writeBytes(bytes);
+    public void encodeValue(V bytes, ByteBuf byteBuf) {
+
     }
 
     @Override

@@ -1,6 +1,6 @@
 package io.penguin.penguincore.plugin.bulkhead;
 
-import io.penguin.penguincore.plugin.Ingredient.BulkheadIngredient;
+import io.penguin.penguincore.plugin.Ingredient.BulkheadDecorator;
 import io.penguin.penguincore.plugin.PluginInput;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ public class BulkheadConfigurationTest {
                 .build();
         BulkheadConfiguration bulkheadConfiguration = new BulkheadConfiguration(pluginInput);
 
-        BulkheadIngredient generate = bulkheadConfiguration.generate(this.getClass());
+        BulkheadDecorator generate = bulkheadConfiguration.generate(this.getClass());
 
         Assertions.assertEquals(BulkheadConfiguration.fail, generate.getFail().getId().getName());
         Assertions.assertEquals(BulkheadConfiguration.success, generate.getSuccess().getId().getName());

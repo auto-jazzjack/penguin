@@ -3,7 +3,7 @@ package io.penguin.penguincore.plugin.bulkhead;
 import io.github.resilience4j.bulkhead.BulkheadFullException;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.penguin.penguincore.plugin.Ingredient.BulkheadIngredient;
+import io.penguin.penguincore.plugin.Ingredient.BulkheadDecorator;
 import io.penguin.penguincore.plugin.PluginInput;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -35,7 +35,7 @@ public class BulkheadPluginTest {
                 .bulkhead(BulkheadModel.base().build())
                 .build());
 
-        BulkheadIngredient generate = bulkheadConfiguration.generate(this.getClass());
+        BulkheadDecorator generate = bulkheadConfiguration.generate(this.getClass());
         BulkheadPlugin<String> objectBulkheadPlugin = new BulkheadPlugin<>(generate);
 
         for (int i = 0; i < 5; i++) {
@@ -52,7 +52,7 @@ public class BulkheadPluginTest {
         BulkheadConfiguration bulkheadConfiguration = new BulkheadConfiguration(PluginInput.builder()
                 .bulkhead(BulkheadModel.base().maxConcurrentCalls(0).build())
                 .build());
-        BulkheadIngredient generate = bulkheadConfiguration.generate(this.getClass());
+        BulkheadDecorator generate = bulkheadConfiguration.generate(this.getClass());
         BulkheadPlugin<String> objectBulkheadPlugin = new BulkheadPlugin<>(generate);
 
         for (int i = 0; i < 5; i++) {

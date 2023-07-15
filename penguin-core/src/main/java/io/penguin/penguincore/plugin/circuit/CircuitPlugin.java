@@ -3,7 +3,7 @@ package io.penguin.penguincore.plugin.circuit;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
 import io.micrometer.core.instrument.Counter;
-import io.penguin.penguincore.plugin.Ingredient.CircuitIngredient;
+import io.penguin.penguincore.plugin.Ingredient.CircuitDecorator;
 import io.penguin.penguincore.plugin.Plugin;
 import reactor.core.publisher.Mono;
 
@@ -13,7 +13,7 @@ public class CircuitPlugin<V> extends Plugin<V> {
     private final Counter success;
     private final Counter fail;
 
-    public CircuitPlugin(CircuitIngredient circuitIngredient) {
+    public CircuitPlugin(CircuitDecorator circuitIngredient) {
         super();
         circuitBreakerOperator = (CircuitBreakerOperator<V>) circuitIngredient.getCircuitBreakerOperator();
         this.success = circuitIngredient.getSuccess();

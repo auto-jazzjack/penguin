@@ -1,6 +1,6 @@
 package io.penguin.penguincore.reader;
 
-import io.penguin.penguincore.plugin.Ingredient.AllIngredient;
+import io.penguin.penguincore.plugin.Ingredient.Decorators;
 import io.penguin.penguincore.plugin.Plugin;
 import io.penguin.penguincore.plugin.PluginInput;
 import io.penguin.penguincore.plugin.bulkhead.BulkheadConfiguration;
@@ -24,24 +24,24 @@ public abstract class BaseReader<K, V> implements Reader<K, V> {
         PluginInput pluginInput = this.pluginInput();
 
         List<Plugin<Object>> pluginList = new ArrayList<>();
-        AllIngredient ingredient = AllIngredient.builder().build();
+        Decorators ingredient = Decorators.builder().build();
 
         TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(pluginInput);
         if (timeoutConfiguration.support()) {
-            ingredient.setTimeoutIngredient(timeoutConfiguration.generate(this.getClass()));
-            pluginList.add(new TimeoutPlugin<>(ingredient.getTimeoutIngredient()));
+            ingredient.setTimeoutDecorator(timeoutConfiguration.generate(this.getClass()));
+            pluginList.add(new TimeoutPlugin<>(ingredient.getTimeoutDecorator()));
         }
 
         BulkheadConfiguration bulkheadConfiguration = new BulkheadConfiguration(pluginInput);
         if (bulkheadConfiguration.support()) {
-            ingredient.setBulkheadIngredient(bulkheadConfiguration.generate(this.getClass()));
-            pluginList.add(new BulkheadPlugin<>(ingredient.getBulkheadIngredient()));
+            ingredient.setBulkheadDecorator(bulkheadConfiguration.generate(this.getClass()));
+            pluginList.add(new BulkheadPlugin<>(ingredient.getBulkheadDecorator()));
         }
 
         CircuitConfiguration circuitConfiguration = new CircuitConfiguration(pluginInput);
         if (circuitConfiguration.support()) {
-            ingredient.setCircuitIngredient(circuitConfiguration.generate(this.getClass()));
-            pluginList.add(new CircuitPlugin<>(ingredient.getCircuitIngredient()));
+            ingredient.setCircuitDecorator(circuitConfiguration.generate(this.getClass()));
+            pluginList.add(new CircuitPlugin<>(ingredient.getCircuitDecorator()));
         }
 
         plugins = pluginList.toArray(new Plugin[0]);
