@@ -47,7 +47,7 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
     private final Sinks.Many<Pair<K, CacheContext<V>>> watcher;
 
 
-    public LettuceCache(LettuceConnectionIngredient connection, LettuceCacheIngredient<K, V> cacheConfig) throws Exception {
+    public LettuceCache(LettuceConnectionIngredient connection, LettuceCacheIngredient<V> cacheConfig) throws Exception {
 
         Objects.requireNonNull(cacheConfig);
         this.codec = cacheConfig.getCodec();
