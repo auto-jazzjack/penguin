@@ -86,11 +86,10 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
         watcher.asFlux()
                 .windowTimeout(100, Duration.ofSeconds(5))
                 .flatMap(i -> i.distinct((Function<Pair<K, CacheContext<V>>, Object>) kCacheContextPair -> kCacheContextPair.getKey()))
-                .subscribe(i -> writeOne(i.getKey(), i.getValue()), e -> log.error("", e));
+                .subscribe(i -> writeOne0(i.getKey(), i.getValue()), e -> log.error("", e));
     }
 
-    @Override
-    public void writeOne(K key, CacheContext<V> value) {
+    private void writeOne0(K key, CacheContext<V> value) {
 
         if (value == null || value.getTimeStamp() <= 0) {
             return;
@@ -104,7 +103,7 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
     }
 
     @Override
-    public void writeOneLazy(K key, CacheContext<V> value) {
+    public void writeOne(K key, CacheContext<V> value) {
         if (key != null && value != null && value.getValue() != null) {
             this.watcher.tryEmitNext(Pair.of(key, value));
         }

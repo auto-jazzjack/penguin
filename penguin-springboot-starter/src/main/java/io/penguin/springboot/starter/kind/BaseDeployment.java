@@ -86,7 +86,7 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                     int i1 = lastIdxCache.get();
                     //cache will be backfilled by right before one
                     if (i1 - 1 >= 0) {
-                        caches.get(lastIdxCache.get()).writeOneLazy(key, i);
+                        caches.get(lastIdxCache.get()).writeOne(key, i);
                     }
                 })
                 //if result still empty, we need to use source
@@ -105,7 +105,7 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
                         })
                         .doOnNext(i -> {
                             if (caches.size() > 0) {
-                                caches.get(0).writeOneLazy(key, i);
+                                caches.get(0).writeOne(key, i);
                             }
                         })
                 );
