@@ -1,6 +1,6 @@
 package io.penguin.penguincore.plugin.timeout;
 
-import io.penguin.penguincore.plugin.Ingredient.TimeoutDecorator;
+import io.penguin.penguincore.plugin.decorator.TimeoutDecorator;
 import io.penguin.penguincore.plugin.PluginInput;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

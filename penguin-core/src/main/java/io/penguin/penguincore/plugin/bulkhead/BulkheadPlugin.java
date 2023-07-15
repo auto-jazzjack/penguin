@@ -3,7 +3,7 @@ package io.penguin.penguincore.plugin.bulkhead;
 import io.github.resilience4j.bulkhead.BulkheadFullException;
 import io.github.resilience4j.reactor.bulkhead.operator.BulkheadOperator;
 import io.micrometer.core.instrument.Counter;
-import io.penguin.penguincore.plugin.Ingredient.BulkheadDecorator;
+import io.penguin.penguincore.plugin.decorator.BulkheadDecorator;
 import io.penguin.penguincore.plugin.Plugin;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -15,11 +15,11 @@ public class BulkheadPlugin<V> extends Plugin<V> {
     private final BulkheadOperator<V> bulkheadOperator;
     private final Counter fail;
 
-    public BulkheadPlugin(BulkheadDecorator bulkheadIngredient) {
+    public BulkheadPlugin(BulkheadDecorator bulkheadDecorator) {
         super();
-        this.bulkheadOperator = (BulkheadOperator<V>) bulkheadIngredient.getBulkheadOperator();
-        this.success = bulkheadIngredient.getSuccess();
-        this.fail = bulkheadIngredient.getFail();
+        this.bulkheadOperator = (BulkheadOperator<V>) bulkheadDecorator.getBulkheadOperator();
+        this.success = bulkheadDecorator.getSuccess();
+        this.fail = bulkheadDecorator.getFail();
     }
 
     @Override

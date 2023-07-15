@@ -1,6 +1,6 @@
 package io.penguin.penguincore.plugin.timeout;
 
-import io.penguin.penguincore.plugin.Ingredient.TimeoutDecorator;
+import io.penguin.penguincore.plugin.decorator.TimeoutDecorator;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;
@@ -11,9 +11,9 @@ public class MonoTimeout<V> extends MonoOperator<V, V> {
 
     private final TimeoutDecorator timeout;
 
-    public MonoTimeout(Mono<? extends V> source, TimeoutDecorator timeoutIngredient) {
+    public MonoTimeout(Mono<? extends V> source, TimeoutDecorator timeoutDecorator) {
         super(source);
-        this.timeout = timeoutIngredient;
+        this.timeout = timeoutDecorator;
     }
 
     @Override

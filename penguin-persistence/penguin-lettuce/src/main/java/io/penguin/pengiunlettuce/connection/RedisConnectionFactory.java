@@ -18,26 +18,18 @@ import io.penguin.penguincore.reader.CacheContext;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class RedisConnectionFactory {
 
 
-    static Map<LettuceResource, StatefulRedisClusterConnection> cached = new ConcurrentHashMap<>();
+    synchronized public static <V> StatefulRedisClusterConnection<String, CacheContext<V>> connection(LettuceResource resource, LettuceCacheConfig<V> lettuceCacheConfig) {
 
-    synchronized public static <V> StatefulRedisClusterConnection<String, CacheContext<V>> connection(LettuceResource resource, LettuceCacheConfig<V> cacheIngredient) {
-
-        if (cached.get(resource) != null) {
-            return cached.get(resource);
-        }
 
         List<RedisURI> collect = Arrays.stream(resource.getRedisUris().split(","))
                 .map(i -> RedisURI.create(i, resource.getPort()))
                 .collect(Collectors.toList());
-        cached.put(resource, connection(collect, new LettuceCodec<>(cacheIngredient.getCodecConfig())));
-        return cached.get(resource);
+        return connection(collect, new LettuceCodec<>(lettuceCacheConfig.getCodecConfig()));
     }
 
     public static ClientResources clientResources() {
@@ -50,7 +42,7 @@ public class RedisConnectionFactory {
                 .build();
     }
 
-    public static <V> StatefulRedisClusterConnection<String, V> connection(List<RedisURI> redisURI, RedisCodec<String, V> codec) {
+    public static <V> StatefulRedisClusterConnection<String, CacheContext<V>> connection(List<RedisURI> redisURI, RedisCodec<String, CacheContext<V>> codec) {
         RedisClusterClient redisClusterClient = RedisClusterClient.create(clientResources(), redisURI);
 
         redisClusterClient.setOptions(ClusterClientOptions.builder()

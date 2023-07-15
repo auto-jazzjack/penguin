@@ -19,7 +19,6 @@ penguin:
     resources:
       - name: CASSANDRA
         spec:
-          keySpace: local
           hosts: 127.0.0.1
       - name: LETTUCE_CACHE
         spec:

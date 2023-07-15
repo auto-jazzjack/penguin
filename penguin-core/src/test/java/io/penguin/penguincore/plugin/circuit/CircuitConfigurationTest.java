@@ -1,7 +1,7 @@
 package io.penguin.penguincore.plugin.circuit;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
-import io.penguin.penguincore.plugin.Ingredient.CircuitDecorator;
+import io.penguin.penguincore.plugin.decorator.CircuitDecorator;
 import io.penguin.penguincore.plugin.PluginInput;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

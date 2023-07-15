@@ -3,8 +3,7 @@ package io.penguin.springboot.starter.factoy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.penguin.pengiuncassandra.CassandraSource;
 import io.penguin.pengiuncassandra.config.CassandraSourceConfig;
-import io.penguin.pengiuncassandra.connection.CassandraConnectionConfig;
-import io.penguin.pengiuncassandra.connection.CassandraConnectionIngredient;
+import io.penguin.pengiuncassandra.connection.CassandraResource;
 import io.penguin.penguincore.reader.Reader;
 import io.penguin.springboot.starter.mapper.ContainerKind;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-import static io.penguin.pengiuncassandra.config.CassandraIngredient.toInternal;
 import static io.penguin.springboot.starter.mapper.ContainerKind.CASSANDRA;
 
 @Component
@@ -30,9 +28,9 @@ public class CassandraFactory<K, V> implements ReaderFactory<K, V> {
 
     @Override
     public Reader<K, V> generate(Map<String, Object> spec) {
-        CassandraConnectionConfig config = objectMapper.convertValue(collectedResources.get(CASSANDRA.name()), CassandraConnectionConfig.class);
-        CassandraSourceConfig cassandraSourceConfig = objectMapper.convertValue(spec, CassandraSourceConfig.class);
-        return new CassandraSource<>(CassandraConnectionIngredient.toInternal(config), toInternal(cassandraSourceConfig));
+        CassandraResource cassandraResource = objectMapper.convertValue(collectedResources.get(CASSANDRA.name()), CassandraResource.class);
+        CassandraSourceConfig<V> cassandraSourceConfig = objectMapper.convertValue(spec, CassandraSourceConfig.class);
+        return new CassandraSource<>(cassandraResource, cassandraSourceConfig);
     }
 
 

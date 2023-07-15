@@ -1,6 +1,6 @@
 package io.penguin.penguincore.plugin.bulkhead;
 
-import io.penguin.penguincore.plugin.Ingredient.BulkheadDecorator;
+import io.penguin.penguincore.plugin.decorator.BulkheadDecorator;
 import io.penguin.penguincore.plugin.PluginInput;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

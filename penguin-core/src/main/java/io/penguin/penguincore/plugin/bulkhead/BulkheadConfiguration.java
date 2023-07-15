@@ -4,7 +4,7 @@ import io.github.resilience4j.bulkhead.Bulkhead;
 import io.github.resilience4j.bulkhead.BulkheadConfig;
 import io.github.resilience4j.reactor.bulkhead.operator.BulkheadOperator;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.Ingredient.BulkheadDecorator;
+import io.penguin.penguincore.plugin.decorator.BulkheadDecorator;
 import io.penguin.penguincore.plugin.PluginConfiguration;
 import io.penguin.penguincore.plugin.PluginInput;
 

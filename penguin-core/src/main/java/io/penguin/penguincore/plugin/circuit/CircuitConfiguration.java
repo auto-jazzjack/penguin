@@ -4,7 +4,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.Ingredient.CircuitDecorator;
+import io.penguin.penguincore.plugin.decorator.CircuitDecorator;
 import io.penguin.penguincore.plugin.PluginConfiguration;
 import io.penguin.penguincore.plugin.PluginInput;
 

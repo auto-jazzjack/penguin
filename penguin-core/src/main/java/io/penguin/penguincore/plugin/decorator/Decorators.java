@@ -1,4 +1,4 @@
-package io.penguin.penguincore.plugin.Ingredient;
+package io.penguin.penguincore.plugin.decorator;
 
 import lombok.*;
 

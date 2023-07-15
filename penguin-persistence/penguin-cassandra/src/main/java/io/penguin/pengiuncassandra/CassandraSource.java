@@ -1,5 +1,6 @@
 package io.penguin.pengiuncassandra;
 
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.mapping.MappingManager;
@@ -9,11 +10,11 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
-import io.penguin.pengiuncassandra.connection.CassandraConnectionIngredient;
-import io.penguin.pengiuncassandra.config.CassandraIngredient;
+import io.penguin.pengiuncassandra.config.CassandraSourceConfig;
+import io.penguin.pengiuncassandra.connection.CassandraResource;
 import io.penguin.pengiuncassandra.util.CasandraUtil;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.Ingredient.Decorators;
+import io.penguin.penguincore.plugin.decorator.Decorators;
 import io.penguin.penguincore.plugin.Plugin;
 import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
 import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
@@ -21,9 +22,7 @@ import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /***
@@ -48,30 +47,44 @@ public class CassandraSource<K, V> implements Reader<K, V> {
     private final Timer latency = MetricCreator.timer("cassandra_latency",
             "kind", this.getClass().getSimpleName());
 
-    public CassandraSource(CassandraConnectionIngredient connection, CassandraIngredient cassandraConfig) {
-        valueType = (Class<V>) cassandraConfig.getValueType();
-        this.session = connection.getSession();
-        Decorators ingredient = Decorators.builder().build();
+    static Map<CassandraResource, Session> cached = new HashMap<>();
+
+    public CassandraSource(CassandraResource cassandraResource, CassandraSourceConfig<V> cassandraSourceConfig) {
+        valueType = (Class<V>) cassandraSourceConfig.getValueType();
+        this.session = connect(cassandraResource);
+        Decorators decorators = Decorators.builder().build();
 
         List<Plugin<Object>> pluginList = new ArrayList<>();
 
-        TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(cassandraConfig.getPluginInput());
+        TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(cassandraSourceConfig.getTimeout());
         if (timeoutConfiguration.support()) {
-            ingredient.setTimeoutDecorator(timeoutConfiguration.generate(this.getClass()));
-            pluginList.add(new TimeoutPlugin<>(ingredient.getTimeoutDecorator()));
+            decorators.setTimeoutDecorator(timeoutConfiguration.generate(this.getClass()));
+            pluginList.add(new TimeoutPlugin<>(decorators.getTimeoutDecorator()));
         }
 
-        this.mappingManager = CasandraUtil.mappingManager(
-                this.session,
-                this.valueType,
-                connection.getKeyspace()
-        );
 
-        this.statement = this.mappingManager.getSession().prepare(CasandraUtil.queryGenerator(connection.getKeyspace(),
-                cassandraConfig.getTable(),
-                cassandraConfig.getColumns(),
-                cassandraConfig.getIdColumn()));
+        mappingManager = new MappingManager(session);
+        mappingManager.mapper(valueType, cassandraResource.getKeySpace());
+
+        this.statement = this.mappingManager.getSession().prepare(CasandraUtil.queryGenerator(cassandraSourceConfig.getValueType()));
         plugins = pluginList.toArray(new Plugin[0]);
+    }
+
+
+    public synchronized static Session connect(CassandraResource config) {
+
+        if (cached.get(config) != null) {
+            return cached.get(config);
+        }
+        Cluster.Builder builder = Cluster.builder();
+
+        Optional.of(config).map(CassandraResource::getHosts)
+                .map(i -> i.split(","))
+                .map(Arrays::asList)
+                .ifPresent(i -> builder.addContactPoints(i.toArray(String[]::new)));
+
+        cached.put(config, builder.build().connect(config.getKeySpace()));
+        return cached.get(config);
     }
 
 

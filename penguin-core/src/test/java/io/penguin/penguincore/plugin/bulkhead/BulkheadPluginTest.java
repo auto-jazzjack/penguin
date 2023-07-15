@@ -3,7 +3,7 @@ package io.penguin.penguincore.plugin.bulkhead;
 import io.github.resilience4j.bulkhead.BulkheadFullException;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.penguin.penguincore.plugin.Ingredient.BulkheadDecorator;
+import io.penguin.penguincore.plugin.decorator.BulkheadDecorator;
 import io.penguin.penguincore.plugin.PluginInput;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;

@@ -2,7 +2,7 @@ package io.penguin.penguincore.plugin.circuit;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.penguin.penguincore.plugin.Ingredient.CircuitDecorator;
+import io.penguin.penguincore.plugin.decorator.CircuitDecorator;
 import io.penguin.penguincore.plugin.PluginInput;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;

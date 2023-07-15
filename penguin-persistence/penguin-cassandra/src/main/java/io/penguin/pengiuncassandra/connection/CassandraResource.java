@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CassandraConnectionConfig {
+public class CassandraResource {
     private String keySpace;
     private String hosts;
     private Integer port;

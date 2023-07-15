@@ -1,13 +1,13 @@
 package io.penguin.pengiunlettuce;
 
-import io.lettuce.core.cluster.api.reactive.RedisAdvancedClusterReactiveCommands;
+import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import io.penguin.pengiunlettuce.cofig.LettuceCacheConfig;
 import io.penguin.pengiunlettuce.connection.LettuceResource;
 import io.penguin.pengiunlettuce.connection.RedisConnectionFactory;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.Ingredient.Decorators;
+import io.penguin.penguincore.plugin.decorator.Decorators;
 import io.penguin.penguincore.plugin.Plugin;
 import io.penguin.penguincore.plugin.circuit.CircuitConfiguration;
 import io.penguin.penguincore.plugin.circuit.CircuitPlugin;
@@ -24,13 +24,15 @@ import reactor.core.scheduler.Schedulers;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 @Slf4j
 public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
 
-    protected final RedisAdvancedClusterReactiveCommands<String, CacheContext<V>> reactive;
+    protected final StatefulRedisClusterConnection<String, CacheContext<V>> statefulConnection;
     private final long expireMilliseconds;
     private final String prefix;
 
@@ -40,28 +42,30 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
     private final Plugin<CacheContext<V>>[] plugins;
     private final Sinks.Many<Pair<K, CacheContext<V>>> watcher;
 
+    private static final Map<LettuceResource, StatefulRedisClusterConnection<String, CacheContext<Object>>> cached = new ConcurrentHashMap<>();
+
 
     public LettuceCache(LettuceResource lettuceResource, LettuceCacheConfig<V> cacheConfig) throws Exception {
 
         Objects.requireNonNull(cacheConfig);
 
-        this.reactive = RedisConnectionFactory.connection(lettuceResource, cacheConfig).reactive();
+        this.statefulConnection = connection(lettuceResource, cacheConfig);
         this.expireMilliseconds = cacheConfig.getExpireMilliseconds();
         this.prefix = cacheConfig.getPrefix();
-        Decorators ingredient = Decorators.builder().build();
+        Decorators decorators = Decorators.builder().build();
 
         List<Plugin<Object>> pluginList = new ArrayList<>();
         TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(cacheConfig.getTimeout());
         if (timeoutConfiguration.support()) {
-            ingredient.setTimeoutDecorator(timeoutConfiguration.generate(this.getClass()));
-            pluginList.add(new TimeoutPlugin<>(ingredient.getTimeoutDecorator()));
+            decorators.setTimeoutDecorator(timeoutConfiguration.generate(this.getClass()));
+            pluginList.add(new TimeoutPlugin<>(decorators.getTimeoutDecorator()));
         }
 
 
         CircuitConfiguration circuitConfiguration = new CircuitConfiguration(cacheConfig.getCircuit());
         if (circuitConfiguration.support()) {
-            ingredient.setCircuitDecorator(circuitConfiguration.generate(this.getClass()));
-            pluginList.add(new CircuitPlugin<>(ingredient.getCircuitDecorator()));
+            decorators.setCircuitDecorator(circuitConfiguration.generate(this.getClass()));
+            pluginList.add(new CircuitPlugin<>(decorators.getCircuitDecorator()));
         }
 
 
@@ -77,6 +81,14 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
                 .subscribe(i -> writeOne0(i.getKey(), i.getValue()), e -> log.error("", e));
     }
 
+    private synchronized StatefulRedisClusterConnection<String, CacheContext<V>> connection(LettuceResource resource, LettuceCacheConfig<V> cacheConfig) {
+        if (cached.get(resource) == null) {
+            StatefulRedisClusterConnection<String, CacheContext<V>> connection = RedisConnectionFactory.connection(resource, cacheConfig);
+            cached.put(resource, (StatefulRedisClusterConnection) connection);
+        }
+        return (StatefulRedisClusterConnection) cached.get(resource);
+    }
+
     private void writeOne0(K key, CacheContext<V> value) {
 
         if (value == null || value.getTimeStamp() <= 0) {
@@ -84,7 +96,7 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
         }
 
         long start = System.currentTimeMillis();
-        reactive.setex(this.prefix() + key, this.expireMilliseconds, value)
+        statefulConnection.reactive().setex(this.prefix() + key, this.expireMilliseconds, value)
                 .doOnSuccess(i -> writer.record(Duration.ofMillis(System.currentTimeMillis() - start)))
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe();
@@ -111,7 +123,7 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
     public Mono<CacheContext<V>> findOne(K key) {
 
         long start = System.currentTimeMillis();
-        Mono<CacheContext<V>> mono = reactive.get(this.prefix + key.toString())
+        Mono<CacheContext<V>> mono = statefulConnection.reactive().get(this.prefix + key.toString())
                 .publishOn(Schedulers.parallel())
                 .doOnNext(i -> {
                     if (i.getTimeStamp() + expireMilliseconds < System.currentTimeMillis()) {

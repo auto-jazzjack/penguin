@@ -2,7 +2,7 @@ package io.penguin.penguincore.plugin.timeout;
 
 import io.netty.util.HashedWheelTimer;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.Ingredient.TimeoutDecorator;
+import io.penguin.penguincore.plugin.decorator.TimeoutDecorator;
 import io.penguin.penguincore.plugin.PluginConfiguration;
 import io.penguin.penguincore.plugin.PluginInput;
 
