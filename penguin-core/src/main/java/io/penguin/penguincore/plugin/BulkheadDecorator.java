@@ -1,4 +1,4 @@
-package io.penguin.penguincore.plugin.decorator;
+package io.penguin.penguincore.plugin;
 
 import io.github.resilience4j.reactor.bulkhead.operator.BulkheadOperator;
 import io.micrometer.core.instrument.Counter;

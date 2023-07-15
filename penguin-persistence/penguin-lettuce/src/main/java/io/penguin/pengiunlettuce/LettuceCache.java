@@ -7,12 +7,10 @@ import io.penguin.pengiunlettuce.cofig.LettuceCacheConfig;
 import io.penguin.pengiunlettuce.connection.LettuceResource;
 import io.penguin.pengiunlettuce.connection.RedisConnectionFactory;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.decorator.Decorators;
 import io.penguin.penguincore.plugin.Plugin;
-import io.penguin.penguincore.plugin.circuit.CircuitConfiguration;
-import io.penguin.penguincore.plugin.circuit.CircuitPlugin;
-import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
-import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
+import io.penguin.penguincore.plugin.circuit.CircuitGenerator;
+import io.penguin.penguincore.plugin.circuit.CircuitOperator;
+import io.penguin.penguincore.plugin.timeout.TimeoutGenerator;
 import io.penguin.penguincore.reader.BaseCacheReader;
 import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguincore.util.Pair;
@@ -39,7 +37,7 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
     private final Timer reader = MetricCreator.timer("lettuce_reader", "kind", this.getClass().getSimpleName());
     private final Timer writer = MetricCreator.timer("lettuce_writer", "kind", this.getClass().getSimpleName());
     private final Counter reUpdate = MetricCreator.counter("lettuce_reUpdate_count", "kind", this.getClass().getSimpleName());
-    private final Plugin<CacheContext<V>>[] plugins;
+    private final List<Plugin<CacheContext<V>>> plugins;
     private final Sinks.Many<Pair<K, CacheContext<V>>> watcher;
 
     private static final Map<LettuceResource, StatefulRedisClusterConnection<String, CacheContext<Object>>> cached = new ConcurrentHashMap<>();
@@ -52,24 +50,17 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
         this.statefulConnection = connection(lettuceResource, cacheConfig);
         this.expireMilliseconds = cacheConfig.getExpireMilliseconds();
         this.prefix = cacheConfig.getPrefix();
-        Decorators decorators = Decorators.builder().build();
 
-        List<Plugin<Object>> pluginList = new ArrayList<>();
-        TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(cacheConfig.getTimeout());
+        plugins = new ArrayList<>();
+        TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(cacheConfig.getTimeout());
         if (timeoutConfiguration.support()) {
-            decorators.setTimeoutDecorator(timeoutConfiguration.generate(this.getClass()));
-            pluginList.add(new TimeoutPlugin<>(decorators.getTimeoutDecorator()));
+            plugins.add(new TimeoutOperator<>(timeoutConfiguration.generate(this.getClass())));
         }
 
-
-        CircuitConfiguration circuitConfiguration = new CircuitConfiguration(cacheConfig.getCircuit());
+        CircuitGenerator circuitConfiguration = new CircuitGenerator(cacheConfig.getCircuit());
         if (circuitConfiguration.support()) {
-            decorators.setCircuitDecorator(circuitConfiguration.generate(this.getClass()));
-            pluginList.add(new CircuitPlugin<>(decorators.getCircuitDecorator()));
+            plugins.add(new CircuitOperator<>(circuitConfiguration.generate(this.getClass())));
         }
-
-
-        plugins = pluginList.toArray(new Plugin[0]);
 
         watcher = Sinks.many()
                 .unicast()

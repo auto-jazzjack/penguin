@@ -4,23 +4,22 @@ import io.github.resilience4j.bulkhead.Bulkhead;
 import io.github.resilience4j.bulkhead.BulkheadConfig;
 import io.github.resilience4j.reactor.bulkhead.operator.BulkheadOperator;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.decorator.BulkheadDecorator;
-import io.penguin.penguincore.plugin.PluginConfiguration;
-import io.penguin.penguincore.plugin.PluginInput;
+import io.penguin.penguincore.plugin.BulkheadDecorator;
+import io.penguin.penguincore.plugin.PluginGenerator;
 
 import java.time.Duration;
 import java.util.Optional;
 
-public class BulkheadConfiguration extends PluginConfiguration<BulkheadDecorator> {
+public class BulkheadGenerator implements PluginGenerator<BulkheadDecorator> {
+    private final BulkheadModel bulkheadModel;
 
-    public BulkheadConfiguration(PluginInput pluginInput) {
-        super(pluginInput);
+    public BulkheadGenerator(BulkheadModel bulkheadModel) {
+        this.bulkheadModel = bulkheadModel;
     }
 
     @Override
     public boolean support() {
-        boolean empty = Optional.ofNullable(pluginInput)
-                .map(PluginInput::getBulkhead)
+        boolean empty = Optional.ofNullable(this.bulkheadModel)
                 .isEmpty();
         return !empty;
     }
@@ -32,8 +31,8 @@ public class BulkheadConfiguration extends PluginConfiguration<BulkheadDecorator
     @Override
     public BulkheadDecorator generate(Class<?> clazz) {
         BulkheadOperator<?> of = BulkheadOperator.of(Bulkhead.of(clazz.getSimpleName(), BulkheadConfig.custom()
-                .maxConcurrentCalls(pluginInput.getBulkhead().getMaxConcurrentCalls())
-                .maxWaitDuration(Duration.ofMillis(pluginInput.getBulkhead().getMaxWaitDurationMilliseconds()))
+                .maxConcurrentCalls(this.bulkheadModel.getMaxConcurrentCalls())
+                .maxWaitDuration(Duration.ofMillis(this.bulkheadModel.getMaxWaitDurationMilliseconds()))
                 .build()));
 
         return BulkheadDecorator.builder()

@@ -14,10 +14,9 @@ import io.penguin.pengiuncassandra.config.CassandraSourceConfig;
 import io.penguin.pengiuncassandra.connection.CassandraResource;
 import io.penguin.pengiuncassandra.util.CasandraUtil;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.decorator.Decorators;
 import io.penguin.penguincore.plugin.Plugin;
-import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
-import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
+import io.penguin.penguincore.plugin.timeout.MonoTimeout;
+import io.penguin.penguincore.plugin.timeout.TimeoutGenerator;
 import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -37,7 +36,7 @@ public class CassandraSource<K, V> implements Reader<K, V> {
     private final MappingManager mappingManager;
     private final PreparedStatement statement;
     private final Session session;
-    private final Plugin<V>[] plugins;
+    private final List<Mono<V>> plugins;
     private final Counter failed = MetricCreator.counter("cassandra_reader",
             "kind", this.getClass().getSimpleName(), "type", "success");
 
@@ -50,16 +49,14 @@ public class CassandraSource<K, V> implements Reader<K, V> {
     static Map<CassandraResource, Session> cached = new HashMap<>();
 
     public CassandraSource(CassandraResource cassandraResource, CassandraSourceConfig<V> cassandraSourceConfig) {
-        valueType = (Class<V>) cassandraSourceConfig.getValueType();
+        valueType = cassandraSourceConfig.getValueType();
         this.session = connect(cassandraResource);
-        Decorators decorators = Decorators.builder().build();
 
-        List<Plugin<Object>> pluginList = new ArrayList<>();
+        plugins = new ArrayList<>();
 
-        TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(cassandraSourceConfig.getTimeout());
+        TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(cassandraSourceConfig.getTimeout());
         if (timeoutConfiguration.support()) {
-            decorators.setTimeoutDecorator(timeoutConfiguration.generate(this.getClass()));
-            pluginList.add(new TimeoutPlugin<>(decorators.getTimeoutDecorator()));
+            plugins.add(new MonoTimeout<>(timeoutConfiguration.generate(this.getClass())));
         }
 
 
@@ -67,7 +64,6 @@ public class CassandraSource<K, V> implements Reader<K, V> {
         mappingManager.mapper(valueType, cassandraResource.getKeySpace());
 
         this.statement = this.mappingManager.getSession().prepare(CasandraUtil.queryGenerator(cassandraSourceConfig.getValueType()));
-        plugins = pluginList.toArray(new Plugin[0]);
     }
 
 
@@ -116,8 +112,8 @@ public class CassandraSource<K, V> implements Reader<K, V> {
             }
         }));
 
-        for (Plugin<V> plugin : plugins) {
-            mono = plugin.decorateSource(mono);
+        for (Mono<V> plugin : plugins) {
+            plugin.subscribe(mono);
         }
 
         return mono

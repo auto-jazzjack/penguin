@@ -1,4 +1,4 @@
-package io.penguin.penguincore.plugin.decorator;
+package io.penguin.penguincore.plugin;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;

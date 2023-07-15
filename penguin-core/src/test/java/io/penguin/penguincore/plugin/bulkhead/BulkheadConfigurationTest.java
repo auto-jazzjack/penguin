@@ -1,7 +1,6 @@
 package io.penguin.penguincore.plugin.bulkhead;
 
-import io.penguin.penguincore.plugin.decorator.BulkheadDecorator;
-import io.penguin.penguincore.plugin.PluginInput;
+import io.penguin.penguincore.plugin.BulkheadDecorator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,33 +9,25 @@ public class BulkheadConfigurationTest {
 
     @Test
     public void should_bulkhead_not_supported() {
-        PluginInput pluginInput = PluginInput.builder()
-                .build();
-        BulkheadConfiguration bulkheadConfiguration = new BulkheadConfiguration(pluginInput);
+        BulkheadGenerator bulkheadConfiguration = new BulkheadGenerator(null);
         Assertions.assertFalse(bulkheadConfiguration.support());
     }
 
     @Test
     public void should_bulkhead_supported() {
-        PluginInput pluginInput = PluginInput.builder()
-                .bulkhead(BulkheadModel.base().build())
-                .build();
-        BulkheadConfiguration bulkheadConfiguration = new BulkheadConfiguration(pluginInput);
+        BulkheadGenerator bulkheadConfiguration = new BulkheadGenerator(BulkheadModel.base().build());
         Assertions.assertTrue(bulkheadConfiguration.support());
     }
 
 
     @Test
     public void should_bulkhead_generated() {
-        PluginInput pluginInput = PluginInput.builder()
-                .bulkhead(BulkheadModel.base().build())
-                .build();
-        BulkheadConfiguration bulkheadConfiguration = new BulkheadConfiguration(pluginInput);
+        BulkheadGenerator bulkheadConfiguration = new BulkheadGenerator(BulkheadModel.base().build());
 
         BulkheadDecorator generate = bulkheadConfiguration.generate(this.getClass());
 
-        Assertions.assertEquals(BulkheadConfiguration.fail, generate.getFail().getId().getName());
-        Assertions.assertEquals(BulkheadConfiguration.success, generate.getSuccess().getId().getName());
+        Assertions.assertEquals(BulkheadGenerator.fail, generate.getFail().getId().getName());
+        Assertions.assertEquals(BulkheadGenerator.success, generate.getSuccess().getId().getName());
 
     }
 
