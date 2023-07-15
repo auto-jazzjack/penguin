@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static io.penguin.springboot.starter.mapper.ContainerKind.LETTUCE_CACHE;
 import static io.penguin.springboot.starter.mapper.ContainerKind.valueOf;
 
 @Component
@@ -55,22 +54,12 @@ public class ComposedReaderFactory {
             Objects.requireNonNull(container.getKind());
 
             ContainerKind containerKind = valueOf(container.getKind().toUpperCase());
-            switch (containerKind) {
-                case LETTUCE_CACHE:
-                    return ReaderBundle.builder()
-                            .reader(factoriesByKind.get(LETTUCE_CACHE).generate(container.getSpec()))
-                            .kind(ContainerKind.LETTUCE_CACHE)
-                            .build();
-                case CASSANDRA:
-                case OVER_WRITER:
-                case BEAN:
-                    return ReaderBundle.builder()
-                            .kind(containerKind)
-                            .reader(factoriesByKind.get(containerKind).generate(container.getSpec()))
-                            .build();
-                default:
-                    throw new IllegalStateException("No such Kind");
-            }
+
+            return ReaderBundle.builder()
+                    .kind(containerKind)
+                    .reader(factoriesByKind.get(containerKind).generate(container.getSpec()))
+                    .build();
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new IllegalStateException("Cannot create Reader " + e);

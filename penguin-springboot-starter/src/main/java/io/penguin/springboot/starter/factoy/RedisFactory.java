@@ -18,7 +18,6 @@ import static io.penguin.springboot.starter.mapper.ContainerKind.LETTUCE_CACHE;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-
 public class RedisFactory implements ReaderFactory {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, Map<String, Object>> collectedResources;
