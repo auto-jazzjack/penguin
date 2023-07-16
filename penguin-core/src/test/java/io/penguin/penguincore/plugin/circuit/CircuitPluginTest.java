@@ -2,8 +2,7 @@ package io.penguin.penguincore.plugin.circuit;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.penguin.penguincore.plugin.decorator.CircuitDecorator;
-import io.penguin.penguincore.plugin.PluginInput;
+import io.penguin.penguincore.plugin.CircuitDecorator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -32,12 +31,10 @@ public class CircuitPluginTest {
     @Test
     public void should_call_succeed() {
 
-        CircuitConfiguration circuitConfiguration = new CircuitConfiguration(PluginInput.builder()
-                .circuit(CircuitModel.base().build())
-                .build());
+        CircuitGenerator circuitConfiguration = new CircuitGenerator(CircuitModel.base().build());
 
         CircuitDecorator generate = circuitConfiguration.generate(this.getClass());
-        CircuitPlugin<String> circuitPlugin = new CircuitPlugin<>(generate);
+        CircuitPlugn<String> circuitPlugin = new CircuitPlugn<>(generate);
 
         for (int i = 0; i < 5; i++) {
             String hello = circuitPlugin.decorateSource(Mono.just("hello")).block();
@@ -50,15 +47,13 @@ public class CircuitPluginTest {
     @Test
     public void should_call_failed_with_circuit_opened() {
 
-        CircuitConfiguration circuitConfiguration = new CircuitConfiguration(PluginInput.builder()
-                .circuit(CircuitModel.builder()
-                        .permittedNumberOfCallsInHalfOpenState(1)
-                        .failureRateThreshold(10f)
-                        .waitDurationInOpenStateMillisecond(Integer.MAX_VALUE)
-                        .build())
+        CircuitGenerator circuitConfiguration = new CircuitGenerator(CircuitModel.builder()
+                .permittedNumberOfCallsInHalfOpenState(1)
+                .failureRateThreshold(10f)
+                .waitDurationInOpenStateMillisecond(Integer.MAX_VALUE)
                 .build());
         CircuitDecorator generate = circuitConfiguration.generate(this.getClass());
-        CircuitPlugin<String> circuitPlugin = new CircuitPlugin<>(generate);
+        CircuitPlugn<String> circuitPlugin = new CircuitPlugn<>(generate);
 
         for (int i = 0; i < 100/*Minimum number of call */ + 10; i++) {
             Assertions.assertThrows(RuntimeException.class, () ->

@@ -1,4 +1,4 @@
-package io.penguin.penguincore.plugin.decorator;
+package io.penguin.penguincore.plugin;
 
 import io.micrometer.core.instrument.Counter;
 import io.netty.util.HashedWheelTimer;

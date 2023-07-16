@@ -3,8 +3,7 @@ package io.penguin.penguincore.plugin.bulkhead;
 import io.github.resilience4j.bulkhead.BulkheadFullException;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.penguin.penguincore.plugin.decorator.BulkheadDecorator;
-import io.penguin.penguincore.plugin.PluginInput;
+import io.penguin.penguincore.plugin.BulkheadDecorator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -31,12 +30,10 @@ public class BulkheadPluginTest {
     @Test
     public void should_call_succeed() {
 
-        BulkheadConfiguration bulkheadConfiguration = new BulkheadConfiguration(PluginInput.builder()
-                .bulkhead(BulkheadModel.base().build())
-                .build());
+        BulkheadGenerator bulkheadConfiguration = new BulkheadGenerator(BulkheadModel.base().build());
 
         BulkheadDecorator generate = bulkheadConfiguration.generate(this.getClass());
-        BulkheadPlugin<String> objectBulkheadPlugin = new BulkheadPlugin<>(generate);
+        BulkHeadPlugin<String> objectBulkheadPlugin = new BulkHeadPlugin<>(generate);
 
         for (int i = 0; i < 5; i++) {
             String hello = objectBulkheadPlugin.decorateSource(Mono.just("hello")).block();
@@ -49,11 +46,9 @@ public class BulkheadPluginTest {
     @Test
     public void should_call_failed_with_concurrent_call_rejected() {
 
-        BulkheadConfiguration bulkheadConfiguration = new BulkheadConfiguration(PluginInput.builder()
-                .bulkhead(BulkheadModel.base().maxConcurrentCalls(0).build())
-                .build());
+        BulkheadGenerator bulkheadConfiguration = new BulkheadGenerator(BulkheadModel.base().maxConcurrentCalls(0).build());
         BulkheadDecorator generate = bulkheadConfiguration.generate(this.getClass());
-        BulkheadPlugin<String> objectBulkheadPlugin = new BulkheadPlugin<>(generate);
+        BulkHeadPlugin<String> objectBulkheadPlugin = new BulkHeadPlugin<>(generate);
 
         for (int i = 0; i < 5; i++) {
             Assertions.assertThrows(BulkheadFullException.class, () -> {

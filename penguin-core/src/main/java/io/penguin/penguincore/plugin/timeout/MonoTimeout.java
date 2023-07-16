@@ -1,6 +1,6 @@
 package io.penguin.penguincore.plugin.timeout;
 
-import io.penguin.penguincore.plugin.decorator.TimeoutDecorator;
+import io.penguin.penguincore.plugin.TimeoutDecorator;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;

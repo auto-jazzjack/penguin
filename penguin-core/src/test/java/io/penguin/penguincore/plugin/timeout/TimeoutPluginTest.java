@@ -3,8 +3,7 @@ package io.penguin.penguincore.plugin.timeout;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.penguin.penguincore.exception.TimeoutException;
-import io.penguin.penguincore.plugin.decorator.TimeoutDecorator;
-import io.penguin.penguincore.plugin.PluginInput;
+import io.penguin.penguincore.plugin.TimeoutDecorator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -31,9 +30,7 @@ public class TimeoutPluginTest {
     @Test
     public void should_call_succeed() {
 
-        TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(PluginInput.builder()
-                .timeout(TimeoutModel.base().build())
-                .build());
+        TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(TimeoutModel.base().build());
 
         TimeoutDecorator generate = timeoutConfiguration.generate(this.getClass());
         TimeoutPlugin<String> circuitPlugin = new TimeoutPlugin<>(generate);
@@ -46,10 +43,8 @@ public class TimeoutPluginTest {
     @Test
     public void should_call_failed_with_timeout() {
 
-        TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(PluginInput.builder()
-                .timeout(TimeoutModel.builder()
-                        .timeoutMilliseconds(1)
-                        .build())
+        TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(TimeoutModel.builder()
+                .timeoutMilliseconds(1)
                 .build());
         TimeoutDecorator generate = timeoutConfiguration.generate(this.getClass());
         TimeoutPlugin<String> timeoutPlugin = new TimeoutPlugin<>(generate);

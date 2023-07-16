@@ -14,9 +14,12 @@ import io.penguin.pengiuncassandra.config.CassandraSourceConfig;
 import io.penguin.pengiuncassandra.connection.CassandraResource;
 import io.penguin.pengiuncassandra.util.CasandraUtil;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.decorator.Decorators;
 import io.penguin.penguincore.plugin.Plugin;
-import io.penguin.penguincore.plugin.timeout.TimeoutConfiguration;
+import io.penguin.penguincore.plugin.bulkhead.BulkHeadPlugin;
+import io.penguin.penguincore.plugin.bulkhead.BulkheadGenerator;
+import io.penguin.penguincore.plugin.circuit.CircuitGenerator;
+import io.penguin.penguincore.plugin.circuit.CircuitPlugn;
+import io.penguin.penguincore.plugin.timeout.TimeoutGenerator;
 import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
 import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
@@ -37,7 +40,7 @@ public class CassandraSource<K, V> implements Reader<K, V> {
     private final MappingManager mappingManager;
     private final PreparedStatement statement;
     private final Session session;
-    private final Plugin<V>[] plugins;
+    private final List<Plugin<V>> plugins;
     private final Counter failed = MetricCreator.counter("cassandra_reader",
             "kind", this.getClass().getSimpleName(), "type", "success");
 
@@ -50,16 +53,22 @@ public class CassandraSource<K, V> implements Reader<K, V> {
     static Map<CassandraResource, Session> cached = new HashMap<>();
 
     public CassandraSource(CassandraResource cassandraResource, CassandraSourceConfig<V> cassandraSourceConfig) {
-        valueType = (Class<V>) cassandraSourceConfig.getValueType();
+        valueType = cassandraSourceConfig.getValueType();
         this.session = connect(cassandraResource);
-        Decorators decorators = Decorators.builder().build();
 
-        List<Plugin<Object>> pluginList = new ArrayList<>();
+        plugins = new ArrayList<>();
 
-        TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(cassandraSourceConfig.getTimeout());
+        TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(cassandraSourceConfig.getTimeout());
         if (timeoutConfiguration.support()) {
-            decorators.setTimeoutDecorator(timeoutConfiguration.generate(this.getClass()));
-            pluginList.add(new TimeoutPlugin<>(decorators.getTimeoutDecorator()));
+            plugins.add(new TimeoutPlugin<>(timeoutConfiguration.generate(this.getClass())));
+        }
+        BulkheadGenerator<V> bulkheadGenerator = new BulkheadGenerator<>(cassandraSourceConfig.getBulkhead());
+        if (bulkheadGenerator.support()) {
+            plugins.add(new BulkHeadPlugin<>(bulkheadGenerator.generate(this.getClass())));
+        }
+        CircuitGenerator<V> circuitGenerator = new CircuitGenerator<>(cassandraSourceConfig.getCircuit());
+        if (circuitGenerator.support()) {
+            plugins.add(new CircuitPlugn<>(circuitGenerator.generate(this.getClass())));
         }
 
 
@@ -67,7 +76,6 @@ public class CassandraSource<K, V> implements Reader<K, V> {
         mappingManager.mapper(valueType, cassandraResource.getKeySpace());
 
         this.statement = this.mappingManager.getSession().prepare(CasandraUtil.queryGenerator(cassandraSourceConfig.getValueType()));
-        plugins = pluginList.toArray(new Plugin[0]);
     }
 
 

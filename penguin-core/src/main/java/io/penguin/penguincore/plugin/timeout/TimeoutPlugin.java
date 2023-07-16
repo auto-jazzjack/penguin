@@ -1,15 +1,14 @@
 package io.penguin.penguincore.plugin.timeout;
 
-import io.penguin.penguincore.plugin.decorator.TimeoutDecorator;
 import io.penguin.penguincore.plugin.Plugin;
+import io.penguin.penguincore.plugin.TimeoutDecorator;
 import reactor.core.publisher.Mono;
 
-public class TimeoutPlugin<V> extends Plugin<V> {
+public class TimeoutPlugin<V> implements Plugin<V> {
 
     private final TimeoutDecorator timeoutDecorator;
 
     public TimeoutPlugin(TimeoutDecorator timeoutDecorator) {
-        super();
         this.timeoutDecorator = timeoutDecorator;
     }
 
