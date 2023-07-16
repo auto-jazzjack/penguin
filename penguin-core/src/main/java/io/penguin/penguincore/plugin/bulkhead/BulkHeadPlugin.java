@@ -16,11 +16,13 @@ public class BulkHeadPlugin<V> extends MonoOperator<V, V> {
 
     private final BulkheadOperator<V> bulkheadOperator;
     private final Counter fail;
+    private Counter success;
 
     public BulkHeadPlugin(Mono<V> src, BulkheadDecorator<V> bulkheadDecorator) {
         super(src);
         this.bulkheadOperator = bulkheadDecorator.getBulkheadOperator();
         this.fail = bulkheadDecorator.getFail();
+        this.success = bulkheadDecorator.getSuccess();
     }
 
     @Override
@@ -33,6 +35,7 @@ public class BulkHeadPlugin<V> extends MonoOperator<V, V> {
 
             @Override
             public void onNext(V v) {
+                success.increment();
                 actual.onNext(v);
             }
 

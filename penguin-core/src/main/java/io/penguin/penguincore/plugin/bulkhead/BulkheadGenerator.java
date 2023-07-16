@@ -38,6 +38,7 @@ public class BulkheadGenerator<V> implements PluginGenerator<BulkheadDecorator<V
         return BulkheadDecorator.<V>builder()
                 .bulkheadOperator(of)
                 .fail(MetricCreator.counter(fail, "kind", clazz.getSimpleName()))
+                .success(MetricCreator.counter(success, "kind", clazz.getSimpleName()))
                 .build();
     }
 }

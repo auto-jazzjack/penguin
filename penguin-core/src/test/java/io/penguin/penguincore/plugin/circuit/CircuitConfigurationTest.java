@@ -10,27 +10,27 @@ public class CircuitConfigurationTest {
 
     @Test
     public void should_circuit_not_supported() {
-        CircuitGenerator circuitConfiguration = new CircuitGenerator(null);
+        CircuitGenerator<String> circuitConfiguration = new CircuitGenerator<>(null);
         Assertions.assertFalse(circuitConfiguration.support());
     }
 
     @Test
     public void should_circuit_supported() {
-        CircuitGenerator circuitConfiguration = new CircuitGenerator(CircuitModel.base().build());
+        CircuitGenerator<String> circuitConfiguration = new CircuitGenerator<>(CircuitModel.base().build());
         Assertions.assertTrue(circuitConfiguration.support());
     }
 
 
     @Test
     public void should_circuit_generated() {
-        CircuitGenerator circuitConfiguration = new CircuitGenerator(CircuitModel.builder()
+        CircuitGenerator<String> circuitConfiguration = new CircuitGenerator<>(CircuitModel.builder()
                 .circuitName("circuit")
                 .waitDurationInOpenStateMillisecond(123)
                 .permittedNumberOfCallsInHalfOpenState(15)
                 .failureRateThreshold(14.1f)
                 .build());
 
-        CircuitDecorator generate = circuitConfiguration.generate(this.getClass());
+        CircuitDecorator<String> generate = circuitConfiguration.generate(this.getClass());
 
         Assertions.assertEquals(CircuitGenerator.fail, generate.getFail().getId().getName());
         Assertions.assertEquals(CircuitGenerator.success, generate.getSuccess().getId().getName());
