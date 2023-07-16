@@ -1,6 +1,7 @@
 package io.penguin.pengiunlettuce.cofig;
 
 import io.penguin.penguincodec.Codec;
+import io.penguin.penguincore.plugin.bulkhead.BulkheadModel;
 import io.penguin.penguincore.plugin.circuit.CircuitModel;
 import io.penguin.penguincore.plugin.timeout.TimeoutModel;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ public class LettuceCacheConfig<T> {
 
     private CircuitModel circuit;
     private TimeoutModel timeout;
+    private BulkheadModel bulkhead;
 
     @Data
     @NoArgsConstructor

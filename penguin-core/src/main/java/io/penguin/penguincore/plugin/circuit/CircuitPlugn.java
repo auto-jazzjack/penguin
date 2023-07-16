@@ -47,6 +47,7 @@ public class CircuitPlugn<V> extends MonoOperator<V, V> {
 
             @Override
             public void onComplete() {
+                success.increment();
                 actual.onComplete();
             }
         });
