@@ -1,6 +1,6 @@
 package io.penguin.springboot.starter.kind;
 
-import io.penguin.penguincore.reader.BaseCacheReader;
+import io.penguin.penguincore.reader.StatefulCache;
 import io.penguin.penguincore.reader.BaseOverWriteReader;
 import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguincore.reader.Reader;
@@ -25,7 +25,7 @@ import java.util.function.BiConsumer;
 public class BaseDeployment<K, V> implements Penguin<K, V> {
 
     private Reader<K, V> source;
-    private final List<BaseCacheReader<K, V>> caches;
+    private final List<StatefulCache<K, V>> caches;
 
 
     /**
@@ -44,7 +44,7 @@ public class BaseDeployment<K, V> implements Penguin<K, V> {
 
             switch (readerBundle.getKind()) {
                 case LETTUCE_CACHE:
-                    caches.add((BaseCacheReader<K, V>) readerBundle.getReader());
+                    caches.add((StatefulCache<K, V>) readerBundle.getReader());
                     break;
                 case OVER_WRITER:
                     System.out.println();

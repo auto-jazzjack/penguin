@@ -12,7 +12,7 @@ import io.penguin.penguincore.plugin.circuit.CircuitGenerator;
 import io.penguin.penguincore.plugin.circuit.CircuitPlugn;
 import io.penguin.penguincore.plugin.timeout.TimeoutGenerator;
 import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
-import io.penguin.penguincore.reader.BaseCacheReader;
+import io.penguin.penguincore.reader.StatefulCache;
 import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguincore.util.Pair;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 @Slf4j
-public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
+public class LettuceCache<K, V> implements StatefulCache<K, V> {
 
     protected final StatefulRedisClusterConnection<String, CacheContext<V>> statefulConnection;
     private final long expireMilliseconds;
@@ -108,7 +108,7 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
 
     @Override
     public String cacheName() {
-        return BaseCacheReader.super.cacheName();
+        return "LettuceCache";
     }
 
     @Override
