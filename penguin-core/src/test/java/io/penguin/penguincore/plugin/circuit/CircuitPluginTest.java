@@ -31,13 +31,13 @@ public class CircuitPluginTest {
     @Test
     public void should_call_succeed() {
 
-        CircuitGenerator circuitConfiguration = new CircuitGenerator(CircuitModel.base().build());
+        CircuitGenerator<String> circuitConfiguration = new CircuitGenerator<>(CircuitModel.base().build());
 
-        CircuitDecorator generate = circuitConfiguration.generate(this.getClass());
-        CircuitPlugn<String> circuitPlugin = new CircuitPlugn<>(generate);
+        CircuitDecorator<String> generate = circuitConfiguration.generate(this.getClass());
+        CircuitPlugn<String> circuitPlugin = new CircuitPlugn<>(Mono.just("hello"), generate);
 
         for (int i = 0; i < 5; i++) {
-            String hello = circuitPlugin.decorateSource(Mono.just("hello")).block();
+            String hello = circuitPlugin.block();
             Assertions.assertEquals("hello", hello);
         }
 
@@ -47,17 +47,16 @@ public class CircuitPluginTest {
     @Test
     public void should_call_failed_with_circuit_opened() {
 
-        CircuitGenerator circuitConfiguration = new CircuitGenerator(CircuitModel.builder()
+        CircuitGenerator<String> circuitConfiguration = new CircuitGenerator<>(CircuitModel.builder()
                 .permittedNumberOfCallsInHalfOpenState(1)
                 .failureRateThreshold(10f)
                 .waitDurationInOpenStateMillisecond(Integer.MAX_VALUE)
                 .build());
-        CircuitDecorator generate = circuitConfiguration.generate(this.getClass());
-        CircuitPlugn<String> circuitPlugin = new CircuitPlugn<>(generate);
+        CircuitDecorator<String> generate = circuitConfiguration.generate(this.getClass());
+        CircuitPlugn<String> circuitPlugin = new CircuitPlugn<>(Mono.error(new IllegalArgumentException("hello")), generate);
 
         for (int i = 0; i < 100/*Minimum number of call */ + 10; i++) {
-            Assertions.assertThrows(RuntimeException.class, () ->
-                    circuitPlugin.decorateSource(Mono.error(new IllegalArgumentException("hello"))).block());
+            Assertions.assertThrows(RuntimeException.class, circuitPlugin::block);
         }
 
         Assertions.assertEquals(OPEN, generate.getCircuitBreaker().getState());

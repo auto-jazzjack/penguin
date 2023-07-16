@@ -6,27 +6,49 @@ import io.micrometer.core.instrument.Counter;
 import io.penguin.penguincore.plugin.BulkheadDecorator;
 import io.penguin.penguincore.plugin.Plugin;
 import lombok.extern.slf4j.Slf4j;
+import org.reactivestreams.Subscription;
+import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoOperator;
 
 @Slf4j
-public class BulkHeadPlugin<V> implements Plugin<V> {
+public class BulkHeadPlugin<V> extends MonoOperator<V, V> {
 
     private final BulkheadOperator<V> bulkheadOperator;
     private final Counter fail;
 
-    public BulkHeadPlugin(BulkheadDecorator<V> bulkheadDecorator) {
+    public BulkHeadPlugin(Mono<V> src, BulkheadDecorator<V> bulkheadDecorator) {
+        super(src);
         this.bulkheadOperator = bulkheadDecorator.getBulkheadOperator();
         this.fail = bulkheadDecorator.getFail();
     }
 
-
     @Override
-    public Mono<V> decorateSource(Mono<V> source) {
-        return ((Mono<V>) bulkheadOperator.apply(source))
-                .doOnError(i -> {
-                    if (i instanceof BulkheadFullException) {
-                        fail.increment();
-                    }
-                });
+    public void subscribe(CoreSubscriber<? super V> actual) {
+        this.source.subscribe(new CoreSubscriber<V>() {
+            @Override
+            public void onSubscribe(Subscription s) {
+                actual.onSubscribe(s);
+            }
+
+            @Override
+            public void onNext(V v) {
+                actual.onNext(v);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                if (t instanceof BulkheadFullException) {
+                    fail.increment();
+                }
+                actual.onError(t);
+            }
+
+            @Override
+            public void onComplete() {
+                actual.onComplete();
+            }
+        });
     }
+
 }
