@@ -8,7 +8,6 @@ import io.penguin.penguincore.plugin.CircuitDecorator;
 import io.penguin.penguincore.plugin.PluginGenerator;
 
 import java.time.Duration;
-import java.util.Optional;
 
 public class CircuitGenerator<V> implements PluginGenerator<CircuitDecorator<V>> {
 
@@ -17,15 +16,6 @@ public class CircuitGenerator<V> implements PluginGenerator<CircuitDecorator<V>>
     public CircuitGenerator(CircuitModel circuitModel) {
         this.circuitModel = circuitModel;
     }
-
-    @Override
-    public boolean support() {
-
-        boolean empty = Optional.ofNullable(this.circuitModel)
-                .isEmpty();
-        return !empty;
-    }
-
 
     static final String fail = "circuit_opened";
     static final String success = "circuit_closed";

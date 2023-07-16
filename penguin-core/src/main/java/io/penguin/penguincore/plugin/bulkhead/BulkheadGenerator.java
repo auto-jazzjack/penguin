@@ -8,7 +8,6 @@ import io.penguin.penguincore.plugin.BulkheadDecorator;
 import io.penguin.penguincore.plugin.PluginGenerator;
 
 import java.time.Duration;
-import java.util.Optional;
 
 public class BulkheadGenerator<V> implements PluginGenerator<BulkheadDecorator<V>> {
     private final BulkheadModel bulkheadModel;
@@ -16,14 +15,6 @@ public class BulkheadGenerator<V> implements PluginGenerator<BulkheadDecorator<V
     public BulkheadGenerator(BulkheadModel bulkheadModel) {
         this.bulkheadModel = bulkheadModel;
     }
-
-    @Override
-    public boolean support() {
-        boolean empty = Optional.ofNullable(this.bulkheadModel)
-                .isEmpty();
-        return !empty;
-    }
-
 
     static final String fail = "bulkhead_rejected";
     static final String success = "bulkhead_success";
@@ -38,6 +29,7 @@ public class BulkheadGenerator<V> implements PluginGenerator<BulkheadDecorator<V
         return BulkheadDecorator.<V>builder()
                 .bulkheadOperator(of)
                 .fail(MetricCreator.counter(fail, "kind", clazz.getSimpleName()))
+                .success(MetricCreator.counter(success, "kind", clazz.getSimpleName()))
                 .build();
     }
 }

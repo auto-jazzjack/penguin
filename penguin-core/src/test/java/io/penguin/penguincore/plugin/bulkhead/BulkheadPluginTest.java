@@ -30,14 +30,13 @@ public class BulkheadPluginTest {
     @Test
     public void should_call_succeed() {
 
-        BulkheadGenerator bulkheadConfiguration = new BulkheadGenerator(BulkheadModel.base().build());
+        BulkheadGenerator<String> bulkheadConfiguration = new BulkheadGenerator<>(BulkheadModel.base().build());
 
-        BulkheadDecorator generate = bulkheadConfiguration.generate(this.getClass());
-        BulkHeadPlugin<String> objectBulkheadPlugin = new BulkHeadPlugin<>(generate);
+        BulkheadDecorator<String> generate = bulkheadConfiguration.generate(this.getClass());
+        BulkHeadOperator<String> objectBulkheadPlugin = new BulkHeadOperator<>(Mono.just("hello"), generate);
 
         for (int i = 0; i < 5; i++) {
-            String hello = objectBulkheadPlugin.decorateSource(Mono.just("hello")).block();
-            Assertions.assertEquals("hello", hello);
+            Assertions.assertEquals("hello", objectBulkheadPlugin.block());
         }
 
         Assertions.assertEquals(5, generate.getSuccess().count());
@@ -46,14 +45,12 @@ public class BulkheadPluginTest {
     @Test
     public void should_call_failed_with_concurrent_call_rejected() {
 
-        BulkheadGenerator bulkheadConfiguration = new BulkheadGenerator(BulkheadModel.base().maxConcurrentCalls(0).build());
-        BulkheadDecorator generate = bulkheadConfiguration.generate(this.getClass());
-        BulkHeadPlugin<String> objectBulkheadPlugin = new BulkHeadPlugin<>(generate);
+        BulkheadGenerator<String> bulkheadConfiguration = new BulkheadGenerator<>(BulkheadModel.base().maxConcurrentCalls(0).build());
+        BulkheadDecorator<String> generate = bulkheadConfiguration.generate(this.getClass());
+        BulkHeadOperator<String> objectBulkheadPlugin = new BulkHeadOperator<>(Mono.just("hello"), generate);
 
         for (int i = 0; i < 5; i++) {
-            Assertions.assertThrows(BulkheadFullException.class, () -> {
-                objectBulkheadPlugin.decorateSource(Mono.just("hello")).block();
-            });
+            Assertions.assertThrows(BulkheadFullException.class, objectBulkheadPlugin::block);
         }
 
         Assertions.assertEquals(5, generate.getFail().count());

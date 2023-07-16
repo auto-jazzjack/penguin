@@ -7,13 +7,14 @@ import io.penguin.pengiunlettuce.cofig.LettuceCacheConfig;
 import io.penguin.pengiunlettuce.connection.LettuceResource;
 import io.penguin.pengiunlettuce.connection.RedisConnectionFactory;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.Plugin;
+import io.penguin.penguincore.plugin.bulkhead.BulkHeadOperator;
+import io.penguin.penguincore.plugin.bulkhead.BulkheadGenerator;
 import io.penguin.penguincore.plugin.circuit.CircuitGenerator;
-import io.penguin.penguincore.plugin.circuit.CircuitPlugn;
+import io.penguin.penguincore.plugin.circuit.CircuitOperator;
+import io.penguin.penguincore.plugin.timeout.TimeoutOperator;
 import io.penguin.penguincore.plugin.timeout.TimeoutGenerator;
-import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
-import io.penguin.penguincore.reader.BaseCacheReader;
 import io.penguin.penguincore.reader.CacheContext;
+import io.penguin.penguincore.reader.StatefulCache;
 import io.penguin.penguincore.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -21,15 +22,13 @@ import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 @Slf4j
-public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
+public class LettuceCache<K, V> implements StatefulCache<K, V> {
 
     protected final StatefulRedisClusterConnection<String, CacheContext<V>> statefulConnection;
     private final long expireMilliseconds;
@@ -38,8 +37,8 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
     private final Timer reader = MetricCreator.timer("lettuce_reader", "kind", this.getClass().getSimpleName());
     private final Timer writer = MetricCreator.timer("lettuce_writer", "kind", this.getClass().getSimpleName());
     private final Counter reUpdate = MetricCreator.counter("lettuce_reUpdate_count", "kind", this.getClass().getSimpleName());
-    private final List<Plugin<CacheContext<V>>> plugins;
     private final Sinks.Many<Pair<K, CacheContext<V>>> watcher;
+    private Function<Mono<CacheContext<V>>, Mono<CacheContext<V>>> resilience;
 
     private static final Map<LettuceResource, StatefulRedisClusterConnection<String, CacheContext<Object>>> cached = new ConcurrentHashMap<>();
 
@@ -52,15 +51,19 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
         this.expireMilliseconds = cacheConfig.getExpireMilliseconds();
         this.prefix = cacheConfig.getPrefix();
 
-        plugins = new ArrayList<>();
-        TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(cacheConfig.getTimeout());
-        if (timeoutConfiguration.support()) {
-            plugins.add(new TimeoutPlugin<>(timeoutConfiguration.generate(this.getClass())));
-        }
+        resilience = Function.identity();
 
-        CircuitGenerator<CacheContext<V>> circuitConfiguration = new CircuitGenerator<>(cacheConfig.getCircuit());
-        if (circuitConfiguration.support()) {
-            plugins.add(new CircuitPlugn<>(circuitConfiguration.generate(this.getClass())));
+        TimeoutGenerator timeoutGenerator = new TimeoutGenerator(cacheConfig.getTimeout());
+        if (cacheConfig.getTimeout() != null) {
+            resilience = i -> new TimeoutOperator<>(resilience.apply(i), timeoutGenerator.generate(this.getClass()));
+        }
+        BulkheadGenerator<CacheContext<V>> bulkheadGenerator = new BulkheadGenerator<>(cacheConfig.getBulkhead());
+        if (cacheConfig.getBulkhead() != null) {
+            resilience = i -> new BulkHeadOperator<>(resilience.apply(i), bulkheadGenerator.generate(this.getClass()));
+        }
+        CircuitGenerator<CacheContext<V>> circuitGenerator = new CircuitGenerator<>(cacheConfig.getCircuit());
+        if (cacheConfig.getCircuit() != null) {
+            resilience = i -> new CircuitOperator<>(resilience.apply(i), circuitGenerator.generate(this.getClass()));
         }
 
         watcher = Sinks.many()
@@ -108,7 +111,7 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
 
     @Override
     public String cacheName() {
-        return BaseCacheReader.super.cacheName();
+        return "LettuceCache";
     }
 
     @Override
@@ -124,9 +127,7 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
                     }
                 });
 
-        for (Plugin<CacheContext<V>> plugin : plugins) {
-            mono = plugin.decorateSource(mono);
-        }
+        mono = mono.transform(resilience);
 
         return mono
                 .onErrorResume(throwable -> failFindOne(key, throwable))

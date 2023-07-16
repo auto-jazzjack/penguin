@@ -14,19 +14,20 @@ import io.penguin.pengiuncassandra.config.CassandraSourceConfig;
 import io.penguin.pengiuncassandra.connection.CassandraResource;
 import io.penguin.pengiuncassandra.util.CasandraUtil;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.Plugin;
-import io.penguin.penguincore.plugin.bulkhead.BulkHeadPlugin;
+import io.penguin.penguincore.plugin.bulkhead.BulkHeadOperator;
 import io.penguin.penguincore.plugin.bulkhead.BulkheadGenerator;
 import io.penguin.penguincore.plugin.circuit.CircuitGenerator;
-import io.penguin.penguincore.plugin.circuit.CircuitPlugn;
+import io.penguin.penguincore.plugin.circuit.CircuitOperator;
+import io.penguin.penguincore.plugin.timeout.TimeoutOperator;
 import io.penguin.penguincore.plugin.timeout.TimeoutGenerator;
-import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
 import io.penguin.penguincore.reader.Reader;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoOperator;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /***
  * Cassandra Source only use timeOutOperator
@@ -40,7 +41,9 @@ public class CassandraSource<K, V> implements Reader<K, V> {
     private final MappingManager mappingManager;
     private final PreparedStatement statement;
     private final Session session;
-    private final List<Plugin<V>> plugins;
+    private final List<MonoOperator<V, V>> plugins;
+    private Function<Mono<V>, Mono<V>> function;
+    CassandraSourceConfig<V> cassandraSourceConfig;
     private final Counter failed = MetricCreator.counter("cassandra_reader",
             "kind", this.getClass().getSimpleName(), "type", "success");
 
@@ -57,18 +60,21 @@ public class CassandraSource<K, V> implements Reader<K, V> {
         this.session = connect(cassandraResource);
 
         plugins = new ArrayList<>();
+        this.cassandraSourceConfig = cassandraSourceConfig;
 
         TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(cassandraSourceConfig.getTimeout());
-        if (timeoutConfiguration.support()) {
-            plugins.add(new TimeoutPlugin<>(timeoutConfiguration.generate(this.getClass())));
+        function = Function.identity();
+
+        if (cassandraSourceConfig.getTimeout() != null) {
+            function = i -> new TimeoutOperator<>(function.apply(i), timeoutConfiguration.generate(this.getClass()));
         }
         BulkheadGenerator<V> bulkheadGenerator = new BulkheadGenerator<>(cassandraSourceConfig.getBulkhead());
-        if (bulkheadGenerator.support()) {
-            plugins.add(new BulkHeadPlugin<>(bulkheadGenerator.generate(this.getClass())));
+        if (cassandraSourceConfig.getBulkhead() != null) {
+            function = i -> new BulkHeadOperator<>(function.apply(i), bulkheadGenerator.generate(this.getClass()));
         }
         CircuitGenerator<V> circuitGenerator = new CircuitGenerator<>(cassandraSourceConfig.getCircuit());
-        if (circuitGenerator.support()) {
-            plugins.add(new CircuitPlugn<>(circuitGenerator.generate(this.getClass())));
+        if (cassandraSourceConfig.getCircuit() != null) {
+            function = i -> new CircuitOperator<>(function.apply(i), circuitGenerator.generate(this.getClass()));
         }
 
 
@@ -124,9 +130,8 @@ public class CassandraSource<K, V> implements Reader<K, V> {
             }
         }));
 
-        for (Plugin<V> plugin : plugins) {
-            mono = plugin.decorateSource(mono);
-        }
+        mono = mono.transform(function);
+
 
         return mono
                 .doOnError(i -> failed.increment())
