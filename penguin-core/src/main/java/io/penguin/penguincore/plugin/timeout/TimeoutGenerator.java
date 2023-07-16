@@ -2,10 +2,8 @@ package io.penguin.penguincore.plugin.timeout;
 
 import io.netty.util.HashedWheelTimer;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.TimeoutDecorator;
 import io.penguin.penguincore.plugin.PluginGenerator;
-
-import java.util.Optional;
+import io.penguin.penguincore.plugin.TimeoutDecorator;
 
 public class TimeoutGenerator implements PluginGenerator<TimeoutDecorator> {
 
@@ -15,13 +13,6 @@ public class TimeoutGenerator implements PluginGenerator<TimeoutDecorator> {
 
     public TimeoutGenerator(TimeoutModel timeoutModel) {
         this.timeoutModel = timeoutModel;
-    }
-
-    @Override
-    public boolean support() {
-        boolean empty = Optional.ofNullable(timeoutModel)
-                .isEmpty();
-        return !empty;
     }
 
     static final String fail = "time_out";

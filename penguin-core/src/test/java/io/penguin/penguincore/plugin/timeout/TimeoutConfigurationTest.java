@@ -8,19 +8,6 @@ public class TimeoutConfigurationTest {
 
 
     @Test
-    public void should_timeout_not_supported() {
-        TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(null);
-        Assertions.assertFalse(timeoutConfiguration.support());
-    }
-
-    @Test
-    public void should_timeout_supported() {
-        TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(TimeoutModel.base().build());
-        Assertions.assertTrue(timeoutConfiguration.support());
-    }
-
-
-    @Test
     public void should_timeout_generated() {
         TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(TimeoutModel.builder()
                 .timeoutMilliseconds(1)

@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
 @Slf4j
-public class TimeoutPluginTest {
+public class TimeoutOperatorTest {
 
     private final SimpleMeterRegistry simpleMeterRegistry = new SimpleMeterRegistry();
 
@@ -33,10 +33,10 @@ public class TimeoutPluginTest {
         TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(TimeoutModel.base().build());
 
         TimeoutDecorator generate = timeoutConfiguration.generate(this.getClass());
-        TimeoutPlugin<String> circuitPlugin = new TimeoutPlugin<>(generate);
+        TimeoutOperator<String> circuitPlugin = new TimeoutOperator<>(Mono.just("hello"), generate);
 
 
-        String hello = circuitPlugin.decorateSource(Mono.just("hello")).block();
+        String hello = circuitPlugin.block();
         Assertions.assertEquals("hello", hello);
     }
 
@@ -47,20 +47,18 @@ public class TimeoutPluginTest {
                 .timeoutMilliseconds(1)
                 .build());
         TimeoutDecorator generate = timeoutConfiguration.generate(this.getClass());
-        TimeoutPlugin<String> timeoutPlugin = new TimeoutPlugin<>(generate);
 
         for (int i = 0; i < 10; i++) {
             try {
-                timeoutPlugin.decorateSource(Mono.create(j -> {
-                            try {
-                                Thread.sleep(10);
-                            } catch (Exception e) {
-                                j.error(e);
-                            }
+                new TimeoutOperator<>(Mono.create(j -> {
+                    try {
+                        Thread.sleep(10);
+                    } catch (Exception e) {
+                        j.error(e);
+                    }
 
-                            j.success("hello");
-                        }))
-                        .block();
+                    j.success("hello");
+                }), generate).block();
             } catch (Exception e) {
                 Assertions.assertEquals(TimeoutException.class, e.getClass());
             }

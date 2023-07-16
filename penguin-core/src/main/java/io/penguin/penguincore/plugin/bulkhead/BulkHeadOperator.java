@@ -1,10 +1,8 @@
 package io.penguin.penguincore.plugin.bulkhead;
 
 import io.github.resilience4j.bulkhead.BulkheadFullException;
-import io.github.resilience4j.reactor.bulkhead.operator.BulkheadOperator;
 import io.micrometer.core.instrument.Counter;
 import io.penguin.penguincore.plugin.BulkheadDecorator;
-import io.penguin.penguincore.plugin.Plugin;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Subscription;
 import reactor.core.CoreSubscriber;
@@ -12,12 +10,12 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoOperator;
 
 @Slf4j
-public class BulkHeadPlugin<V> extends MonoOperator<V, V> {
+public class BulkHeadOperator<V> extends MonoOperator<V, V> {
 
     private final Counter fail;
     private final Counter success;
 
-    public BulkHeadPlugin(Mono<V> src, BulkheadDecorator<V> bulkheadDecorator) {
+    public BulkHeadOperator(Mono<V> src, BulkheadDecorator<V> bulkheadDecorator) {
         super((Mono<? extends V>) bulkheadDecorator.getBulkheadOperator().apply(src));
         this.fail = bulkheadDecorator.getFail();
         this.success = bulkheadDecorator.getSuccess();

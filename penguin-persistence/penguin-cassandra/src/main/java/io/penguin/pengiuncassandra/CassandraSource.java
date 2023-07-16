@@ -14,16 +14,13 @@ import io.penguin.pengiuncassandra.config.CassandraSourceConfig;
 import io.penguin.pengiuncassandra.connection.CassandraResource;
 import io.penguin.pengiuncassandra.util.CasandraUtil;
 import io.penguin.penguincore.metric.MetricCreator;
-import io.penguin.penguincore.plugin.Plugin;
-import io.penguin.penguincore.plugin.bulkhead.BulkHeadPlugin;
+import io.penguin.penguincore.plugin.bulkhead.BulkHeadOperator;
 import io.penguin.penguincore.plugin.bulkhead.BulkheadGenerator;
 import io.penguin.penguincore.plugin.circuit.CircuitGenerator;
-import io.penguin.penguincore.plugin.circuit.CircuitPlugn;
-import io.penguin.penguincore.plugin.timeout.MonoTimeout;
+import io.penguin.penguincore.plugin.circuit.CircuitOperator;
+import io.penguin.penguincore.plugin.timeout.TimeoutOperator;
 import io.penguin.penguincore.plugin.timeout.TimeoutGenerator;
-import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
 import io.penguin.penguincore.reader.Reader;
-import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoOperator;
 import reactor.core.scheduler.Schedulers;
@@ -68,16 +65,16 @@ public class CassandraSource<K, V> implements Reader<K, V> {
         TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(cassandraSourceConfig.getTimeout());
         function = Function.identity();
 
-        if (timeoutConfiguration.support()) {
-            function = i -> new MonoTimeout<>(function.apply(i), timeoutConfiguration.generate(this.getClass()));
+        if (cassandraSourceConfig.getTimeout() != null) {
+            function = i -> new TimeoutOperator<>(function.apply(i), timeoutConfiguration.generate(this.getClass()));
         }
         BulkheadGenerator<V> bulkheadGenerator = new BulkheadGenerator<>(cassandraSourceConfig.getBulkhead());
-        if (bulkheadGenerator.support()) {
-            function = i -> new BulkHeadPlugin<>(function.apply(i), bulkheadGenerator.generate(this.getClass()));
+        if (cassandraSourceConfig.getBulkhead() != null) {
+            function = i -> new BulkHeadOperator<>(function.apply(i), bulkheadGenerator.generate(this.getClass()));
         }
         CircuitGenerator<V> circuitGenerator = new CircuitGenerator<>(cassandraSourceConfig.getCircuit());
-        if (circuitGenerator.support()) {
-            function = i -> new CircuitPlugn<>(function.apply(i), circuitGenerator.generate(this.getClass()));
+        if (cassandraSourceConfig.getCircuit() != null) {
+            function = i -> new CircuitOperator<>(function.apply(i), circuitGenerator.generate(this.getClass()));
         }
 
 

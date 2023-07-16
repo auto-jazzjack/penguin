@@ -34,7 +34,7 @@ public class CircuitPluginTest {
         CircuitGenerator<String> circuitConfiguration = new CircuitGenerator<>(CircuitModel.base().build());
 
         CircuitDecorator<String> generate = circuitConfiguration.generate(this.getClass());
-        CircuitPlugn<String> circuitPlugin = new CircuitPlugn<>(Mono.just("hello"), generate);
+        CircuitOperator<String> circuitPlugin = new CircuitOperator<>(Mono.just("hello"), generate);
 
         for (int i = 0; i < 5; i++) {
             String hello = circuitPlugin.block();
@@ -53,7 +53,7 @@ public class CircuitPluginTest {
                 .waitDurationInOpenStateMillisecond(Integer.MAX_VALUE)
                 .build());
         CircuitDecorator<String> generate = circuitConfiguration.generate(this.getClass());
-        CircuitPlugn<String> circuitPlugin = new CircuitPlugn<>(Mono.error(new IllegalArgumentException("hello")), generate);
+        CircuitOperator<String> circuitPlugin = new CircuitOperator<>(Mono.error(new IllegalArgumentException("hello")), generate);
 
         for (int i = 0; i < 100/*Minimum number of call */ + 10; i++) {
             Assertions.assertThrows(RuntimeException.class, circuitPlugin::block);
