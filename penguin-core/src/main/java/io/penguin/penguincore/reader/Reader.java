@@ -6,6 +6,6 @@ public interface Reader<K, V> {
     Mono<V> findOne(K key);
 
     default Mono<V> failFindOne(K key, Throwable error){
-        return Mono.empty();
+        return Mono.error(error);
     }
 }
