@@ -8,8 +8,8 @@ import lombok.Data;
 
 @Data
 @Builder
-public class CircuitDecorator {
-    private CircuitBreakerOperator<?> circuitBreakerOperator;
+public class CircuitDecorator<V> {
+    private CircuitBreakerOperator<V> circuitBreakerOperator;
     private CircuitBreaker circuitBreaker;
     private Counter success;
     private Counter fail;

@@ -9,8 +9,9 @@ import io.penguin.pengiunlettuce.connection.RedisConnectionFactory;
 import io.penguin.penguincore.metric.MetricCreator;
 import io.penguin.penguincore.plugin.Plugin;
 import io.penguin.penguincore.plugin.circuit.CircuitGenerator;
-import io.penguin.penguincore.plugin.circuit.CircuitOperator;
+import io.penguin.penguincore.plugin.circuit.CircuitPlugn;
 import io.penguin.penguincore.plugin.timeout.TimeoutGenerator;
+import io.penguin.penguincore.plugin.timeout.TimeoutPlugin;
 import io.penguin.penguincore.reader.BaseCacheReader;
 import io.penguin.penguincore.reader.CacheContext;
 import io.penguin.penguincore.util.Pair;
@@ -54,12 +55,12 @@ public class LettuceCache<K, V> implements BaseCacheReader<K, V> {
         plugins = new ArrayList<>();
         TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(cacheConfig.getTimeout());
         if (timeoutConfiguration.support()) {
-            plugins.add(new TimeoutOperator<>(timeoutConfiguration.generate(this.getClass())));
+            plugins.add(new TimeoutPlugin<>(timeoutConfiguration.generate(this.getClass())));
         }
 
-        CircuitGenerator circuitConfiguration = new CircuitGenerator(cacheConfig.getCircuit());
+        CircuitGenerator<CacheContext<V>> circuitConfiguration = new CircuitGenerator<>(cacheConfig.getCircuit());
         if (circuitConfiguration.support()) {
-            plugins.add(new CircuitOperator<>(circuitConfiguration.generate(this.getClass())));
+            plugins.add(new CircuitPlugn<>(circuitConfiguration.generate(this.getClass())));
         }
 
         watcher = Sinks.many()

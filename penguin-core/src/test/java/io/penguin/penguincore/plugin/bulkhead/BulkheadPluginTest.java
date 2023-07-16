@@ -33,7 +33,7 @@ public class BulkheadPluginTest {
         BulkheadGenerator bulkheadConfiguration = new BulkheadGenerator(BulkheadModel.base().build());
 
         BulkheadDecorator generate = bulkheadConfiguration.generate(this.getClass());
-        BulkHeadOperator<String> objectBulkheadPlugin = new BulkHeadOperator<>(generate);
+        BulkHeadPlugin<String> objectBulkheadPlugin = new BulkHeadPlugin<>(generate);
 
         for (int i = 0; i < 5; i++) {
             String hello = objectBulkheadPlugin.decorateSource(Mono.just("hello")).block();
@@ -48,7 +48,7 @@ public class BulkheadPluginTest {
 
         BulkheadGenerator bulkheadConfiguration = new BulkheadGenerator(BulkheadModel.base().maxConcurrentCalls(0).build());
         BulkheadDecorator generate = bulkheadConfiguration.generate(this.getClass());
-        BulkHeadOperator<String> objectBulkheadPlugin = new BulkHeadOperator<>(generate);
+        BulkHeadPlugin<String> objectBulkheadPlugin = new BulkHeadPlugin<>(generate);
 
         for (int i = 0; i < 5; i++) {
             Assertions.assertThrows(BulkheadFullException.class, () -> {

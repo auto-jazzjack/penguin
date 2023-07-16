@@ -10,7 +10,7 @@ import io.penguin.penguincore.plugin.PluginGenerator;
 import java.time.Duration;
 import java.util.Optional;
 
-public class BulkheadGenerator implements PluginGenerator<BulkheadDecorator> {
+public class BulkheadGenerator<V> implements PluginGenerator<BulkheadDecorator<V>> {
     private final BulkheadModel bulkheadModel;
 
     public BulkheadGenerator(BulkheadModel bulkheadModel) {
@@ -29,16 +29,15 @@ public class BulkheadGenerator implements PluginGenerator<BulkheadDecorator> {
     static final String success = "bulkhead_success";
 
     @Override
-    public BulkheadDecorator generate(Class<?> clazz) {
-        BulkheadOperator<?> of = BulkheadOperator.of(Bulkhead.of(clazz.getSimpleName(), BulkheadConfig.custom()
+    public BulkheadDecorator<V> generate(Class<?> clazz) {
+        BulkheadOperator<V> of = BulkheadOperator.of(Bulkhead.of(clazz.getSimpleName(), BulkheadConfig.custom()
                 .maxConcurrentCalls(this.bulkheadModel.getMaxConcurrentCalls())
                 .maxWaitDuration(Duration.ofMillis(this.bulkheadModel.getMaxWaitDurationMilliseconds()))
                 .build()));
 
-        return BulkheadDecorator.builder()
+        return BulkheadDecorator.<V>builder()
                 .bulkheadOperator(of)
                 .fail(MetricCreator.counter(fail, "kind", clazz.getSimpleName()))
-                .success(MetricCreator.counter(success, "kind", clazz.getSimpleName()))
                 .build();
     }
 }

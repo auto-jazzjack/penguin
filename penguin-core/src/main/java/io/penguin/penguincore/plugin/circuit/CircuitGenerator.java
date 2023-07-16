@@ -10,7 +10,7 @@ import io.penguin.penguincore.plugin.PluginGenerator;
 import java.time.Duration;
 import java.util.Optional;
 
-public class CircuitGenerator implements PluginGenerator<CircuitDecorator> {
+public class CircuitGenerator<V> implements PluginGenerator<CircuitDecorator<V>> {
 
     private final CircuitModel circuitModel;
 
@@ -31,14 +31,14 @@ public class CircuitGenerator implements PluginGenerator<CircuitDecorator> {
     static final String success = "circuit_closed";
 
     @Override
-    public CircuitDecorator generate(Class<?> clazz) {
+    public CircuitDecorator<V> generate(Class<?> clazz) {
         CircuitBreaker circuitBreaker = CircuitBreaker.of(this.circuitModel.getCircuitName(), CircuitBreakerConfig.custom()
                 .permittedNumberOfCallsInHalfOpenState(this.circuitModel.getPermittedNumberOfCallsInHalfOpenState())
                 .failureRateThreshold(this.circuitModel.getFailureRateThreshold())
                 .waitDurationInOpenState(Duration.ofMillis(this.circuitModel.getWaitDurationInOpenStateMillisecond()))
                 .build());
 
-        return CircuitDecorator.builder()
+        return CircuitDecorator.<V>builder()
                 .circuitBreakerOperator(CircuitBreakerOperator.of(circuitBreaker))
                 .circuitBreaker(circuitBreaker)
                 .fail(MetricCreator.counter(fail, "kind", clazz.getSimpleName()))

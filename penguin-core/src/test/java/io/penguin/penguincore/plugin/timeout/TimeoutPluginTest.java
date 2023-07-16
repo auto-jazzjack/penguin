@@ -33,7 +33,7 @@ public class TimeoutPluginTest {
         TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(TimeoutModel.base().build());
 
         TimeoutDecorator generate = timeoutConfiguration.generate(this.getClass());
-        TimeoutOperator<String> circuitPlugin = new TimeoutOperator<>(generate);
+        TimeoutPlugin<String> circuitPlugin = new TimeoutPlugin<>(generate);
 
 
         String hello = circuitPlugin.decorateSource(Mono.just("hello")).block();
@@ -47,7 +47,7 @@ public class TimeoutPluginTest {
                 .timeoutMilliseconds(1)
                 .build());
         TimeoutDecorator generate = timeoutConfiguration.generate(this.getClass());
-        TimeoutOperator<String> timeoutPlugin = new TimeoutOperator<>(generate);
+        TimeoutPlugin<String> timeoutPlugin = new TimeoutPlugin<>(generate);
 
         for (int i = 0; i < 10; i++) {
             try {

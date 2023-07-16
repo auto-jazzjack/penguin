@@ -7,8 +7,8 @@ import lombok.Data;
 
 @Data
 @Builder
-public class BulkheadDecorator {
-    private BulkheadOperator<?> bulkheadOperator;
+public class BulkheadDecorator<V> {
+    private BulkheadOperator<V> bulkheadOperator;
     private Counter success;
     private Counter fail;
 }

@@ -11,6 +11,8 @@ public class TimeoutGenerator implements PluginGenerator<TimeoutDecorator> {
 
     private final TimeoutModel timeoutModel;
 
+    private static final HashedWheelTimer hashedWheelTimer = new HashedWheelTimer();
+
     public TimeoutGenerator(TimeoutModel timeoutModel) {
         this.timeoutModel = timeoutModel;
     }
@@ -28,7 +30,7 @@ public class TimeoutGenerator implements PluginGenerator<TimeoutDecorator> {
     public TimeoutDecorator generate(Class<?> clazz) {
         return TimeoutDecorator.builder()
                 .milliseconds(timeoutModel.getTimeoutMilliseconds())
-                .timer(new HashedWheelTimer())
+                .timer(hashedWheelTimer)
                 .fail(MetricCreator.counter(fail, "kind", clazz.getSimpleName()))
                 .build();
     }
