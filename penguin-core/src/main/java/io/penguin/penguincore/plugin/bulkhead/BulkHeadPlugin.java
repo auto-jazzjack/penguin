@@ -14,13 +14,11 @@ import reactor.core.publisher.MonoOperator;
 @Slf4j
 public class BulkHeadPlugin<V> extends MonoOperator<V, V> {
 
-    private final BulkheadOperator<V> bulkheadOperator;
     private final Counter fail;
-    private Counter success;
+    private final Counter success;
 
     public BulkHeadPlugin(Mono<V> src, BulkheadDecorator<V> bulkheadDecorator) {
-        super(src);
-        this.bulkheadOperator = bulkheadDecorator.getBulkheadOperator();
+        super((Mono<? extends V>) bulkheadDecorator.getBulkheadOperator().apply(src));
         this.fail = bulkheadDecorator.getFail();
         this.success = bulkheadDecorator.getSuccess();
     }
