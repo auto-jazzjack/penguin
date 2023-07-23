@@ -41,7 +41,6 @@ public class CassandraSource<K, V> implements Reader<K, V> {
     private final MappingManager mappingManager;
     private final PreparedStatement statement;
     private final Session session;
-    private final List<MonoOperator<V, V>> plugins;
     private Function<Mono<V>, Mono<V>> function;
     CassandraSourceConfig<V> cassandraSourceConfig;
     private final Counter failed = MetricCreator.counter("cassandra_reader",
@@ -59,7 +58,6 @@ public class CassandraSource<K, V> implements Reader<K, V> {
         valueType = cassandraSourceConfig.getValueType();
         this.session = connect(cassandraResource);
 
-        plugins = new ArrayList<>();
         this.cassandraSourceConfig = cassandraSourceConfig;
 
         TimeoutGenerator timeoutConfiguration = new TimeoutGenerator(cassandraSourceConfig.getTimeout());
