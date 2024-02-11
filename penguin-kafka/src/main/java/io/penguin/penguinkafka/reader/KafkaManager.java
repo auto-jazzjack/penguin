@@ -21,7 +21,7 @@ import static io.penguin.penguinkafka.util.KafkaUtil.createActor;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class KafkaManager {
 
-    private Map<String, KafkaProcessor> kafkaProcessorMap;
+    private Map<String, KafkaProcessor<?,?>> kafkaProcessorMap;
     private final CommonConfiguration properties;
 
     @PostConstruct
@@ -46,8 +46,8 @@ public class KafkaManager {
 
     public Map<String, Integer> revive() {
         Map<String, Integer> retv = new HashMap<>();
-        for (Map.Entry<String, KafkaProcessor> entry : kafkaProcessorMap.entrySet()) {
-            KafkaProcessor value = entry.getValue();
+        for (Map.Entry<String, KafkaProcessor<?,?>> entry : kafkaProcessorMap.entrySet()) {
+            KafkaProcessor<?,?> value = entry.getValue();
             int consume = value.consume();
 
             if (retv.get(entry.getKey()) == null) {
